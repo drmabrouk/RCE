@@ -130,22 +130,13 @@ $countries_list = array(
                         </select>
                     </div>
                 </div>
-                    <div class="control-form-group large">
-                        <select name="nationality">
-                            <?php foreach($countries_list as $code => $name): ?>
-                                <option value="<?php echo $code; ?>" <?php selected($code, 'EG'); ?>><?php echo $name; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <label><?php _e('الجنسية', 'control'); ?></label>
-                    </div>
-                    <div class="control-form-group large">
-                        <input type="text" name="height" placeholder="cm">
-                        <label><?php _e('الطول', 'control'); ?></label>
-                    </div>
-                    <div class="control-form-group large">
-                        <input type="text" name="weight" placeholder="kg">
-                        <label><?php _e('الوزن', 'control'); ?></label>
-                    </div>
+                <div class="wiz-field" style="margin-top:20px;">
+                    <label data-t="nationality"><?php echo Control_I18n::t('nationality'); ?></label>
+                    <select name="nationality">
+                        <?php foreach($countries_list as $code => $name): ?>
+                            <option value="<?php echo $code; ?>" <?php selected($code, 'EG'); ?>><?php echo $name; ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
 

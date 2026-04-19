@@ -1,3 +1,4 @@
+<div class="view-section-container">
 <?php
 global $wpdb;
 $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings", OBJECT_K );

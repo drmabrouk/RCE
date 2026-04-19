@@ -1,3 +1,4 @@
+<div class="view-section-container">
 <?php
 global $wpdb;
 $roles = $wpdb->get_results( "SELECT r.*, (SELECT COUNT(*) FROM {$wpdb->prefix}control_staff WHERE role = r.role_key) as user_count FROM {$wpdb->prefix}control_roles r" );
@@ -217,3 +218,4 @@ jQuery(document).ready(function($) {
 .role-card-simplified { padding:20px; transition:0.3s; border:1px solid var(--control-border); }
 .role-card-simplified:hover { border-color:var(--control-accent); transform:translateY(-5px); box-shadow:0 10px 20px rgba(0,0,0,0.05); }
 </style>
+</div>

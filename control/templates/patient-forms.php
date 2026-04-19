@@ -136,15 +136,64 @@ $strings = Control_I18n::get_all();
                 </div>
             </div>
 
-            <!-- Step 4: Initial Intake -->
+            <!-- Step 4: Initial Intake & Clinical -->
             <div class="wiz-step" id="wiz-step-4" style="display:none;">
                 <div class="wiz-field">
                     <label data-t="intake_reason"><?php echo Control_I18n::t('intake_reason'); ?></label>
-                    <textarea name="intake_reason" rows="3"></textarea>
+                    <textarea name="intake_reason" rows="2"></textarea>
                 </div>
+
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="medical_history"><?php echo Control_I18n::t('medical_history'); ?> (Pregnancy)</label>
+                        <textarea name="pregnancy_history" rows="2"></textarea>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label>
+                        <textarea name="birth_history" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="wiz-grid-3">
+                    <div class="wiz-field">
+                        <label data-t="walking"><?php echo Control_I18n::t('walking'); ?></label>
+                        <input type="text" name="milestones_walking">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="speaking"><?php echo Control_I18n::t('speaking'); ?></label>
+                        <input type="text" name="milestones_speaking">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="sitting"><?php echo Control_I18n::t('sitting'); ?></label>
+                        <input type="text" name="milestones_sitting">
+                    </div>
+                </div>
+
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="chronic_conditions"><?php echo Control_I18n::t('chronic_conditions'); ?></label>
+                        <textarea name="chronic_conditions" rows="2"></textarea>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="medications"><?php echo Control_I18n::t('medications'); ?></label>
+                        <textarea name="current_medications" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="initial_diagnosis"><?php echo Control_I18n::t('initial_diagnosis'); ?></label>
+                        <textarea name="initial_diagnosis" rows="2"></textarea>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="diagnosis_source"><?php echo Control_I18n::t('diagnosis_source'); ?></label>
+                        <input type="text" name="external_diagnosis_source">
+                    </div>
+                </div>
+
                 <div class="wiz-field">
-                    <label data-t="medical_history"><?php echo Control_I18n::t('medical_history'); ?></label>
-                    <textarea name="pregnancy_history" rows="3"></textarea>
+                    <label data-t="behavioral_observation"><?php echo Control_I18n::t('behavioral_observation'); ?></label>
+                    <textarea name="initial_behavioral_observation" rows="2"></textarea>
                 </div>
             </div>
 

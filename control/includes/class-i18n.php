@@ -44,6 +44,16 @@ class Control_I18n {
 			'intake_reason' => 'سبب الزيارة / الشكوى الرئيسية',
 			'medical_history' => 'أبرز التاريخ الطبي',
 			'workflow_metadata' => 'بيانات تدفق العمل (داخلية)',
+			'birth_history' => 'تاريخ الولادة',
+			'milestones' => 'مراحل التطور',
+			'walking' => 'المشي',
+			'speaking' => 'الكلام',
+			'sitting' => 'الجلوس',
+			'chronic_conditions' => 'الأمراض المزمنة',
+			'medications' => 'الأدوية',
+			'initial_diagnosis' => 'التشخيص الأولي',
+			'diagnosis_source' => 'مصدر التشخيص الخارجي',
+			'behavioral_observation' => 'الملاحظة السلوكية',
 		),
 		'en' => array(
 			'registration_title' => 'New Child Registration',
@@ -83,6 +93,16 @@ class Control_I18n {
 			'intake_reason' => 'Intake Reason / Main Complaint',
 			'medical_history' => 'Medical History Highlights',
 			'workflow_metadata' => 'Workflow Metadata (Internal Only)',
+			'birth_history' => 'Birth History',
+			'milestones' => 'Developmental Milestones',
+			'walking' => 'Walking',
+			'speaking' => 'Speaking',
+			'sitting' => 'Sitting',
+			'chronic_conditions' => 'Chronic Conditions',
+			'medications' => 'Medications',
+			'initial_diagnosis' => 'Initial Diagnosis',
+			'diagnosis_source' => 'External Diagnosis Source',
+			'behavioral_observation' => 'Behavioral Observation',
 		)
 	);
 

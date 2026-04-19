@@ -18,6 +18,10 @@ class Control_Database {
 		$table_policies     = $wpdb->prefix . 'control_policies';
 		$table_otps         = $wpdb->prefix . 'control_otps';
 		$table_reset_tokens = $wpdb->prefix . 'control_reset_tokens';
+		$table_patients     = $wpdb->prefix . 'control_patients';
+		$table_patient_assessments = $wpdb->prefix . 'control_patient_assessments';
+		$table_patient_documents = $wpdb->prefix . 'control_patient_documents';
+		$table_patient_referrals = $wpdb->prefix . 'control_patient_referrals';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -129,6 +133,80 @@ class Control_Database {
 			is_used tinyint(1) DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY token (token)
+		) $charset_collate;
+
+		CREATE TABLE $table_patients (
+			id mediumint(9) NOT NULL AUTO_INCREMENT,
+			full_name varchar(255) NOT NULL,
+			dob date,
+			gender varchar(20),
+			profile_photo varchar(255),
+			father_phone varchar(50),
+			mother_phone varchar(50),
+			email varchar(255),
+			address text,
+			emergency_contact varchar(255),
+			blood_type varchar(10),
+			drug_allergies text,
+
+			/* Medical History */
+			pregnancy_history text,
+			birth_history text,
+			milestones_walking varchar(255),
+			milestones_speaking varchar(255),
+			milestones_sitting varchar(255),
+			chronic_conditions text,
+			current_medications text,
+
+			/* Diagnosis */
+			initial_diagnosis text,
+			external_diagnosis_source varchar(255),
+
+			/* Behavioral Observation */
+			initial_behavioral_observation text,
+
+			/* Status & Assignment */
+			case_status varchar(50) DEFAULT 'waiting_list',
+			assigned_specialists text, /* JSON or comma-separated IDs */
+
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id)
+		) $charset_collate;
+
+		CREATE TABLE $table_patient_assessments (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			test_name varchar(255) NOT NULL,
+			test_result text,
+			test_date date,
+			assessor_id varchar(100),
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_patient_documents (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			doc_type varchar(100), /* medical_report, eeg, scan, gene_test, birth_certificate, id, agreement */
+			doc_url varchar(255) NOT NULL,
+			doc_name varchar(255),
+			uploaded_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_patient_referrals (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			from_department varchar(100),
+			to_department varchar(100),
+			referral_date date,
+			notes text,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -185,6 +263,24 @@ class Control_Database {
 				'role_key'  => 'researcher',
 				'role_name' => 'Sports Researcher',
 				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'receptionist',
+				'role_name' => 'Reception Staff',
+				'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_basic' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'specialist',
+				'role_name' => 'Specialist',
+				'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_basic' => true, 'pediatric_view_clinical' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'center_manager',
+				'role_name' => 'Center Manager',
+				'permissions' => json_encode(array('all' => true)),
 				'is_system' => 1
 			)
 		);

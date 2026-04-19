@@ -326,6 +326,9 @@ class Control_Auth {
 			'audit_view'    => array( 'label' => __( 'عرض سجل النشاطات', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 			'backup_manage' => array( 'label' => __( 'إدارة النسخ الاحتياطي', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 			'emails_send'   => array( 'label' => __( 'إرسال البريد الإلكتروني', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+			'pediatric_view_basic' => array( 'label' => __( 'عرض البيانات الأساسية (الأطفال)', 'control' ), 'category' => __( 'سجلات الأطفال', 'control' ) ),
+			'pediatric_view_clinical' => array( 'label' => __( 'عرض البيانات السريرية (الأطفال)', 'control' ), 'category' => __( 'سجلات الأطفال', 'control' ) ),
+			'pediatric_manage' => array( 'label' => __( 'إدارة سجلات الأطفال بالكامل', 'control' ), 'category' => __( 'سجلات الأطفال', 'control' ) ),
 		);
 	}
 }

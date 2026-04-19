@@ -22,6 +22,13 @@ class Control_Database {
 		$table_patient_assessments = $wpdb->prefix . 'control_patient_assessments';
 		$table_patient_documents = $wpdb->prefix . 'control_patient_documents';
 		$table_patient_referrals = $wpdb->prefix . 'control_patient_referrals';
+		$table_fin_sessions      = $wpdb->prefix . 'control_fin_sessions';
+		$table_fin_packages      = $wpdb->prefix . 'control_fin_packages';
+		$table_fin_invoices      = $wpdb->prefix . 'control_fin_invoices';
+		$table_fin_invoice_items = $wpdb->prefix . 'control_fin_invoice_items';
+		$table_fin_payments      = $wpdb->prefix . 'control_fin_payments';
+		$table_fin_payroll       = $wpdb->prefix . 'control_fin_payroll';
+		$table_fin_expenses      = $wpdb->prefix . 'control_fin_expenses';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -207,6 +214,107 @@ class Control_Database {
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_sessions (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			specialist_id varchar(100) NOT NULL,
+			session_date date NOT NULL,
+			duration_minutes int DEFAULT 60,
+			status varchar(20) DEFAULT 'attended', /* attended, cancelled, no_show */
+			billing_status varchar(20) DEFAULT 'unbilled', /* unbilled, billed, deducted_from_package */
+			invoice_id bigint(20),
+			package_id bigint(20),
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id),
+			KEY specialist_id (specialist_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_packages (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			package_name varchar(255) NOT NULL,
+			total_sessions int NOT NULL,
+			remaining_sessions int NOT NULL,
+			price decimal(10,2) NOT NULL,
+			expiry_date date,
+			status varchar(20) DEFAULT 'active',
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_invoices (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			invoice_number varchar(50) NOT NULL,
+			subtotal decimal(10,2) NOT NULL,
+			discount decimal(10,2) DEFAULT 0,
+			tax decimal(10,2) DEFAULT 0,
+			total_amount decimal(10,2) NOT NULL,
+			paid_amount decimal(10,2) DEFAULT 0,
+			status varchar(20) DEFAULT 'pending', /* paid, pending, overdue, partial */
+			invoice_date date NOT NULL,
+			due_date date,
+			notes text,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			UNIQUE KEY invoice_number (invoice_number),
+			KEY patient_id (patient_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_invoice_items (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			invoice_id bigint(20) NOT NULL,
+			description text NOT NULL,
+			quantity int DEFAULT 1,
+			unit_price decimal(10,2) NOT NULL,
+			total_price decimal(10,2) NOT NULL,
+			PRIMARY KEY  (id),
+			KEY invoice_id (invoice_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_payments (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			invoice_id bigint(20) NOT NULL,
+			amount decimal(10,2) NOT NULL,
+			payment_method varchar(50), /* cash, card, transfer */
+			payment_date datetime DEFAULT CURRENT_TIMESTAMP,
+			transaction_id varchar(255),
+			recorded_by varchar(100),
+			PRIMARY KEY  (id),
+			KEY invoice_id (invoice_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_payroll (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			specialist_id varchar(100) NOT NULL,
+			month int NOT NULL,
+			year int NOT NULL,
+			total_sessions int DEFAULT 0,
+			base_salary decimal(10,2) DEFAULT 0,
+			incentives decimal(10,2) DEFAULT 0,
+			deductions decimal(10,2) DEFAULT 0,
+			net_salary decimal(10,2) NOT NULL,
+			payment_status varchar(20) DEFAULT 'unpaid',
+			payment_date date,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY specialist_id (specialist_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_fin_expenses (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			category varchar(100) NOT NULL, /* rent, equipment, utilities, misc */
+			description text NOT NULL,
+			amount decimal(10,2) NOT NULL,
+			expense_date date NOT NULL,
+			is_recurring tinyint(1) DEFAULT 0,
+			attachment_url varchar(255),
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {

@@ -22,7 +22,11 @@ class Control_Ajax {
 			'get_email_templates', 'preview_email', 'send_manual_email',
 			'save_patient', 'delete_patient', 'save_patient_assessment',
 			'delete_patient_assessment', 'save_patient_document', 'delete_patient_document',
-			'save_patient_referral', 'delete_patient_referral'
+			'save_patient_referral', 'delete_patient_referral',
+			'save_fin_session', 'delete_fin_session', 'save_fin_package',
+			'delete_fin_package', 'save_fin_invoice', 'delete_fin_invoice',
+			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
+			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1393,6 +1397,260 @@ class Control_Ajax {
 		global $wpdb;
 		$wpdb->delete( "{$wpdb->prefix}control_patient_referrals", array( 'id' => $id ) );
 		$this->send_success();
+	}
+
+	/* --- Financial Module Handlers --- */
+
+	public function save_fin_session() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$data = array(
+			'patient_id'    => intval( $_POST['patient_id'] ),
+			'specialist_id' => sanitize_text_field( $_POST['specialist_id'] ),
+			'session_date'  => sanitize_text_field( $_POST['session_date'] ),
+			'duration_minutes' => intval( $_POST['duration_minutes'] ?? 60 ),
+			'status'        => sanitize_text_field( $_POST['status'] ?? 'attended' ),
+			'billing_status' => sanitize_text_field( $_POST['billing_status'] ?? 'unbilled' ),
+			'package_id'    => !empty($_POST['package_id']) ? intval($_POST['package_id']) : null,
+		);
+
+		if ( $id ) {
+			$wpdb->update( "{$wpdb->prefix}control_fin_sessions", $data, array( 'id' => $id ) );
+		} else {
+			// Logic to deduct from package if specified
+			if ($data['package_id']) {
+				$pkg = $wpdb->get_row($wpdb->prepare("SELECT remaining_sessions FROM {$wpdb->prefix}control_fin_packages WHERE id = %d", $data['package_id']));
+				if ($pkg && $pkg->remaining_sessions > 0) {
+					$wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}control_fin_packages SET remaining_sessions = remaining_sessions - 1 WHERE id = %d", $data['package_id']));
+					$data['billing_status'] = 'deducted_from_package';
+				}
+			}
+			$wpdb->insert( "{$wpdb->prefix}control_fin_sessions", $data );
+		}
+		$this->send_success();
+	}
+
+	public function delete_fin_session() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval( $_POST['id'] );
+
+		// If it was deducted from a package, refund the session
+		$session = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_fin_sessions WHERE id = %d", $id));
+		if ($session && $session->billing_status === 'deducted_from_package' && $session->package_id) {
+			$wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}control_fin_packages SET remaining_sessions = remaining_sessions + 1 WHERE id = %d", $session->package_id));
+		}
+
+		$wpdb->delete( "{$wpdb->prefix}control_fin_sessions", array( 'id' => $id ) );
+		$this->send_success();
+	}
+
+	public function save_fin_package() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_invoicing') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$data = array(
+			'patient_id'   => intval( $_POST['patient_id'] ),
+			'package_name' => sanitize_text_field( $_POST['package_name'] ),
+			'total_sessions' => intval( $_POST['total_sessions'] ),
+			'price'        => floatval( $_POST['price'] ),
+			'expiry_date'  => sanitize_text_field( $_POST['expiry_date'] ),
+			'status'       => sanitize_text_field( $_POST['status'] ?? 'active' ),
+		);
+		if (!$id) {
+			$data['remaining_sessions'] = $data['total_sessions'];
+			$wpdb->insert( "{$wpdb->prefix}control_fin_packages", $data );
+		} else {
+			$wpdb->update( "{$wpdb->prefix}control_fin_packages", $data, array( 'id' => $id ) );
+		}
+		$this->send_success();
+	}
+
+	public function delete_fin_package() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_invoicing') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$wpdb->delete( "{$wpdb->prefix}control_fin_packages", array( 'id' => intval($_POST['id']) ) );
+		$this->send_success();
+	}
+
+	public function save_fin_invoice() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_invoicing') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$items = json_decode(wp_unslash($_POST['items']), true);
+
+		$data = array(
+			'patient_id'     => intval( $_POST['patient_id'] ),
+			'invoice_number' => sanitize_text_field( $_POST['invoice_number'] ),
+			'subtotal'       => floatval( $_POST['subtotal'] ),
+			'discount'       => floatval( $_POST['discount'] ?? 0 ),
+			'tax'            => floatval( $_POST['tax'] ?? 0 ),
+			'total_amount'   => floatval( $_POST['total_amount'] ),
+			'status'         => sanitize_text_field( $_POST['status'] ?? 'pending' ),
+			'invoice_date'   => sanitize_text_field( $_POST['invoice_date'] ),
+			'due_date'       => sanitize_text_field( $_POST['due_date'] ),
+			'notes'          => sanitize_textarea_field( $_POST['notes'] ),
+		);
+
+		if ($id) {
+			$wpdb->update("{$wpdb->prefix}control_fin_invoices", $data, array('id' => $id));
+			$wpdb->delete("{$wpdb->prefix}control_fin_invoice_items", array('invoice_id' => $id));
+		} else {
+			$wpdb->insert("{$wpdb->prefix}control_fin_invoices", $data);
+			$id = $wpdb->insert_id;
+		}
+
+		foreach ($items as $item) {
+			$wpdb->insert("{$wpdb->prefix}control_fin_invoice_items", array(
+				'invoice_id'  => $id,
+				'description' => sanitize_text_field($item['description']),
+				'quantity'    => intval($item['quantity']),
+				'unit_price'  => floatval($item['unit_price']),
+				'total_price' => floatval($item['total_price']),
+			));
+		}
+
+		$this->send_success(array('id' => $id));
+	}
+
+	public function delete_fin_invoice() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_invoicing') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval($_POST['id']);
+		$wpdb->delete("{$wpdb->prefix}control_fin_invoices", array('id' => $id));
+		$wpdb->delete("{$wpdb->prefix}control_fin_invoice_items", array('invoice_id' => $id));
+		$wpdb->delete("{$wpdb->prefix}control_fin_payments", array('invoice_id' => $id));
+		$this->send_success();
+	}
+
+	public function save_fin_payment() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_invoicing') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$data = array(
+			'invoice_id'     => intval( $_POST['invoice_id'] ),
+			'amount'         => floatval( $_POST['amount'] ),
+			'payment_method' => sanitize_text_field( $_POST['payment_method'] ),
+			'transaction_id' => sanitize_text_field( $_POST['transaction_id'] ),
+			'recorded_by'    => Control_Auth::current_user()->id,
+		);
+		$wpdb->insert("{$wpdb->prefix}control_fin_payments", $data);
+
+		// Update invoice paid amount and status
+		$invoice = $wpdb->get_row($wpdb->prepare("SELECT total_amount FROM {$wpdb->prefix}control_fin_invoices WHERE id = %d", $data['invoice_id']));
+		$total_paid = $wpdb->get_var($wpdb->prepare("SELECT SUM(amount) FROM {$wpdb->prefix}control_fin_payments WHERE invoice_id = %d", $data['invoice_id']));
+
+		$status = 'partial';
+		if ($total_paid >= $invoice->total_amount) $status = 'paid';
+
+		$wpdb->update("{$wpdb->prefix}control_fin_invoices", array(
+			'paid_amount' => $total_paid,
+			'status'      => $status
+		), array('id' => $data['invoice_id']));
+
+		$this->send_success();
+	}
+
+	public function delete_fin_payment() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval($_POST['id']);
+		$payment = $wpdb->get_row($wpdb->prepare("SELECT invoice_id FROM {$wpdb->prefix}control_fin_payments WHERE id = %d", $id));
+		if ($payment) {
+			$wpdb->delete("{$wpdb->prefix}control_fin_payments", array('id' => $id));
+			$total_paid = $wpdb->get_var($wpdb->prepare("SELECT SUM(amount) FROM {$wpdb->prefix}control_fin_payments WHERE invoice_id = %d", $payment->invoice_id)) ?: 0;
+			$wpdb->update("{$wpdb->prefix}control_fin_invoices", array('paid_amount' => $total_paid, 'status' => ($total_paid > 0 ? 'partial' : 'pending')), array('id' => $payment->invoice_id));
+		}
+		$this->send_success();
+	}
+
+	public function save_fin_payroll() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$data = array(
+			'specialist_id'  => sanitize_text_field( $_POST['specialist_id'] ),
+			'month'          => intval( $_POST['month'] ),
+			'year'           => intval( $_POST['year'] ),
+			'total_sessions' => intval( $_POST['total_sessions'] ),
+			'base_salary'    => floatval( $_POST['base_salary'] ),
+			'incentives'     => floatval( $_POST['incentives'] ),
+			'deductions'     => floatval( $_POST['deductions'] ),
+			'net_salary'     => floatval( $_POST['net_salary'] ),
+			'payment_status' => sanitize_text_field( $_POST['payment_status'] ?? 'unpaid' ),
+			'payment_date'   => !empty($_POST['payment_date']) ? sanitize_text_field($_POST['payment_date']) : null,
+		);
+		if ($id) {
+			$wpdb->update("{$wpdb->prefix}control_fin_payroll", $data, array('id' => $id));
+		} else {
+			$wpdb->insert("{$wpdb->prefix}control_fin_payroll", $data);
+		}
+		$this->send_success();
+	}
+
+	public function delete_fin_payroll() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$wpdb->delete("{$wpdb->prefix}control_fin_payroll", array('id' => intval($_POST['id'])));
+		$this->send_success();
+	}
+
+	public function save_fin_expense() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$data = array(
+			'category'       => sanitize_text_field( $_POST['category'] ),
+			'description'    => sanitize_textarea_field( $_POST['description'] ),
+			'amount'         => floatval( $_POST['amount'] ),
+			'expense_date'   => sanitize_text_field( $_POST['expense_date'] ),
+			'is_recurring'   => intval( $_POST['is_recurring'] ?? 0 ),
+			'attachment_url' => sanitize_text_field( $_POST['attachment_url'] ),
+		);
+		if ($id) {
+			$wpdb->update("{$wpdb->prefix}control_fin_expenses", $data, array('id' => $id));
+		} else {
+			$wpdb->insert("{$wpdb->prefix}control_fin_expenses", $data);
+		}
+		$this->send_success();
+	}
+
+	public function delete_fin_expense() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$wpdb->delete("{$wpdb->prefix}control_fin_expenses", array('id' => intval($_POST['id'])));
+		$this->send_success();
+	}
+
+	public function get_fin_report_data() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+
+		$revenue = $wpdb->get_var("SELECT SUM(amount) FROM {$wpdb->prefix}control_fin_payments") ?: 0;
+		$expenses = $wpdb->get_var("SELECT SUM(amount) FROM {$wpdb->prefix}control_fin_expenses") ?: 0;
+		$payroll = $wpdb->get_var("SELECT SUM(net_salary) FROM {$wpdb->prefix}control_fin_payroll WHERE payment_status = 'paid'") ?: 0;
+		$outstanding = $wpdb->get_var("SELECT SUM(total_amount - paid_amount) FROM {$wpdb->prefix}control_fin_invoices") ?: 0;
+
+		$this->send_success(array(
+			'revenue' => $revenue,
+			'expenses' => $expenses + $payroll,
+			'net_profit' => $revenue - ($expenses + $payroll),
+			'outstanding' => $outstanding
+		));
 	}
 }
 

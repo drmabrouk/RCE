@@ -147,6 +147,7 @@ class Control_Database {
 			full_name varchar(255) NOT NULL,
 			dob date,
 			gender varchar(20),
+			nationality varchar(100),
 			profile_photo varchar(255),
 			father_phone varchar(50),
 			mother_phone varchar(50),
@@ -175,6 +176,7 @@ class Control_Database {
 			/* Status & Assignment */
 			case_status varchar(50) DEFAULT 'waiting_list',
 			assigned_specialists text, /* JSON or comma-separated IDs */
+			is_draft tinyint(1) DEFAULT 0,
 
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

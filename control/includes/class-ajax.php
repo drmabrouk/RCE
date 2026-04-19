@@ -1260,31 +1260,40 @@ class Control_Ajax {
 
 		global $wpdb;
 		$id = intval( $_POST['id'] ?? 0 );
-		$data = array(
-			'full_name'         => sanitize_text_field( $_POST['full_name'] ),
-			'dob'               => sanitize_text_field( $_POST['dob'] ),
-			'gender'            => sanitize_text_field( $_POST['gender'] ),
-			'profile_photo'     => sanitize_text_field( $_POST['profile_photo'] ),
-			'father_phone'      => sanitize_text_field( $_POST['father_phone'] ),
-			'mother_phone'      => sanitize_text_field( $_POST['mother_phone'] ),
-			'email'             => sanitize_email( $_POST['email'] ),
-			'address'           => sanitize_textarea_field( $_POST['address'] ),
-			'emergency_contact' => sanitize_text_field( $_POST['emergency_contact'] ),
-			'blood_type'        => sanitize_text_field( $_POST['blood_type'] ),
-			'drug_allergies'    => sanitize_textarea_field( $_POST['drug_allergies'] ),
-			'pregnancy_history' => sanitize_textarea_field( $_POST['pregnancy_history'] ),
-			'birth_history'     => sanitize_textarea_field( $_POST['birth_history'] ),
-			'milestones_walking'  => sanitize_text_field( $_POST['milestones_walking'] ),
-			'milestones_speaking' => sanitize_text_field( $_POST['milestones_speaking'] ),
-			'milestones_sitting'  => sanitize_text_field( $_POST['milestones_sitting'] ),
-			'chronic_conditions'  => sanitize_textarea_field( $_POST['chronic_conditions'] ),
-			'current_medications' => sanitize_textarea_field( $_POST['current_medications'] ),
-			'initial_diagnosis'   => sanitize_textarea_field( $_POST['initial_diagnosis'] ),
-			'external_diagnosis_source' => sanitize_text_field( $_POST['external_diagnosis_source'] ),
-			'initial_behavioral_observation' => sanitize_textarea_field( $_POST['initial_behavioral_observation'] ),
-			'case_status'         => sanitize_text_field( $_POST['case_status'] ),
-			'assigned_specialists' => sanitize_text_field( $_POST['assigned_specialists'] ),
+		$fields = array(
+			'full_name'         => 'sanitize_text_field',
+			'dob'               => 'sanitize_text_field',
+			'gender'            => 'sanitize_text_field',
+			'nationality'       => 'sanitize_text_field',
+			'profile_photo'     => 'sanitize_text_field',
+			'father_phone'      => 'sanitize_text_field',
+			'mother_phone'      => 'sanitize_text_field',
+			'email'             => 'sanitize_email',
+			'address'           => 'sanitize_textarea_field',
+			'emergency_contact' => 'sanitize_text_field',
+			'blood_type'        => 'sanitize_text_field',
+			'drug_allergies'    => 'sanitize_textarea_field',
+			'pregnancy_history' => 'sanitize_textarea_field',
+			'birth_history'     => 'sanitize_textarea_field',
+			'milestones_walking'  => 'sanitize_text_field',
+			'milestones_speaking' => 'sanitize_text_field',
+			'milestones_sitting'  => 'sanitize_text_field',
+			'chronic_conditions'  => 'sanitize_textarea_field',
+			'current_medications' => 'sanitize_textarea_field',
+			'initial_diagnosis'   => 'sanitize_textarea_field',
+			'external_diagnosis_source' => 'sanitize_text_field',
+			'initial_behavioral_observation' => 'sanitize_textarea_field',
+			'case_status'         => 'sanitize_text_field',
+			'assigned_specialists' => 'sanitize_text_field',
+			'is_draft'            => 'intval',
 		);
+
+		$data = array();
+		foreach ($fields as $field => $sanitizer) {
+			if (isset($_POST[$field])) {
+				$data[$field] = $sanitizer($_POST[$field]);
+			}
+		}
 
 		if ( $id ) {
 			$wpdb->update( "{$wpdb->prefix}control_patients", $data, array( 'id' => $id ) );

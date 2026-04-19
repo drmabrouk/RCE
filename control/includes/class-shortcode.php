@@ -8,6 +8,7 @@ class Control_Shortcode {
 	public function __construct() {
 		add_shortcode( 'control_system', array( $this, 'render_dashboard' ) );
 		add_shortcode( 'control_policies', array( $this, 'render_policies' ) );
+		add_shortcode( 'control_kiosk_registration', array( $this, 'render_kiosk' ) );
 	}
 
 	public function render_dashboard() {
@@ -89,6 +90,12 @@ class Control_Shortcode {
 		}
 
 		include CONTROL_PATH . 'templates/footer.php';
+		return ob_get_clean();
+	}
+
+	public function render_kiosk() {
+		ob_start();
+		include CONTROL_PATH . 'templates/kiosk-registration.php';
 		return ob_get_clean();
 	}
 

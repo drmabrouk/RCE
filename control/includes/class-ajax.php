@@ -26,7 +26,8 @@ class Control_Ajax {
 			'save_fin_session', 'delete_fin_session', 'save_fin_package',
 			'delete_fin_package', 'save_fin_invoice', 'delete_fin_invoice',
 			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
-			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense'
+			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense',
+			'update_intake_status'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -34,7 +35,7 @@ class Control_Ajax {
 		}
 
 		// Public actions (Non-logged-in)
-		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp', 'check_uniqueness', 'verify_recovery_otp', 'reset_password_recovery' );
+		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp', 'check_uniqueness', 'verify_recovery_otp', 'reset_password_recovery', 'submit_kiosk_registration' );
 		foreach ( $public_actions as $action ) {
 			add_action( 'wp_ajax_control_' . $action, array( $this, $action ) );
 			add_action( 'wp_ajax_nopriv_control_' . $action, array( $this, $action ) );
@@ -1672,6 +1673,47 @@ class Control_Ajax {
 			'net_profit' => $revenue - ($expenses + $payroll),
 			'outstanding' => $outstanding
 		));
+	}
+
+	public function submit_kiosk_registration() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		global $wpdb;
+
+		$data = array(
+			'full_name'      => sanitize_text_field($_POST['full_name']),
+			'dob'            => sanitize_text_field($_POST['dob']),
+			'gender'         => sanitize_text_field($_POST['gender']),
+			'nationality'    => sanitize_text_field($_POST['nationality']),
+			'height'         => sanitize_text_field($_POST['height']),
+			'weight'         => sanitize_text_field($_POST['weight']),
+			'father_phone'   => sanitize_text_field($_POST['father_phone']),
+			'email'          => sanitize_email($_POST['email']),
+			'intake_reason'  => sanitize_textarea_field($_POST['intake_reason']),
+			'intake_notes'   => sanitize_textarea_field($_POST['intake_notes']),
+			'intake_status'  => 'pending',
+			'case_status'    => 'waiting_list',
+		);
+
+		$wpdb->insert("{$wpdb->prefix}control_patients", $data);
+		Control_Audit::log('kiosk_intake', "New intake request from Kiosk: {$data['full_name']}");
+		$this->send_success();
+	}
+
+	public function update_intake_status() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+
+		$id = intval($_POST['id']);
+		$status = sanitize_text_field($_POST['status']);
+
+		$wpdb->update("{$wpdb->prefix}control_patients", array('intake_status' => $status), array('id' => $id));
+
+		if ($status === 'approved') {
+			Control_Audit::log('intake_approved', "Intake request approved for ID: $id");
+		}
+
+		$this->send_success();
 	}
 }
 

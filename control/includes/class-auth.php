@@ -329,6 +329,9 @@ class Control_Auth {
 			'pediatric_view_basic' => array( 'label' => __( 'عرض البيانات الأساسية (الأطفال)', 'control' ), 'category' => __( 'سجلات الأطفال', 'control' ) ),
 			'pediatric_view_clinical' => array( 'label' => __( 'عرض البيانات السريرية (الأطفال)', 'control' ), 'category' => __( 'سجلات الأطفال', 'control' ) ),
 			'pediatric_manage' => array( 'label' => __( 'إدارة سجلات الأطفال بالكامل', 'control' ), 'category' => __( 'سجلات الأطفال', 'control' ) ),
+			'finance_manage' => array( 'label' => __( 'إدارة المالية بالكامل', 'control' ), 'category' => __( 'الإدارة المالية', 'control' ) ),
+			'finance_invoicing' => array( 'label' => __( 'إدارة الفواتير والمدفوعات', 'control' ), 'category' => __( 'الإدارة المالية', 'control' ) ),
+			'finance_payroll_view' => array( 'label' => __( 'عرض مستحقات الرواتب', 'control' ), 'category' => __( 'الإدارة المالية', 'control' ) ),
 		);
 	}
 }

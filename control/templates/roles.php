@@ -35,8 +35,8 @@ $available_permissions = Control_Auth::get_permissions_registry();
                 <div style="width:50px; height:50px; background:var(--control-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--control-primary);">
                     <span class="dashicons dashicons-admin-users" style="font-size:24px; width:24px; height:24px;"></span>
                 </div>
-                <h3 style="margin:0; font-size:1rem; color:var(--control-text-dark);"><?php echo esc_html($role->role_name); ?></h3>
-                <code style="font-size:0.65rem; opacity:0.6;"><?php echo esc_html($role->role_key); ?></code>
+                <h3 style="margin:0; font-size:1rem; color:var(--control-text-dark); font-weight:800;"><?php echo esc_html($role->role_name); ?></h3>
+                <div style="font-size:0.65rem; color:var(--control-muted); margin-top:5px;"><?php _e('معرف النظام:', 'control'); ?> <?php echo esc_html($role->role_key); ?></div>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; margin-bottom:15px; padding:0 5px;">

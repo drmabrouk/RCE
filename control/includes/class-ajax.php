@@ -1289,6 +1289,7 @@ class Control_Ajax {
 			'email'             => 'sanitize_email',
 			'address'           => 'sanitize_textarea_field',
 			'emergency_contact' => 'sanitize_text_field',
+			'emergency_contact_alt' => 'sanitize_text_field',
 			'blood_type'        => 'sanitize_text_field',
 			'drug_allergies'    => 'sanitize_textarea_field',
 			'pregnancy_history' => 'sanitize_textarea_field',

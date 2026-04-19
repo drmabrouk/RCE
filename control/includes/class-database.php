@@ -157,6 +157,7 @@ class Control_Database {
 			email varchar(255),
 			address text,
 			emergency_contact varchar(255),
+			emergency_contact_alt varchar(255),
 			blood_type varchar(10),
 			drug_allergies text,
 

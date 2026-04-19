@@ -10,8 +10,7 @@ $categories = array(
 );
 ?>
 
-<div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-    <h2 style="font-weight:800; font-size:1.5rem; margin:0; color:var(--control-text-dark);"><?php _e('إدارة المصروفات', 'control'); ?></h2>
+<div style="display:flex; justify-content: flex-end; margin-bottom: 20px;">
     <?php if($can_manage): ?>
         <button id="add-expense-btn" class="control-btn" style="background:var(--control-primary); border:none;">
             <span class="dashicons dashicons-plus-alt" style="margin-left:5px;"></span><?php _e('إضافة مصروف جديد', 'control'); ?>

@@ -80,23 +80,9 @@
             <?php endif; ?>
 
             <?php if ( Control_Auth::has_permission('finance_payroll_view') ) : ?>
-                <div class="control-sidebar-group">
-                    <div class="sidebar-group-title"><?php _e('الإدارة المالية', 'control'); ?></div>
-                    <a href="<?php echo add_query_arg('control_view', 'fin_dashboard'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'fin_dashboard') ? 'active' : ''; ?>">
-                        <span class="dashicons dashicons-chart-bar"></span> <?php _e('لوحة المعلومات', 'control'); ?>
-                    </a>
-                    <a href="<?php echo add_query_arg('control_view', 'fin_invoices'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'fin_invoices') ? 'active' : ''; ?>">
-                        <span class="dashicons dashicons-cart"></span> <?php _e('الفواتير والتحصيل', 'control'); ?>
-                    </a>
-                    <a href="<?php echo add_query_arg('control_view', 'fin_payroll'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'fin_payroll') ? 'active' : ''; ?>">
-                        <span class="dashicons dashicons-money-alt"></span> <?php _e('رواتب الأخصائيين', 'control'); ?>
-                    </a>
-                    <?php if ( Control_Auth::has_permission('finance_manage') ) : ?>
-                        <a href="<?php echo add_query_arg('control_view', 'fin_expenses'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'fin_expenses') ? 'active' : ''; ?>">
-                            <span class="dashicons dashicons-trending-down"></span> <?php _e('إدارة المصروفات', 'control'); ?>
-                        </a>
-                    <?php endif; ?>
-                </div>
+                <a href="<?php echo add_query_arg('control_view', 'finance'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'finance') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-bank"></span> <?php _e('الإدارة المالية', 'control'); ?>
+                </a>
             <?php endif; ?>
 
             <?php if ( Control_Auth::has_permission('roles_manage') ) : ?>

@@ -1318,6 +1318,18 @@ class Control_Ajax {
 		$wpdb->delete( "{$wpdb->prefix}control_patient_documents", array( 'patient_id' => $id ) );
 		$wpdb->delete( "{$wpdb->prefix}control_patient_referrals", array( 'patient_id' => $id ) );
 
+		// Cleanup financial records
+		$wpdb->delete( "{$wpdb->prefix}control_fin_sessions", array( 'patient_id' => $id ) );
+		$wpdb->delete( "{$wpdb->prefix}control_fin_packages", array( 'patient_id' => $id ) );
+
+		$invoices = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_fin_invoices WHERE patient_id = %d", $id ) );
+		if ( ! empty( $invoices ) ) {
+			$placeholders = implode( ',', array_fill( 0, count( $invoices ), '%d' ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}control_fin_invoice_items WHERE invoice_id IN ($placeholders)", ...$invoices ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}control_fin_payments WHERE invoice_id IN ($placeholders)", ...$invoices ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}control_fin_invoices WHERE id IN ($placeholders)", ...$invoices ) );
+		}
+
 		Control_Audit::log( 'delete_patient', "Deleted patient ID: $id" );
 		$this->send_success();
 	}

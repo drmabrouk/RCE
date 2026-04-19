@@ -6,9 +6,6 @@ $available_permissions = Control_Auth::get_permissions_registry();
 
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2 style="font-weight:800; font-size:1.3rem; margin:0; color:var(--control-text-dark);"><?php _e('الأدوار وصلاحيات النظام', 'control'); ?></h2>
-    <button id="add-role-btn" class="control-btn" style="background:var(--control-primary); border:none;">
-        <span class="dashicons dashicons-plus-alt" style="margin-left:5px;"></span><?php _e('إضافة دور جديد', 'control'); ?>
-    </button>
 </div>
 
 <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
@@ -39,13 +36,8 @@ $available_permissions = Control_Auth::get_permissions_registry();
 
             <div style="display:flex; gap:10px; border-top:1px solid var(--control-border); padding-top:15px;">
                 <button class="control-btn edit-role-btn" style="flex:1; background:var(--control-bg); color:var(--control-text) !important; border:none; font-size:0.8rem;">
-                    <span class="dashicons dashicons-edit" style="margin-left:5px;"></span><?php _e('تعديل', 'control'); ?>
+                    <span class="dashicons dashicons-edit" style="margin-left:5px;"></span><?php _e('إعداد الصلاحيات', 'control'); ?>
                 </button>
-                <?php if(!$role->is_system): ?>
-                    <button class="control-btn delete-role-btn" data-id="<?php echo $role->id; ?>" style="background:#fef2f2; color:#ef4444 !important; border:none; width:42px; padding:0;">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
-                <?php endif; ?>
             </div>
         </div>
     <?php endforeach; ?>
@@ -92,11 +84,11 @@ $available_permissions = Control_Auth::get_permissions_registry();
             <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:25px;">
                 <div class="control-form-group">
                     <label><?php _e('اسم الدور (بالعربية)', 'control'); ?></label>
-                    <input type="text" name="role_name" id="role-name-input" required placeholder="مثال: مدير تقني">
+                    <input type="text" name="role_name" id="role-name-input" readonly style="background:#f1f5f9;">
                 </div>
                 <div class="control-form-group">
                     <label><?php _e('مفتاح الدور (English Key)', 'control'); ?></label>
-                    <input type="text" name="role_key" id="role-key-input" required placeholder="example_role">
+                    <input type="text" name="role_key" id="role-key-input" readonly style="background:#f1f5f9;">
                 </div>
             </div>
 

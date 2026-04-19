@@ -1043,15 +1043,12 @@ class Control_Ajax {
 		);
 
 		if ( $id ) {
+			// System roles only update permissions
+			unset($data['role_key']);
 			$wpdb->update( $wpdb->prefix . 'control_roles', $data, array( 'id' => $id ) );
 			Control_Audit::log('edit_role', "Updated role: $role_name");
 		} else {
-			// Check key uniqueness
-			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_roles WHERE role_key = %s", $role_key ) );
-			if ( $exists ) $this->send_error( 'Role key already exists' );
-
-			$wpdb->insert( $wpdb->prefix . 'control_roles', $data );
-			Control_Audit::log('add_role', "Added role: $role_name");
+			$this->send_error( 'Creating new roles is restricted to standard system roles.' );
 		}
 
 		// Re-sync WP roles
@@ -1060,39 +1057,7 @@ class Control_Ajax {
 	}
 
 	public function delete_role() {
-		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::has_permission('roles_manage') ) $this->send_error( 'Unauthorized', 403 );
-
-		global $wpdb;
-		$id = intval( $_POST['id'] );
-		$replacement_key = sanitize_key( $_POST['replacement_role_key'] ?? 'coach' );
-
-		$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_roles WHERE id = %d", $id ) );
-
-		if ( ! $role ) $this->send_error( 'Role not found' );
-		if ( $role->is_system ) $this->send_error( 'Cannot delete system roles' );
-
-		// 1. Reassign staff members
-		$wpdb->update(
-			"{$wpdb->prefix}control_staff",
-			array( 'role' => $replacement_key ),
-			array( 'role' => $role->role_key )
-		);
-
-		// 2. Reassign WP Users
-		$users = get_users( array( 'role' => $role->role_key ) );
-		foreach ( $users as $user ) {
-			$user->set_role( $replacement_key );
-		}
-
-		// 3. Delete from DB
-		$wpdb->delete( "{$wpdb->prefix}control_roles", array( 'id' => $id ) );
-
-		Control_Audit::log('delete_role', sprintf(__('حذف الدور: %s وإعادة تعيين المستخدمين إلى: %s', 'control'), $role->role_name, $replacement_key));
-
-		// 4. Re-sync WP roles
-		Control_Auth::sync_roles();
-		$this->send_success();
+		$this->send_error( 'Role deletion is permanently disabled. System roles are standardized.' );
 	}
 
 	public function save_policy() {

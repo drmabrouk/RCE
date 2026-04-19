@@ -1,0 +1,97 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class Control_I18n {
+
+	private static $strings = array(
+		'ar' => array(
+			'registration_title' => 'تسجيل حالة طفل جديد',
+			'edit_title' => 'تعديل بيانات الطفل',
+			'child_name' => 'اسم الطفل',
+			'guardian_name' => 'اسم ولي الأمر',
+			'dob' => 'تاريخ الميلاد',
+			'age' => 'العمر',
+			'years' => 'سنوات',
+			'months' => 'شهور',
+			'days' => 'أيام',
+			'height' => 'الطول',
+			'weight' => 'الوزن',
+			'gender' => 'الجنس',
+			'male' => 'ذكر',
+			'female' => 'أنثى',
+			'phone' => 'رقم الهاتف',
+			'guardian_phone' => 'هاتف ولي الأمر',
+			'nationality' => 'الجنسية',
+			'internal_classification' => 'التصنيف الداخلي',
+			'internal_notes' => 'ملاحظات إدارية',
+			'system_id' => 'رقم النظام',
+			'workflow' => 'حالة تدفق العمل',
+			'upload_photo' => 'رفع صورة الطفل',
+			'next' => 'التالي',
+			'prev' => 'السابق',
+			'save' => 'حفظ الملف',
+			'basic_info' => 'البيانات الأساسية',
+			'contact_info' => 'بيانات التواصل',
+			'clinical_info' => 'البيانات السريرية',
+			'admin_info' => 'البيانات الإدارية',
+			'select_lang' => 'اختر لغة التسجيل',
+			'lang_ar' => 'العربية',
+			'lang_en' => 'English',
+			'email' => 'البريد الإلكتروني',
+			'address' => 'العنوان',
+			'intake_reason' => 'سبب الزيارة / الشكوى الرئيسية',
+			'medical_history' => 'أبرز التاريخ الطبي',
+			'workflow_metadata' => 'بيانات تدفق العمل (داخلية)',
+		),
+		'en' => array(
+			'registration_title' => 'New Child Registration',
+			'edit_title' => 'Edit Child Records',
+			'child_name' => 'Child Name',
+			'guardian_name' => 'Guardian Name',
+			'dob' => 'Date of Birth',
+			'age' => 'Age',
+			'years' => 'Years',
+			'months' => 'Months',
+			'days' => 'Days',
+			'height' => 'Height',
+			'weight' => 'Weight',
+			'gender' => 'Gender',
+			'male' => 'Male',
+			'female' => 'Female',
+			'phone' => 'Phone Number',
+			'guardian_phone' => 'Guardian Phone',
+			'nationality' => 'Nationality',
+			'internal_classification' => 'Internal Classification',
+			'internal_notes' => 'Administrative Notes',
+			'system_id' => 'System ID',
+			'workflow' => 'Workflow Status',
+			'upload_photo' => 'Upload Child Photo',
+			'next' => 'Next',
+			'prev' => 'Previous',
+			'save' => 'Save File',
+			'basic_info' => 'Basic Information',
+			'contact_info' => 'Contact Details',
+			'clinical_info' => 'Clinical Data',
+			'admin_info' => 'Administrative Data',
+			'select_lang' => 'Select Registration Language',
+			'lang_ar' => 'العربية',
+			'lang_en' => 'English',
+			'email' => 'Email',
+			'address' => 'Address',
+			'intake_reason' => 'Intake Reason / Main Complaint',
+			'medical_history' => 'Medical History Highlights',
+			'workflow_metadata' => 'Workflow Metadata (Internal Only)',
+		)
+	);
+
+	public static function t( $key ) {
+		$lang = $_SESSION['control_lang'] ?? 'ar';
+		return self::$strings[$lang][$key] ?? $key;
+	}
+
+	public static function get_all() {
+		return self::$strings;
+	}
+}

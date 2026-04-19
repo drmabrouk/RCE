@@ -59,8 +59,23 @@ $countries_list = array(
 <div id="kiosk-app-root" style="direction:rtl; font-family:'Rubik', sans-serif; min-height:100vh; background:#f1f5f9; padding:20px;">
     <div style="max-width:800px; margin: 0 auto; background:#fff; border-radius:30px; box-shadow:0 20px 50px rgba(0,0,0,0.1); overflow:hidden;">
 
+        <!-- Language Selection Overlay -->
+        <div id="k-lang-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:30px;">
+            <h2 style="margin-bottom:30px; color:var(--control-primary); font-weight:800;"><?php echo Control_I18n::t('select_lang'); ?></h2>
+            <div style="display:flex; gap:30px;">
+                <button onclick="setKLang('ar')" class="lang-sel-btn">
+                    <span style="font-size:3rem; margin-bottom:10px;">🇸🇦</span>
+                    <span style="font-weight:800;">العربية</span>
+                </button>
+                <button onclick="setKLang('en')" class="lang-sel-btn">
+                    <span style="font-size:3rem; margin-bottom:10px;">🇺🇸</span>
+                    <span style="font-weight:800;">English</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Welcome Screen -->
-        <div id="kiosk-welcome" class="kiosk-screen" style="padding:60px 40px; text-align:center;">
+        <div id="kiosk-welcome" class="kiosk-screen" style="display:none; padding:60px 40px; text-align:center;">
             <div style="width:120px; height:120px; background:var(--control-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 30px; color:#fff;">
                 <span class="dashicons dashicons-welcome-learn-more" style="font-size:60px; width:60px; height:60px;"></span>
             </div>
@@ -71,6 +86,7 @@ $countries_list = array(
 
         <!-- Multi-step Form -->
         <form id="kiosk-form" class="kiosk-screen" style="display:none; padding:40px;">
+            <input type="hidden" name="k_lang" id="k-selected-lang" value="ar">
             <div id="kiosk-progress" style="display:flex; gap:10px; margin-bottom:40px;">
                 <div class="k-p-step active" data-step="1"></div>
                 <div class="k-p-step" data-step="2"></div>
@@ -78,23 +94,42 @@ $countries_list = array(
             </div>
 
             <div id="k-step-1" class="k-step-content">
-                <h2 style="margin-bottom:30px;"><?php _e('بيانات الطفل الأساسية', 'control'); ?></h2>
-                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div class="control-form-group large">
-                        <input type="text" name="full_name" required placeholder=" ">
-                        <label><?php _e('الاسم الكامل للطفل', 'control'); ?></label>
+                <h2 style="margin-bottom:30px;" data-t="basic_info"><?php echo Control_I18n::t('basic_info'); ?></h2>
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="child_name"><?php echo Control_I18n::t('child_name'); ?> *</label>
+                        <input type="text" name="full_name" required>
                     </div>
-                    <div class="control-form-group large">
-                        <input type="date" name="dob" required placeholder=" ">
-                        <label><?php _e('تاريخ الميلاد', 'control'); ?></label>
+                    <div class="wiz-field">
+                        <label data-t="guardian_name"><?php echo Control_I18n::t('guardian_name'); ?> *</label>
+                        <input type="text" name="guardian_name" required>
                     </div>
-                    <div class="control-form-group large">
+                    <div class="wiz-field">
+                        <label data-t="dob"><?php echo Control_I18n::t('dob'); ?> *</label>
+                        <input type="date" name="dob" id="k-dob-input" required>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="age"><?php echo Control_I18n::t('age'); ?></label>
+                        <div id="k-age-display" style="background:#f8fafc; border:1px solid #e2e8f0; padding:12px; border-radius:12px; font-weight:700;">---</div>
+                    </div>
+                </div>
+                <div class="wiz-grid-3" style="margin-top:20px;">
+                    <div class="wiz-field">
+                        <label data-t="height"><?php echo Control_I18n::t('height'); ?> (cm)</label>
+                        <input type="number" name="height">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="weight"><?php echo Control_I18n::t('weight'); ?> (kg)</label>
+                        <input type="number" name="weight">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="gender"><?php echo Control_I18n::t('gender'); ?></label>
                         <select name="gender">
-                            <option value="male"><?php _e('ذكر', 'control'); ?></option>
-                            <option value="female"><?php _e('أنثى', 'control'); ?></option>
+                            <option value="male" data-t="male"><?php echo Control_I18n::t('male'); ?></option>
+                            <option value="female" data-t="female"><?php echo Control_I18n::t('female'); ?></option>
                         </select>
-                        <label><?php _e('الجنس', 'control'); ?></label>
                     </div>
+                </div>
                     <div class="control-form-group large">
                         <select name="nationality">
                             <?php foreach($countries_list as $code => $name): ?>
@@ -164,19 +199,14 @@ $countries_list = array(
 </div>
 
 <style>
-#kiosk-app-root .control-form-group.large input,
-#kiosk-app-root .control-form-group.large select,
-#kiosk-app-root .control-form-group.large textarea {
-    padding: 18px 20px; font-size: 1.2rem; border-radius: 15px; border: 2px solid #e2e8f0;
-}
-#kiosk-app-root .control-form-group.large label { font-size: 1.1rem; top: 18px; right: 20px; }
-#kiosk-app-root .control-form-group.large input:focus + label,
-#kiosk-app-root .control-form-group.large input:not(:placeholder-shown) + label,
-#kiosk-app-root .control-form-group.large textarea:focus + label,
-#kiosk-app-root .control-form-group.large textarea:not(:placeholder-shown) + label,
-#kiosk-app-root .control-form-group.large select + label {
-    transform: translateY(-35px) scale(0.85); background: #fff; padding: 0 8px; color: var(--control-primary); font-weight: 800;
-}
+.wiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.wiz-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+.wiz-field { margin-bottom: 20px; text-align: right; }
+.wiz-field label { display: block; font-size: 0.9rem; font-weight: 800; color: #64748b; margin-bottom: 8px; }
+.wiz-field input, .wiz-field select, .wiz-field textarea { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0; font-size: 1.1rem; }
+
+.lang-sel-btn { flex: 1; min-width: 150px; padding: 40px 20px; border: 2px solid #f1f5f9; border-radius: 20px; background: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
+.lang-sel-btn:hover { border-color: var(--control-primary); background: #f8fafc; transform: translateY(-5px); }
 
 .k-p-step { flex:1; height:8px; background:#e2e8f0; border-radius:4px; transition:0.3s; }
 .k-p-step.active { background:var(--control-accent); }
@@ -186,7 +216,43 @@ $countries_list = array(
 </style>
 
 <script>
+const kStrings = <?php echo json_encode(Control_I18n::get_all()); ?>;
 let kStep = 1;
+
+function setKLang(lang) {
+    jQuery('#k-selected-lang').val(lang);
+    jQuery('#k-lang-overlay').fadeOut();
+    jQuery('#kiosk-welcome').fadeIn();
+
+    // UI Update
+    const s = kStrings[lang];
+    jQuery('[data-t]').each(function() {
+        const key = jQuery(this).data('t');
+        if(s[key]) jQuery(this).text(s[key]);
+    });
+
+    if(lang === 'ar') {
+        jQuery('#kiosk-app-root').css('direction', 'rtl');
+        jQuery('.wiz-field').css('text-align', 'right');
+    } else {
+        jQuery('#kiosk-app-root').css('direction', 'ltr');
+        jQuery('.wiz-field').css('text-align', 'left');
+    }
+}
+
+function calculateDetailedAge(dobString) {
+    if(!dobString) return '---';
+    const dob = new Date(dobString);
+    const now = new Date();
+    let years = now.getFullYear() - dob.getFullYear();
+    let months = now.getMonth() - dob.getMonth();
+    let days = now.getDate() - dob.getDate();
+    if (days < 0) { months--; const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0); days += lastMonth.getDate(); }
+    if (months < 0) { years--; months += 12; }
+    const lang = jQuery('#k-selected-lang').val();
+    const s = kStrings[lang];
+    return `${years} ${s.years}, ${months} ${s.months}, ${days} ${s.days}`;
+}
 
 function startKiosk() {
     jQuery('#kiosk-welcome').hide();
@@ -238,6 +304,12 @@ function resetKiosk() {
 }
 
 jQuery(document).ready(function($) {
+    $('#k-dob-input').on('change', function() {
+        const ageStr = calculateDetailedAge($(this).val());
+        const lang = $('#k-selected-lang').val();
+        $('#k-age-display').text(ageStr);
+    });
+
     $('#kiosk-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $('#k-submit');

@@ -109,20 +109,6 @@ $countries_list = array(
                         <input type="date" name="dob" id="k-dob-input" required>
                     </div>
                     <div class="wiz-field">
-                        <label data-t="age"><?php echo Control_I18n::t('age'); ?></label>
-                        <div id="k-age-display" style="background:#f8fafc; border:1px solid #e2e8f0; padding:12px; border-radius:12px; font-weight:700;">---</div>
-                    </div>
-                </div>
-                <div class="wiz-grid-3" style="margin-top:20px;">
-                    <div class="wiz-field">
-                        <label data-t="height"><?php echo Control_I18n::t('height'); ?> (cm)</label>
-                        <input type="number" name="height">
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="weight"><?php echo Control_I18n::t('weight'); ?> (kg)</label>
-                        <input type="number" name="weight">
-                    </div>
-                    <div class="wiz-field">
                         <label data-t="gender"><?php echo Control_I18n::t('gender'); ?></label>
                         <select name="gender">
                             <option value="male" data-t="male"><?php echo Control_I18n::t('male'); ?></option>
@@ -130,49 +116,63 @@ $countries_list = array(
                         </select>
                     </div>
                 </div>
-                <div class="wiz-field" style="margin-top:20px;">
-                    <label data-t="nationality"><?php echo Control_I18n::t('nationality'); ?></label>
-                    <select name="nationality">
-                        <?php foreach($countries_list as $code => $name): ?>
-                            <option value="<?php echo $code; ?>" <?php selected($code, 'EG'); ?>><?php echo $name; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
             </div>
 
             <div id="k-step-2" class="k-step-content" style="display:none;">
-                <h2 style="margin-bottom:30px;"><?php _e('بيانات ولي الأمر والتواصل', 'control'); ?></h2>
-                <div class="control-form-group large">
-                    <input type="text" name="guardian_name" required placeholder=" ">
-                    <label><?php _e('اسم ولي الأمر الكامل', 'control'); ?></label>
+                <h2 style="margin-bottom:30px;" data-t="contact_info"><?php echo Control_I18n::t('contact_info'); ?></h2>
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="father_phone"><?php echo Control_I18n::t('father_phone'); ?> *</label>
+                        <input type="tel" name="father_phone" required>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="mother_phone"><?php echo Control_I18n::t('mother_phone'); ?></label>
+                        <input type="tel" name="mother_phone">
+                    </div>
                 </div>
-                <div class="control-form-group large">
-                    <input type="tel" name="father_phone" required placeholder=" ">
-                    <label><?php _e('رقم الهاتف للتواصل', 'control'); ?></label>
+                <div class="wiz-field">
+                    <label data-t="address"><?php echo Control_I18n::t('address'); ?></label>
+                    <input type="text" name="address">
                 </div>
-                <div class="control-form-group large">
-                    <input type="email" name="email" placeholder=" ">
-                    <label><?php _e('البريد الإلكتروني (اختياري)', 'control'); ?></label>
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="emergency_contact"><?php echo Control_I18n::t('emergency_contact'); ?></label>
+                        <input type="text" name="emergency_contact">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="blood_type"><?php echo Control_I18n::t('blood_type'); ?></label>
+                        <select name="blood_type">
+                            <option value="">-</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div id="k-step-3" class="k-step-content" style="display:none;">
-                <h2 style="margin-bottom:30px;"><?php _e('سبب الزيارة والملاحظات', 'control'); ?></h2>
-                <div class="control-form-group large">
-                    <textarea name="intake_reason" rows="4" required placeholder=" "></textarea>
+                <h2 style="margin-bottom:30px;" data-t="intake_reason"><?php echo Control_I18n::t('intake_reason'); ?></h2>
+                <div class="wiz-field">
                     <label><?php _e('ما هو سبب زيارتكم للمركز اليوم؟', 'control'); ?></label>
+                    <textarea name="intake_reason" rows="4" required></textarea>
                 </div>
-                <div class="control-form-group large">
-                    <textarea name="intake_notes" rows="4" placeholder=" "></textarea>
-                    <label><?php _e('هل هناك أي ملاحظات إضافية ترغبون في ذكرها؟', 'control'); ?></label>
+                <div class="wiz-field">
+                    <label data-t="drug_allergies"><?php echo Control_I18n::t('drug_allergies'); ?></label>
+                    <input type="text" name="drug_allergies">
                 </div>
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-top:50px;">
-                <button type="button" id="k-prev" onclick="prevKStep()" class="k-btn-secondary" style="display:none;"><?php _e('السابق', 'control'); ?></button>
+                <button type="button" id="k-prev" onclick="prevKStep()" class="k-btn-secondary" style="display:none;"><?php echo Control_I18n::t('prev'); ?></button>
                 <div style="flex:1;"></div>
-                <button type="button" id="k-next" onclick="nextKStep()" class="k-btn-primary"><?php _e('التالي', 'control'); ?></button>
-                <button type="submit" id="k-submit" style="display:none;" class="k-btn-primary"><?php _e('إرسال الطلب الآن', 'control'); ?></button>
+                <button type="button" id="k-next" onclick="nextKStep()" class="k-btn-primary"><?php echo Control_I18n::t('next'); ?></button>
+                <button type="submit" id="k-submit" style="display:none;" class="k-btn-primary"><?php echo Control_I18n::t('save'); ?></button>
             </div>
         </form>
 
@@ -270,9 +270,13 @@ function prevKStep() {
 
 function updateKUI() {
     const $ = jQuery;
-    $('#k-prev').toggle(kStep > 1);
-    $('#k-next').toggle(kStep < 3);
-    $('#k-submit').toggle(kStep === 3);
+    const lang = $('#k-selected-lang').val();
+    const s = kStrings[lang];
+
+    $('#k-prev').toggle(kStep > 1).text(s.prev);
+    $('#k-next').toggle(kStep < 3).text(s.next);
+    $('#k-submit').toggle(kStep === 3).text(s.save);
+
     $('.k-p-step').removeClass('active');
     $(`.k-p-step[data-step="${kStep}"]`).addClass('active');
 }

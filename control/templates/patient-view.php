@@ -10,7 +10,8 @@ if ( ! $patient ) {
 }
 
 $can_view_clinical = Control_Auth::has_permission('pediatric_view_clinical');
-$can_manage = Control_Auth::has_permission('pediatric_manage');
+$can_manage = Control_Auth::has_permission('pediatric_manage'); // This corresponds to Center Manager/Admin
+$is_reception = ! $can_view_clinical && Control_Auth::has_permission('pediatric_view_basic');
 
 $assessments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_assessments WHERE patient_id = %d ORDER BY test_date DESC", $patient_id ) );
 $documents = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_documents WHERE patient_id = %d ORDER BY uploaded_at DESC", $patient_id ) );
@@ -63,13 +64,13 @@ $status_labels = array(
 <div class="control-card" style="padding:0; border:none; overflow:hidden;">
     <div class="control-tabs" style="display:flex; background:#fff; border-bottom:1px solid #e2e8f0; padding:0 20px; gap:20px; overflow-x:auto;">
         <button class="tab-btn active" data-tab="tab-overview"><?php _e('نظرة عامة', 'control'); ?></button>
-        <button class="tab-btn" data-tab="tab-medical"><?php _e('التاريخ الطبي', 'control'); ?></button>
-        <?php if($can_view_clinical): ?>
+        <?php if($can_view_clinical || $can_manage): ?>
+            <button class="tab-btn" data-tab="tab-medical"><?php _e('التاريخ الطبي', 'control'); ?></button>
             <button class="tab-btn" data-tab="tab-assessments"><?php _e('التقييمات والتشخيص', 'control'); ?></button>
             <button class="tab-btn" data-tab="tab-behavioral"><?php _e('الملاحظة السلوكية', 'control'); ?></button>
         <?php endif; ?>
         <button class="tab-btn" data-tab="tab-documents"><?php _e('الوثائق والملفات', 'control'); ?></button>
-        <?php if($can_view_clinical): ?>
+        <?php if($can_view_clinical || $can_manage): ?>
             <button class="tab-btn" data-tab="tab-referrals"><?php _e('التحويلات الداخلية', 'control'); ?></button>
         <?php endif; ?>
     </div>
@@ -120,8 +121,12 @@ $status_labels = array(
                     <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('معلومات الطوارئ', 'control'); ?></h4>
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال بديلة', 'control'); ?></label>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال الطوارئ', 'control'); ?></label>
                             <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact); ?></span>
+                        </div>
+                        <div>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال طوارئ بديلة', 'control'); ?></label>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact_alt); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('فصيلة الدم', 'control'); ?></label>
@@ -162,6 +167,7 @@ $status_labels = array(
                 </div>
             </div>
 
+            <?php if($can_manage): ?>
             <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:30px; margin-top:40px;">
                 <div>
                     <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('البيانات الإدارية', 'control'); ?></h4>
@@ -187,8 +193,10 @@ $status_labels = array(
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
 
+        <?php if($can_view_clinical || $can_manage): ?>
         <!-- Medical Tab -->
         <div id="tab-medical" class="tab-content" style="display:none;">
             <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:30px;">
@@ -235,8 +243,9 @@ $status_labels = array(
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <?php if($can_view_clinical): ?>
+        <?php if($can_view_clinical || $can_manage): ?>
         <!-- Assessments Tab -->
         <div id="tab-assessments" class="tab-content" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -300,7 +309,16 @@ $status_labels = array(
             </div>
 
             <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
-                <?php if($documents): foreach($documents as $d): ?>
+                <?php
+                if($documents):
+                    foreach($documents as $d):
+                        // Filter documents based on role
+                        $is_admin_doc = in_array($d->doc_type, array('birth_certificate', 'id', 'agreement'));
+                        if ( $is_admin_doc && ! $can_manage ) continue;
+
+                        $is_clinical_doc = in_array($d->doc_type, array('medical_report', 'eeg', 'scan', 'gene_test'));
+                        if ( $is_clinical_doc && ! $can_view_clinical && ! $can_manage ) continue;
+                ?>
                     <div class="control-card" style="padding:15px; text-align:center; position:relative;">
                         <span class="dashicons dashicons-media-document" style="font-size:40px; width:40px; height:40px; color:var(--control-primary); margin-bottom:10px;"></span>
                         <h5 style="margin:5px 0; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?php echo esc_html($d->doc_name); ?></h5>
@@ -316,7 +334,7 @@ $status_labels = array(
             </div>
         </div>
 
-        <?php if($can_view_clinical): ?>
+        <?php if($can_view_clinical || $can_manage): ?>
         <!-- Referrals Tab -->
         <div id="tab-referrals" class="tab-content" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">

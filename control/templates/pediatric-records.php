@@ -97,6 +97,8 @@ $status_labels = array(
     <?php endif; ?>
 </div>
 
+<div id="pediatric-toast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#1e293b; color:#fff; padding:12px 30px; border-radius:50px; z-index:100000; box-shadow:0 10px 30px rgba(0,0,0,0.2); font-weight:700;"></div>
+
 <!-- Add Patient Modal Placeholder - Implementation in patient-forms.php -->
 <?php include CONTROL_PATH . 'templates/patient-forms.php'; ?>
 
@@ -122,16 +124,28 @@ jQuery(document).ready(function($) {
         });
     });
 
+    function showToast(message) {
+        $('#pediatric-toast').text(message).fadeIn().delay(3000).fadeOut();
+    }
+
     $(document).on('click', '.delete-patient-btn', function() {
         if(!confirm('<?php _e("هل أنت متأكد من حذف ملف هذا الطفل نهائياً؟ سيتم حذف كافة السجلات والتقارير المرتبطة به.", "control"); ?>')) return;
         const id = $(this).data('id');
+        const $btn = $(this);
+        $btn.prop('disabled', true).css('opacity', '0.5');
+
         $.post(control_ajax.ajax_url, {
             action: 'control_delete_patient',
             id: id,
             nonce: control_ajax.nonce
         }, function(res) {
-            if(res.success) location.reload();
-            else alert(res.data);
+            if(res.success) {
+                showToast('<?php _e("تم حذف ملف الطفل بنجاح.", "control"); ?>');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                alert(res.data);
+                $btn.prop('disabled', false).css('opacity', '1');
+            }
         });
     });
 

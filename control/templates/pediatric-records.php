@@ -1,3 +1,4 @@
+<div class="view-section-container">
 <?php
 global $wpdb;
 $patients = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_patients ORDER BY created_at DESC" );
@@ -172,3 +173,4 @@ jQuery(document).ready(function($) {
 .patient-status-badge.status-dropped_out { background: #fef2f2; color: #ef4444; }
 .patient-status-badge.status-completed { background: #eff6ff; color: #2563eb; }
 </style>
+</div>

@@ -53,6 +53,7 @@ if ( ! isset( $tabs[$active_tab] ) ) {
 }
 ?>
 
+<div class="view-section-container">
 <div class="control-module-container">
     <div class="control-header-flex" style="margin-bottom: 25px; border-bottom: 1px solid var(--control-border); padding-bottom: 0;">
         <div style="display:flex; align-items:center; gap:15px; margin-bottom: 15px;">
@@ -101,3 +102,4 @@ if ( ! isset( $tabs[$active_tab] ) ) {
 .tab-nav-item:hover { color: var(--control-primary); background: rgba(0,0,0,0.02); }
 .tab-nav-item.active { color: var(--control-primary); border-bottom-color: var(--control-accent); background: #fff; }
 </style>
+</div>

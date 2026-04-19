@@ -1,3 +1,4 @@
+<div class="view-section-container">
 <?php
 $users = Control_Auth::get_all_users();
 $can_manage = Control_Auth::is_admin();
@@ -387,6 +388,7 @@ function control_get_time_ago($timestamp) {
 .mgmt-tab-btn.active { color:var(--control-primary); border-bottom-color:var(--control-accent); }
 .export-format-card.active { border-color:var(--control-accent) !important; background:var(--control-accent-soft); }
 </style>
+</div>
 
 <!-- Email Composer Modal -->
 <div id="control-email-composer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10004; align-items:center; justify-content:center; backdrop-filter: blur(4px);">

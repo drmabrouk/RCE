@@ -1,3 +1,4 @@
+<div class="view-section-container">
 <?php
 global $wpdb;
 $current_user = Control_Auth::current_user();
@@ -125,3 +126,4 @@ if ( Control_Auth::is_admin() ) {
     <?php
 }
 ?>
+</div>

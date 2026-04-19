@@ -39,17 +39,26 @@
     font-family: dashicons !important;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 body, .control-dashboard {
     direction: rtl;
     text-align: right;
-    min-height: 100vh;
     background: var(--control-bg);
     margin: 0;
     padding: 0;
     font-size: 14px;
     color: var(--control-text);
-    overflow-x: hidden;
     width: 100%;
+}
+
+.control-dashboard {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* Sidebar Styles */
@@ -169,8 +178,26 @@ body, .control-dashboard {
 
 .control-main-content {
     margin-right: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.control-content-inner {
+    flex: 1;
+    overflow-y: auto;
     padding: 25px;
-    min-height: 100vh;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    position: relative;
+}
+
+.view-section-container {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Card Standardization */

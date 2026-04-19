@@ -1,3 +1,4 @@
+<div class="view-section-container">
 <?php
 global $wpdb;
 $patient_id = intval( $_GET['id'] ?? 0 );
@@ -465,3 +466,4 @@ jQuery(document).ready(function($) {
 .patient-status-badge.status-completed { background: #eff6ff; color: #2563eb; }
 .info-box p { margin:0; line-height:1.6; color:var(--control-text-dark); font-weight:500; }
 </style>
+</div>

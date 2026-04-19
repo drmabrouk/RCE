@@ -331,7 +331,43 @@ class Control_Database {
 
 		// Seed initial data
 		self::seed_data();
+
+		// Enforce Standardized Roles
+		self::enforce_standard_roles();
+
 		Control_Auth::sync_roles();
+	}
+
+	private static function enforce_standard_roles() {
+		global $wpdb;
+		$table_roles = $wpdb->prefix . 'control_roles';
+		$table_staff = $wpdb->prefix . 'control_staff';
+
+		$standard_keys = array(
+			'admin', 'center_director', 'executive_manager', 'accountant',
+			'occupational_therapist', 'physical_rehab', 'sports_therapy',
+			'speech_therapist', 'sensory_integration', 'behavior_modification',
+			'psych_assessor', 'learning_difficulties', 'admin_assistant',
+			'receptionist', 'assistant_specialist'
+		);
+
+		// 1. Map legacy users to standard roles
+		$legacy_mapping = array(
+			'coach' => 'sports_therapy',
+			'therapist' => 'occupational_therapist',
+			'nutritionist' => 'assistant_specialist',
+			'pe_teacher' => 'sports_therapy',
+			'researcher' => 'psych_assessor',
+			'specialist' => 'occupational_therapist'
+		);
+
+		foreach ($legacy_mapping as $old => $new) {
+			$wpdb->update($table_staff, array('role' => $new), array('role' => $old));
+		}
+
+		// 2. Remove non-standard roles from DB
+		$placeholders = implode(',', array_fill(0, count($standard_keys), '%s'));
+		$wpdb->query($wpdb->prepare("DELETE FROM $table_roles WHERE role_key NOT IN ($placeholders)", ...$standard_keys));
 	}
 
 	private static function seed_data() {
@@ -342,62 +378,23 @@ class Control_Database {
 		$table_email_templates = $wpdb->prefix . 'control_email_templates';
 		$table_policies = $wpdb->prefix . 'control_policies';
 
-		// Seed initial roles
+		// Seed standardized professional roles
 		$initial_roles = array(
-			array(
-				'role_key'  => 'admin',
-				'role_name' => 'System Administrator',
-				'permissions' => json_encode(array('all' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'coach',
-				'role_name' => 'Sports Coach',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'therapist',
-				'role_name' => 'Sports Therapist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'nutritionist',
-				'role_name' => 'Sports Nutrition Specialist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'pe_teacher',
-				'role_name' => 'PE Teacher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'researcher',
-				'role_name' => 'Sports Researcher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'receptionist',
-				'role_name' => 'Reception Staff',
-				'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_basic' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'specialist',
-				'role_name' => 'Specialist',
-				'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_basic' => true, 'pediatric_view_clinical' => true)),
-				'is_system' => 1
-			),
-			array(
-				'role_key'  => 'center_manager',
-				'role_name' => 'Center Manager',
-				'permissions' => json_encode(array('all' => true)),
-				'is_system' => 1
-			)
+			array('role_key' => 'admin', 'role_name' => 'System Administrator', 'permissions' => json_encode(array('all' => true)), 'is_system' => 1),
+			array('role_key' => 'center_director', 'role_name' => 'Center Director', 'permissions' => json_encode(array('all' => true)), 'is_system' => 1),
+			array('role_key' => 'executive_manager', 'role_name' => 'Executive Manager', 'permissions' => json_encode(array('all' => true)), 'is_system' => 1),
+			array('role_key' => 'accountant', 'role_name' => 'Accountant', 'permissions' => json_encode(array('finance_manage' => true, 'dashboard' => true)), 'is_system' => 1),
+			array('role_key' => 'occupational_therapist', 'role_name' => 'Occupational Therapist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'physical_rehab', 'role_name' => 'Physical Rehabilitation Specialist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'sports_therapy', 'role_name' => 'Sports Therapy Specialist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'speech_therapist', 'role_name' => 'Speech-Language Therapist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'sensory_integration', 'role_name' => 'Sensory Integration Therapist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'behavior_modification', 'role_name' => 'Behavior Modification Specialist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'psych_assessor', 'role_name' => 'Psychological Assessor', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'learning_difficulties', 'role_name' => 'Learning Difficulties Specialist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_clinical' => true)), 'is_system' => 1),
+			array('role_key' => 'admin_assistant', 'role_name' => 'Administrative Assistant', 'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)), 'is_system' => 1),
+			array('role_key' => 'receptionist', 'role_name' => 'Receptionist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_basic' => true, 'finance_invoicing' => true)), 'is_system' => 1),
+			array('role_key' => 'assistant_specialist', 'role_name' => 'Assistant Specialist', 'permissions' => json_encode(array('dashboard' => true, 'pediatric_view_basic' => true)), 'is_system' => 1),
 		);
 
 		foreach ( $initial_roles as $role ) {

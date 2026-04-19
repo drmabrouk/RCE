@@ -319,7 +319,153 @@ function checkBirthdayAlert(dobString) {
     return diff <= 30;
 }
 
+function openPatientModal(data = null) {
+    const $ = jQuery;
+    const form = $('#patient-wizard-form');
+    form[0].reset();
+    $('#wiz-patient-id').val('');
+    $('#wiz-is-draft').val('0');
+    $('#wizard-title').text('<?php _e('تسجيل حالة طفل جديد', 'control'); ?>');
+    $('#wiz-photo-preview img').hide();
+    $('#wiz-photo-preview span').show();
+    $('.sp-check').prop('checked', false);
+    $('#wiz-age-badge').hide();
+
+    if (data) {
+        $('#wizard-title').text('<?php _e('تعديل بيانات الطفل', 'control'); ?>');
+        $('#wiz-patient-id').val(data.id);
+        $('#wiz-full-name').val(data.full_name);
+        $('#wiz-dob').val(data.dob).trigger('change');
+        $('#wiz-gender').val(data.gender);
+        $('#wiz-nationality').val(data.nationality);
+        $('#wiz-height').val(data.height);
+        $('#wiz-weight').val(data.weight);
+        $('#wiz-blood-type').val(data.blood_type);
+        $('#wiz-father-phone').val(data.father_phone);
+        $('#wiz-mother-phone').val(data.mother_phone);
+        $('#wiz-email').val(data.email);
+        $('#wiz-address').val(data.address);
+        $('#wiz-emergency').val(data.emergency_contact);
+        $('#wiz-allergies').val(data.drug_allergies);
+        $('#wiz-pregnancy').val(data.pregnancy_history);
+        $('#wiz-walk').val(data.milestones_walking);
+        $('#wiz-speak').val(data.milestones_speaking);
+        $('#wiz-sit').val(data.milestones_sitting);
+        $('#wiz-chronic').val(data.chronic_conditions);
+        $('#wiz-meds').val(data.current_medications);
+        $('#wiz-init-diag').val(data.initial_diagnosis);
+        $('#wiz-ext-source').val(data.external_diagnosis_source);
+        $('#wiz-behavior').val(data.initial_behavioral_observation);
+        $('#wiz-status').val(data.case_status);
+        $('#wiz-intake-status').val(data.intake_status);
+
+        if (data.profile_photo) {
+            $('#wiz-photo-preview img').attr('src', data.profile_photo).show();
+            $('#wiz-photo-preview span').hide();
+            $('#wiz-profile-photo').val(data.profile_photo);
+        }
+
+        if (data.assigned_specialists) {
+            const ids = data.assigned_specialists.split(',');
+            ids.forEach(id => $(`.sp-check[value="${id}"]`).prop('checked', true));
+        }
+    }
+
+    goToStep(1);
+    $('#patient-wizard-modal').css('display', 'flex');
+    if (typeof updateFloatingLabels === 'function') updateFloatingLabels();
+}
+
+let wizCurrentStep = 1;
+function goToStep(step) {
+    const $ = jQuery;
+    $('.wizard-step-content').hide();
+    $(`#step-${step}`).show();
+
+    $('.step-item').removeClass('active completed');
+    for(let i=1; i<step; i++) $(`.step-item[data-step="${i}"]`).addClass('completed');
+    $(`.step-item[data-step="${step}"]`).addClass('active');
+
+    $('#wiz-prev').toggle(step > 1);
+    $('#wiz-next').toggle(step < 5);
+    $('#wiz-submit').toggle(step === 5);
+
+    const progress = ((step - 1) / 4) * 100;
+    $('#progress-bar').css('width', progress + '%');
+
+    wizCurrentStep = step;
+}
+
 jQuery(document).ready(function($) {
+    $('#wiz-next').on('click', function() {
+        if (validateWizStep(wizCurrentStep)) {
+            autoSaveDraft();
+            goToStep(wizCurrentStep + 1);
+        }
+    });
+
+    $('#wiz-prev').on('click', function() {
+        goToStep(wizCurrentStep - 1);
+    });
+
+    function validateWizStep(step) {
+        let valid = true;
+        $(`#step-${step} [required]`).each(function() {
+            if (!$(this).val()) {
+                $(this).css('border-color', '#ef4444');
+                valid = false;
+            } else {
+                $(this).css('border-color', '');
+            }
+        });
+        return valid;
+    }
+
+    $('#wiz-upload-photo, #wiz-photo-preview').on('click', function(e) {
+        e.preventDefault();
+        const frame = wp.media({ title: 'اختر صورة الطفل', multiple: false }).open();
+        frame.on('select', function() {
+            const attachment = frame.state().get('selection').first().toJSON();
+            $('#wiz-profile-photo').val(attachment.url);
+            $('#wiz-photo-preview img').attr('src', attachment.url).show();
+            $('#wiz-photo-preview span').hide();
+        });
+    });
+
+    function autoSaveDraft() {
+        const ids = $('.sp-check:checked').map((_, el) => el.value).get().join(',');
+        $('#wiz-assigned-ids').val(ids);
+
+        const formData = $('#patient-wizard-form').serialize() + '&action=control_save_patient&nonce=' + control_ajax.nonce + '&is_draft=1';
+
+        $('#wiz-autosave-status').text('<?php _e("جاري حفظ مسودة...", "control"); ?>');
+        $.post(control_ajax.ajax_url, formData, function(res) {
+            if (res.success) {
+                if (!$('#wiz-patient-id').val()) $('#wiz-patient-id').val(res.data.id);
+                $('#wiz-autosave-status').html('<span class="dashicons dashicons-yes"></span> <?php _e("تم الحفظ", "control"); ?>');
+            }
+        });
+    }
+
+    $('#wiz-submit').on('click', function() {
+        const ids = $('.sp-check:checked').map((_, el) => el.value).get().join(',');
+        $('#wiz-assigned-ids').val(ids);
+        $('#wiz-is-draft').val('0');
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('<?php _e("جاري الحفظ...", "control"); ?>');
+
+        const formData = $('#patient-wizard-form').serialize() + '&action=control_save_patient&nonce=' + control_ajax.nonce;
+        $.post(control_ajax.ajax_url, formData, function(res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.data);
+                $btn.prop('disabled', false).text('<?php _e("حفظ الملف", "control"); ?>');
+            }
+        });
+    });
+
     $('#wiz-dob').on('change', function() {
         const ageText = calculateAge($(this).val());
         $('#wiz-age-badge').text(ageText).fadeIn();

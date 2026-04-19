@@ -1328,7 +1328,11 @@ class Control_Ajax {
 		$data = array();
 		foreach ($fields as $field => $sanitizer) {
 			if (isset($_POST[$field])) {
-				$data[$field] = $sanitizer($_POST[$field]);
+				if (is_array($_POST[$field])) {
+					$data[$field] = implode(', ', array_map('sanitize_text_field', $_POST[$field]));
+				} else {
+					$data[$field] = $sanitizer($_POST[$field]);
+				}
 			}
 		}
 
@@ -1730,38 +1734,51 @@ class Control_Ajax {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 		global $wpdb;
 
+		// Utility to handle arrays from multi-select/checkboxes
+		$get_val = function($key, $is_email = false) {
+			$val = $_POST[$key] ?? '';
+			if (is_array($val)) {
+				return implode(', ', array_map('sanitize_text_field', $val));
+			}
+			return $is_email ? sanitize_email($val) : sanitize_text_field($val);
+		};
+
 		$data = array(
-			'full_name'      => sanitize_text_field($_POST['full_name']),
-			'name_first'     => sanitize_text_field($_POST['name_first']),
-			'name_second'    => sanitize_text_field($_POST['name_second']),
-			'name_third'     => sanitize_text_field($_POST['name_third']),
-			'name_last'      => sanitize_text_field($_POST['name_last']),
-			'dob'            => sanitize_text_field($_POST['dob']),
-			'gender'         => sanitize_text_field($_POST['gender']),
-			'guardian_name'  => sanitize_text_field($_POST['guardian_name']),
-			'father_phone'   => sanitize_text_field($_POST['father_phone']),
-			'mother_phone'   => sanitize_text_field($_POST['mother_phone']),
-			'email'          => sanitize_email($_POST['email']),
-			'address'        => sanitize_text_field($_POST['address']),
-			'emergency_contact' => sanitize_text_field($_POST['emergency_contact']),
-			'blood_type'     => sanitize_text_field($_POST['blood_type']),
-			'pregnancy_history' => sanitize_textarea_field($_POST['pregnancy_history']),
-			'birth_history'  => sanitize_textarea_field($_POST['birth_history']),
-			'milestones_walking' => sanitize_text_field($_POST['milestones_walking']),
-			'milestones_speaking' => sanitize_text_field($_POST['milestones_speaking']),
-			'milestones_sitting' => sanitize_text_field($_POST['milestones_sitting']),
-			'chronic_conditions' => sanitize_textarea_field($_POST['chronic_conditions']),
-			'current_medications' => sanitize_textarea_field($_POST['current_medications']),
-			'intake_reason'  => sanitize_textarea_field($_POST['intake_reason']),
-			'initial_behavioral_observation' => sanitize_textarea_field($_POST['initial_behavioral_observation']),
-			'drug_allergies' => sanitize_text_field($_POST['drug_allergies']),
-			'initial_diagnosis' => sanitize_textarea_field($_POST['initial_diagnosis']),
+			'full_name'      => $get_val('full_name'),
+			'name_first'     => $get_val('name_first'),
+			'name_second'    => $get_val('name_second'),
+			'name_third'     => $get_val('name_third'),
+			'name_last'      => $get_val('name_last'),
+			'dob'            => $get_val('dob'),
+			'gender'         => $get_val('gender'),
+			'guardian_name'  => $get_val('guardian_name'),
+			'father_phone'   => $get_val('father_phone'),
+			'mother_phone'   => $get_val('mother_phone'),
+			'email'          => $get_val('email', true),
+			'address'        => $get_val('address'),
+			'emergency_contact' => $get_val('emergency_contact'),
+			'blood_type'     => $get_val('blood_type'),
+			'pregnancy_history' => $get_val('pregnancy_history'),
+			'birth_history'  => $get_val('birth_history'),
+			'milestones_walking' => $get_val('milestones_walking'),
+			'milestones_speaking' => $get_val('milestones_speaking'),
+			'milestones_sitting' => $get_val('milestones_sitting'),
+			'chronic_conditions' => $get_val('chronic_conditions'),
+			'current_medications' => $get_val('current_medications'),
+			'intake_reason'  => $get_val('intake_reason'),
+			'initial_behavioral_observation' => $get_val('initial_behavioral_observation'),
+			'screening_metadata' => $get_val('screening_metadata'),
+			'drug_allergies' => $get_val('drug_allergies'),
+			'initial_diagnosis' => $get_val('initial_diagnosis'),
 			'intake_status'  => 'pending',
 			'case_status'    => 'waiting_list',
 			'temp_id'        => 'REQ-' . strtoupper(wp_generate_password(8, false)),
 		);
 
-		$wpdb->insert("{$wpdb->prefix}control_patients", $data);
+		$result = $wpdb->insert("{$wpdb->prefix}control_patients", $data);
+		if ($result === false) {
+			$this->send_error(__('فشل حفظ البيانات في قاعدة البيانات. يرجى مراجعة الإدارة.', 'control') . ' ' . $wpdb->last_error);
+		}
 		Control_Audit::log('kiosk_intake', "New intake request from Kiosk: {$data['full_name']}");
 		$this->send_success();
 	}

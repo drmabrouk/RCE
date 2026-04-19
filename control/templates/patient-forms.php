@@ -6,7 +6,7 @@ $strings = Control_I18n::get_all();
 ?>
 
 <div id="patient-wizard-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10005; align-items:center; justify-content:center; backdrop-filter: blur(8px); padding: 20px;">
-    <div class="control-card wizard-container" style="width:100%; max-width:1000px; padding:0; border-radius:24px; overflow:hidden; box-shadow:0 50px 100px -20px rgba(0,0,0,0.4); background:#fff; position:relative;">
+    <div class="control-card wizard-container" style="width:100%; max-width:1100px; padding:0; border-radius:24px; overflow:hidden; box-shadow:0 50px 100px -20px rgba(0,0,0,0.4); background:#fff; position:relative;">
 
         <!-- Language Selection Overlay -->
         <div id="wiz-lang-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:24px;">
@@ -29,21 +29,25 @@ $strings = Control_I18n::get_all();
             <div id="wiz-age-badge" style="display:inline-block; background:var(--control-accent); color:var(--control-primary); font-size:0.85rem; padding:4px 15px; border-radius:15px; font-weight:900; margin-top:10px; display:none;"></div>
 
             <div class="wiz-progress-steps" style="display:flex; justify-content:center; gap:15px; margin-top:25px;">
-                <div class="wiz-dot active" data-step="1"></div>
-                <div class="wiz-dot" data-step="2"></div>
-                <div class="wiz-dot" data-step="3"></div>
-                <div class="wiz-dot" data-step="4"></div>
-                <div class="wiz-dot" data-step="5"></div>
-                <?php if($is_internal): ?><div class="wiz-dot" data-step="6"></div><?php endif; ?>
+                <div class="wiz-dot active" data-step="1" title="Phase 1: Identification"></div>
+                <div class="wiz-dot" data-step="2" title="Phase 2: Guardian"></div>
+                <div class="wiz-dot" data-step="3" title="Phase 3: Medical"></div>
+                <div class="wiz-dot" data-step="4" title="Phase 4: Assessment"></div>
+                <?php if($is_internal): ?>
+                    <div class="wiz-dot" data-step="5" title="Phase 5: Evaluation"></div>
+                    <div class="wiz-dot" data-step="6" title="Phase 6: Activation"></div>
+                <?php endif; ?>
             </div>
         </div>
 
         <form id="patient-wizard-form" style="padding:40px; max-height:70vh; overflow-y:auto; direction: inherit;">
             <input type="hidden" name="id" id="wiz-patient-id">
+            <input type="hidden" name="full_name" id="wiz-full-name-concat">
             <input type="hidden" name="is_draft" value="0" id="wiz-is-draft">
             <input type="hidden" name="wizard_lang" id="wiz-selected-lang" value="ar">
+            <input type="hidden" name="intake_status" id="wiz-intake-status" value="pending">
 
-            <!-- Step 1: Identity & Profile -->
+            <!-- Phase 1: Child Identification Data -->
             <div class="wiz-step" id="wiz-step-1">
                 <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:30px;">
                     <div id="wiz-photo-preview" style="width:120px; height:120px; border-radius:50%; background:#f1f5f9; border:3px dashed var(--control-border); display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative;">
@@ -56,12 +60,20 @@ $strings = Control_I18n::get_all();
 
                 <div class="wiz-grid">
                     <div class="wiz-field">
-                        <label data-t="child_name"><?php echo Control_I18n::t('child_name'); ?> *</label>
-                        <input type="text" name="full_name" required>
+                        <label data-t="first_name"><?php echo Control_I18n::t('first_name'); ?> *</label>
+                        <input type="text" name="name_first" required class="name-part">
                     </div>
                     <div class="wiz-field">
-                        <label data-t="guardian_name"><?php echo Control_I18n::t('guardian_name'); ?> *</label>
-                        <input type="text" name="guardian_name" required>
+                        <label data-t="second_name"><?php echo Control_I18n::t('second_name'); ?> *</label>
+                        <input type="text" name="name_second" required class="name-part">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="third_name"><?php echo Control_I18n::t('third_name'); ?> *</label>
+                        <input type="text" name="name_third" required class="name-part">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="last_name"><?php echo Control_I18n::t('last_name'); ?> *</label>
+                        <input type="text" name="name_last" required class="name-part">
                     </div>
                     <div class="wiz-field">
                         <label data-t="dob"><?php echo Control_I18n::t('dob'); ?> *</label>
@@ -75,26 +87,15 @@ $strings = Control_I18n::get_all();
                         </select>
                     </div>
                 </div>
-                <div class="wiz-field">
-                    <label data-t="nationality"><?php echo Control_I18n::t('nationality'); ?></label>
-                    <select name="nationality" id="wiz-nationality-sel">
-                        <option value="SA">🇸🇦 Saudi Arabia</option>
-                        <option value="EG">🇪🇬 Egypt</option>
-                        <option value="AE">🇦🇪 UAE</option>
-                        <option value="JO">🇯🇴 Jordan</option>
-                        <option value="KW">🇰🇼 Kuwait</option>
-                        <option value="BH">🇧🇭 Bahrain</option>
-                        <option value="QA">🇶🇦 Qatar</option>
-                        <option value="OM">🇴🇲 Oman</option>
-                        <option value="US">🇺🇸 USA</option>
-                        <option value="GB">🇬🇧 UK</option>
-                    </select>
-                </div>
             </div>
 
-            <!-- Step 2: Physical & Contact -->
+            <!-- Phase 2: Guardian Information -->
             <div class="wiz-step" id="wiz-step-2" style="display:none;">
                 <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="guardian_name"><?php echo Control_I18n::t('guardian_name'); ?> *</label>
+                        <input type="text" name="guardian_name" required>
+                    </div>
                     <div class="wiz-field">
                         <label data-t="father_phone"><?php echo Control_I18n::t('father_phone'); ?> *</label>
                         <input type="tel" name="father_phone" required>
@@ -107,10 +108,12 @@ $strings = Control_I18n::get_all();
                         <label data-t="email"><?php echo Control_I18n::t('email'); ?></label>
                         <input type="email" name="email">
                     </div>
-                    <div class="wiz-field">
-                        <label data-t="address"><?php echo Control_I18n::t('address'); ?></label>
-                        <input type="text" name="address">
-                    </div>
+                </div>
+                <div class="wiz-field">
+                    <label data-t="address"><?php echo Control_I18n::t('address'); ?></label>
+                    <input type="text" name="address">
+                </div>
+                <div class="wiz-grid">
                     <div class="wiz-field">
                         <label data-t="emergency_contact"><?php echo Control_I18n::t('emergency_contact'); ?></label>
                         <input type="text" name="emergency_contact">
@@ -120,48 +123,38 @@ $strings = Control_I18n::get_all();
                         <input type="text" name="emergency_contact_alt">
                     </div>
                 </div>
-                <div class="wiz-grid-3">
-                    <div class="wiz-field">
-                        <label data-t="height"><?php echo Control_I18n::t('height'); ?> (cm)</label>
-                        <input type="number" name="height">
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="weight"><?php echo Control_I18n::t('weight'); ?> (kg)</label>
-                        <input type="number" name="weight">
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="blood_type"><?php echo Control_I18n::t('blood_type'); ?></label>
-                        <select name="blood_type">
-                            <option value="">-</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="wiz-field">
-                    <label data-t="drug_allergies"><?php echo Control_I18n::t('drug_allergies'); ?></label>
-                    <input type="text" name="drug_allergies">
-                </div>
             </div>
 
-            <!-- Step 3: Medical History -->
+            <!-- Phase 3: Medical & Pre-Entry Screening -->
             <div class="wiz-step" id="wiz-step-3" style="display:none;">
                 <div class="wiz-grid">
                     <div class="wiz-field">
                         <label data-t="pregnancy_history"><?php echo Control_I18n::t('pregnancy_history'); ?></label>
-                        <textarea name="pregnancy_history" rows="2"></textarea>
+                        <textarea name="pregnancy_history" rows="2" placeholder="Complications, Hypoxia, etc."></textarea>
                     </div>
                     <div class="wiz-field">
                         <label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label>
-                        <textarea name="birth_history" rows="2"></textarea>
+                        <textarea name="birth_history" rows="2" placeholder="NICU admission, birth weight..."></textarea>
                     </div>
                 </div>
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="chronic_conditions"><?php echo Control_I18n::t('chronic_conditions'); ?></label>
+                        <textarea name="chronic_conditions" rows="2" placeholder="Epilepsy, Diabetes, Hearing/Vision..."></textarea>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="medications"><?php echo Control_I18n::t('medications'); ?></label>
+                        <textarea name="current_medications" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="wiz-field">
+                    <label data-t="screening_flags"><?php echo Control_I18n::t('screening_flags'); ?></label>
+                    <textarea name="screening_metadata" rows="2" placeholder="Pre-entry observations..."></textarea>
+                </div>
+            </div>
+
+            <!-- Phase 4: Functional & Behavioral Assessment -->
+            <div class="wiz-step" id="wiz-step-4" style="display:none;">
                 <div class="wiz-grid-3">
                     <div class="wiz-field">
                         <label data-t="walking"><?php echo Control_I18n::t('walking'); ?></label>
@@ -176,77 +169,84 @@ $strings = Control_I18n::get_all();
                         <input type="text" name="milestones_sitting">
                     </div>
                 </div>
-                <div class="wiz-grid">
-                    <div class="wiz-field">
-                        <label data-t="chronic_conditions"><?php echo Control_I18n::t('chronic_conditions'); ?></label>
-                        <textarea name="chronic_conditions" rows="2"></textarea>
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="medications"><?php echo Control_I18n::t('medications'); ?></label>
-                        <textarea name="current_medications" rows="2"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4: Assessments & Diagnosis -->
-            <div class="wiz-step" id="wiz-step-4" style="display:none;">
-                <div class="wiz-grid">
-                    <div class="wiz-field">
-                        <label data-t="initial_diagnosis"><?php echo Control_I18n::t('initial_diagnosis'); ?></label>
-                        <textarea name="initial_diagnosis" rows="2"></textarea>
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="diagnosis_source"><?php echo Control_I18n::t('diagnosis_source'); ?></label>
-                        <input type="text" name="external_diagnosis_source">
-                    </div>
-                </div>
-                <div class="wiz-field">
-                    <label data-t="test_results"><?php echo Control_I18n::t('test_results'); ?></label>
-                    <textarea placeholder="Stanford-Binet, CARS, etc." rows="2" readonly style="background:#f1f5f9; cursor:not-allowed;">Manage via Clinical Tab after profile creation</textarea>
-                </div>
-            </div>
-
-            <!-- Step 5: Behavioral Observation -->
-            <div class="wiz-step" id="wiz-step-5" style="display:none;">
                 <div class="wiz-field">
                     <label data-t="behavioral_observation"><?php echo Control_I18n::t('behavioral_observation'); ?></label>
-                    <textarea name="initial_behavioral_observation" rows="5" placeholder="Eye contact, ability to follow instructions, stereotypical behaviors..."></textarea>
+                    <textarea name="initial_behavioral_observation" rows="4" placeholder="Eye contact, instructions, stereotypical behaviors..."></textarea>
+                </div>
+                <div class="wiz-field">
+                    <label data-t="initial_diagnosis"><?php echo Control_I18n::t('initial_diagnosis'); ?></label>
+                    <textarea name="initial_diagnosis" rows="2" placeholder="ASD, ADHD, Speech Delay..."></textarea>
                 </div>
             </div>
 
-            <!-- Step 6: Internal Admin (Only for logged in staff) -->
+            <!-- Phase 5: Administrative Evaluation (Internal Only) -->
             <?php if($is_internal): ?>
-            <div class="wiz-step" id="wiz-step-6" style="display:none;">
+            <div class="wiz-step" id="wiz-step-5" style="display:none;">
+                <h4 style="color:var(--control-primary); margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;" data-t="phase_5_title"><?php echo Control_I18n::t('phase_5_title'); ?></h4>
                 <div class="wiz-grid">
                     <div class="wiz-field">
-                        <label data-t="system_id"><?php echo Control_I18n::t('system_id'); ?></label>
-                        <input type="text" name="system_id">
+                        <label data-t="temp_id"><?php echo Control_I18n::t('temp_id'); ?></label>
+                        <input type="text" name="temp_id" readonly style="background:#f8fafc;">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="priority_level"><?php echo Control_I18n::t('priority_level'); ?></label>
+                        <select name="priority_level">
+                            <option value="normal">Normal</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="critical">Critical / Immediate</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="routing_dept"><?php echo Control_I18n::t('routing_dept'); ?></label>
+                        <select name="routing_dept">
+                            <option value="speech">Speech Therapy</option>
+                            <option value="occupational">Occupational Therapy</option>
+                            <option value="behavioral">Behavioral Modification</option>
+                            <option value="physical">Physical Rehab</option>
+                        </select>
                     </div>
                     <div class="wiz-field">
                         <label data-t="internal_classification"><?php echo Control_I18n::t('internal_classification'); ?></label>
                         <select name="internal_classification">
-                            <option value="gold">VIP / Gold</option>
                             <option value="standard">Standard</option>
-                            <option value="charity">Social / Charity</option>
+                            <option value="gold">VIP / Gold</option>
+                            <option value="charity">Charity / Social</option>
                         </select>
+                    </div>
+                </div>
+                <div class="wiz-field">
+                    <label data-t="internal_notes"><?php echo Control_I18n::t('internal_notes'); ?></label>
+                    <textarea name="internal_notes" rows="4"></textarea>
+                </div>
+            </div>
+
+            <!-- Phase 6: System Activation (Internal Only) -->
+            <div class="wiz-step" id="wiz-step-6" style="display:none;">
+                <h4 style="color:var(--control-primary); margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;" data-t="phase_6_title"><?php echo Control_I18n::t('phase_6_title'); ?></h4>
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="permanent_id"><?php echo Control_I18n::t('permanent_id'); ?></label>
+                        <input type="text" name="permanent_id" placeholder="Generate ID...">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="activation_date"><?php echo Control_I18n::t('activation_date'); ?></label>
+                        <input type="datetime-local" name="activation_date">
                     </div>
                     <div class="wiz-field">
                         <label data-t="case_status"><?php echo Control_I18n::t('case_status'); ?></label>
                         <select name="case_status">
-                            <option value="active">Active</option>
                             <option value="waiting_list">Waiting List</option>
+                            <option value="active">Active (Full File)</option>
                             <option value="dropped_out">Dropped Out</option>
                             <option value="completed">Completed Rehabilitation</option>
                         </select>
                     </div>
                 </div>
                 <div class="wiz-field">
-                    <label data-t="internal_notes"><?php echo Control_I18n::t('internal_notes'); ?></label>
-                    <textarea name="internal_notes" rows="3"></textarea>
-                </div>
-                <div class="wiz-field">
-                    <label data-t="workflow_metadata"><?php echo Control_I18n::t('workflow_metadata'); ?></label>
-                    <textarea name="workflow_metadata" rows="2" placeholder="JSON or encoded metadata..."></textarea>
+                    <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:20px; border-radius:15px; color:#0369a1;">
+                        <p style="font-weight:700; margin-bottom:10px;">🛡️ Administrative Action</p>
+                        <p style="font-size:0.9rem; margin:0;">Activating the record will generate a permanent file and enable financial billing for this case.</p>
+                    </div>
                 </div>
             </div>
             <?php endif; ?>
@@ -270,8 +270,9 @@ $strings = Control_I18n::get_all();
 .wiz-field input, .wiz-field select, .wiz-field textarea { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; transition: 0.3s; background: #fff; }
 .wiz-field input:focus { border-color: var(--control-primary); outline: none; box-shadow: 0 0 0 4px rgba(0,0,0,0.05); }
 
-.wiz-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.4s; }
-.wiz-dot.active { background: var(--control-accent); transform: scale(1.3); }
+.wiz-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.4s; position: relative; cursor: help; }
+.wiz-dot.active { background: var(--control-accent); transform: scale(1.4); }
+.wiz-dot.active::after { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 2px solid var(--control-accent); border-radius: 50%; }
 
 .lang-sel-btn { flex: 1; min-width: 150px; padding: 40px 20px; border: 2px solid #f1f5f9; border-radius: 20px; background: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
 .lang-sel-btn:hover { border-color: var(--control-primary); background: #f8fafc; transform: translateY(-5px); }
@@ -287,20 +288,19 @@ $strings = Control_I18n::get_all();
 <script>
 const wizStrings = <?php echo json_encode($strings); ?>;
 let currentWizStep = 1;
-const totalWizSteps = <?php echo $is_internal ? 6 : 5; ?>;
+const isInternalUser = <?php echo $is_internal ? 'true' : 'false'; ?>;
+const totalWizSteps = isInternalUser ? 6 : 4;
 
 function setWizLang(lang) {
     jQuery('#wiz-selected-lang').val(lang);
     jQuery('#wiz-lang-overlay').fadeOut();
 
-    // Persist to session
     jQuery.post(control_ajax.ajax_url, {
         action: 'control_update_session_lang',
         lang: lang,
         nonce: control_ajax.nonce
     });
 
-    // Update UI Strings
     const s = wizStrings[lang];
     jQuery('#wiz-title-text').text(s.registration_title);
     jQuery('#wiz-next-btn').text(s.next);
@@ -312,7 +312,6 @@ function setWizLang(lang) {
         if(s[key]) jQuery(this).text(s[key]);
     });
 
-    // Set form direction
     if(lang === 'ar') {
         jQuery('#patient-wizard-form').css('direction', 'rtl');
     } else {
@@ -334,31 +333,36 @@ function calculateDetailedAge(dobString) {
         const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
         days += lastMonth.getDate();
     }
-    if (months < 0) {
-        years--;
-        months += 12;
-    }
+    if (months < 0) { years--; months += 12; }
 
     const lang = jQuery('#wiz-selected-lang').val();
     const s = wizStrings[lang];
-
     return `${years} ${s.years}, ${months} ${s.months}, ${days} ${s.days}`;
 }
 
 jQuery(document).ready(function($) {
+    // 4-Part Name Concat
+    $('.name-part').on('input', function() {
+        const f = $('[name="name_first"]').val().trim();
+        const s = $('[name="name_second"]').val().trim();
+        const t = $('[name="name_third"]').val().trim();
+        const l = $('[name="name_last"]').val().trim();
+        $('#wiz-full-name-concat').val(`${f} ${s} ${t} ${l}`.trim());
+    });
+
     $('#wiz-dob-input').on('change', function() {
         const ageStr = calculateDetailedAge($(this).val());
-        const lang = $('#wiz-selected-lang').val();
-        $('#wiz-age-display').text(wizStrings[lang].age + ': ' + ageStr);
         $('#wiz-age-badge').text(ageStr).fadeIn();
     });
 
     $('#wiz-next-btn').on('click', function() {
-        if(currentWizStep < totalWizSteps) {
-            $(`#wiz-step-${currentWizStep}`).hide();
-            currentWizStep++;
-            $(`#wiz-step-${currentWizStep}`).fadeIn();
-            updateWizUI();
+        if (validateStep(currentWizStep)) {
+            if(currentWizStep < totalWizSteps) {
+                $(`#wiz-step-${currentWizStep}`).hide();
+                currentWizStep++;
+                $(`#wiz-step-${currentWizStep}`).fadeIn();
+                updateWizUI();
+            }
         }
     });
 
@@ -371,6 +375,19 @@ jQuery(document).ready(function($) {
         }
     });
 
+    function validateStep(step) {
+        let valid = true;
+        $(`#wiz-step-${step} [required]`).each(function() {
+            if (!$(this).val()) {
+                $(this).css('border-color', '#ef4444');
+                valid = false;
+            } else {
+                $(this).css('border-color', '');
+            }
+        });
+        return valid;
+    }
+
     function updateWizUI() {
         $('#wiz-prev-btn').toggle(currentWizStep > 1);
         $('#wiz-next-btn').toggle(currentWizStep < totalWizSteps);
@@ -382,7 +399,7 @@ jQuery(document).ready(function($) {
 
     $('#wiz-upload-btn, #wiz-photo-preview').on('click', function(e) {
         e.preventDefault();
-        const frame = wp.media({ title: 'Select Child Photo', multiple: false }).open();
+        const frame = wp.media({ title: 'Select Photo', multiple: false }).open();
         frame.on('select', function() {
             const attachment = frame.state().get('selection').first().toJSON();
             $('#wiz-photo-input').val(attachment.url);
@@ -393,7 +410,7 @@ jQuery(document).ready(function($) {
 
     $('#wiz-save-btn').on('click', function() {
         const $btn = $(this);
-        $btn.prop('disabled', true).text('Saving...');
+        $btn.prop('disabled', true).text('Processing...');
 
         const formData = $('#patient-wizard-form').serialize() + '&action=control_save_patient&nonce=' + control_ajax.nonce;
         $.post(control_ajax.ajax_url, formData, function(res) {
@@ -401,10 +418,13 @@ jQuery(document).ready(function($) {
                 location.reload();
             } else {
                 alert(res.data);
-                $btn.prop('disabled', false).text('Save File');
+                $btn.prop('disabled', false).text('Save Record');
             }
         });
     });
+
+    // Make updateWizUI available to window for external openers
+    window.updateWizUI = updateWizUI;
 });
 
 window.openPatientModal = function(data = null) {
@@ -416,7 +436,7 @@ window.openPatientModal = function(data = null) {
     $('#wiz-lang-overlay').show();
 
     currentWizStep = 1;
-    updateWizUI();
+    window.updateWizUI();
     $('.wiz-step').hide();
     $('#wiz-step-1').show();
 
@@ -424,44 +444,18 @@ window.openPatientModal = function(data = null) {
         $('#wiz-lang-overlay').hide();
         setWizLang('ar');
         $('#wiz-patient-id').val(data.id);
-        $('[name="full_name"]').val(data.full_name);
-        $('[name="guardian_name"]').val(data.guardian_name);
-        $('[name="dob"]').val(data.dob).trigger('change');
-        $('[name="height"]').val(data.height);
-        $('[name="weight"]').val(data.weight);
-        $('[name="gender"]').val(data.gender);
-        $('[name="nationality"]').val(data.nationality);
-        $('[name="father_phone"]').val(data.father_phone);
-        $('[name="mother_phone"]').val(data.mother_phone);
-        $('[name="email"]').val(data.email);
-        $('[name="address"]').val(data.address);
-        $('[name="emergency_contact"]').val(data.emergency_contact);
-        $('[name="emergency_contact_alt"]').val(data.emergency_contact_alt);
-        $('[name="blood_type"]').val(data.blood_type);
-        $('[name="drug_allergies"]').val(data.drug_allergies);
-        $('[name="pregnancy_history"]').val(data.pregnancy_history);
-        $('[name="birth_history"]').val(data.birth_history);
-        $('[name="milestones_walking"]').val(data.milestones_walking);
-        $('[name="milestones_speaking"]').val(data.milestones_speaking);
-        $('[name="milestones_sitting"]').val(data.milestones_sitting);
-        $('[name="chronic_conditions"]').val(data.chronic_conditions);
-        $('[name="current_medications"]').val(data.current_medications);
-        $('[name="initial_diagnosis"]').val(data.initial_diagnosis);
-        $('[name="external_diagnosis_source"]').val(data.external_diagnosis_source);
-        $('[name="initial_behavioral_observation"]').val(data.initial_behavioral_observation);
-        $('[name="system_id"]').val(data.system_id);
-        $('[name="internal_classification"]').val(data.internal_classification);
-        $('[name="case_status"]').val(data.case_status);
-        $('[name="internal_notes"]').val(data.internal_notes);
-        $('[name="workflow_metadata"]').val(data.workflow_metadata);
-
+        // Full data mapping for all 6 phases
+        Object.keys(data).forEach(key => {
+                const field = $(`#patient-wizard-form [name="${key}"]`);
+            if (field.length) field.val(data[key]);
+        });
+        $('#wiz-dob-input').trigger('change');
         if (data.profile_photo) {
             $('#wiz-photo-preview img').attr('src', data.profile_photo).show();
             $('#wiz-photo-preview span').hide();
             $('#wiz-photo-input').val(data.profile_photo);
         }
     }
-
     $('#patient-wizard-modal').css('display', 'flex');
 }
 </script>

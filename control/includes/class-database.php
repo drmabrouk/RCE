@@ -148,6 +148,8 @@ class Control_Database {
 			dob date,
 			gender varchar(20),
 			nationality varchar(100),
+			height varchar(50),
+			weight varchar(50),
 			profile_photo varchar(255),
 			father_phone varchar(50),
 			mother_phone varchar(50),
@@ -177,6 +179,9 @@ class Control_Database {
 			case_status varchar(50) DEFAULT 'waiting_list',
 			assigned_specialists text, /* JSON or comma-separated IDs */
 			is_draft tinyint(1) DEFAULT 0,
+			intake_reason text,
+			intake_notes text,
+			intake_status varchar(50) DEFAULT 'none', /* none, pending, approved, rejected */
 
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -45,6 +45,9 @@ $status_labels = array(
         </div>
     </div>
     <div style="display:flex; gap:10px;">
+        <button onclick="window.print()" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);">
+            <span class="dashicons dashicons-printer" style="margin-left:5px;"></span><?php _e('طباعة الملف', 'control'); ?>
+        </button>
         <a href="<?php echo add_query_arg('control_view', 'pediatric_records'); ?>" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);">
             <span class="dashicons dashicons-arrow-right-alt" style="margin-left:5px;"></span><?php _e('العودة للقائمة', 'control'); ?>
         </a>
@@ -122,6 +125,33 @@ $status_labels = array(
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('حساسية الأدوية', 'control'); ?></label>
                             <span style="font-weight:700; color:#ef4444;"><?php echo esc_html($patient->drug_allergies) ?: __('لا يوجد', 'control'); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="id-card-print-section" style="margin-bottom:30px;">
+                <div class="patient-id-card" style="width:350px; background:linear-gradient(135deg, #1e293b, #334155); color:#fff; border-radius:15px; padding:20px; display:flex; gap:15px; align-items:center; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                    <div style="position:absolute; top:-20px; left:-20px; width:100px; height:100px; background:var(--control-accent); opacity:0.1; border-radius:50%;"></div>
+                    <div style="width:80px; height:80px; background:#fff; border-radius:10px; overflow:hidden; border:2px solid var(--control-accent); flex-shrink:0;">
+                        <?php if($patient->profile_photo): ?>
+                            <img src="<?php echo esc_url($patient->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
+                        <?php else: ?>
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><span class="dashicons dashicons-admin-users" style="font-size:40px;"></span></div>
+                        <?php endif; ?>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:800; font-size:1.1rem; margin-bottom:5px;"><?php echo esc_html($patient->full_name); ?></div>
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.7); display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                            <span><?php _e('العمر:', 'control'); ?> <strong style="color:#fff;"><?php
+                                $dob = new DateTime($patient->dob);
+                                $now = new DateTime();
+                                $age = $now->diff($dob);
+                                echo $age->y . ' ' . __('سنة', 'control');
+                            ?></strong></span>
+                            <span><?php _e('رقم الملف:', 'control'); ?> <strong style="color:#fff;">#<?php echo $patient->id; ?></strong></span>
+                            <span><?php _e('الطول:', 'control'); ?> <strong style="color:#fff;"><?php echo $patient->height ?: '---'; ?></strong></span>
+                            <span><?php _e('الوزن:', 'control'); ?> <strong style="color:#fff;"><?php echo $patient->weight ?: '---'; ?></strong></span>
                         </div>
                     </div>
                 </div>

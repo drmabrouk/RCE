@@ -34,13 +34,14 @@ $status_labels = array(
             <?php foreach($status_labels as $val => $label): ?>
                 <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
             <?php endforeach; ?>
+            <option value="pending"><?php _e('طلبات الانتظار (Kiosk)', 'control'); ?></option>
         </select>
     </div>
 </div>
 
 <div id="patients-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
     <?php if($patients): foreach($patients as $p): ?>
-        <div class="control-card patient-card" data-status="<?php echo esc_attr($p->case_status); ?>" data-search="<?php echo esc_attr(strtolower($p->full_name . ' ' . $p->father_phone . ' ' . $p->mother_phone)); ?>" style="padding:0; overflow:hidden;">
+        <div class="control-card patient-card" data-status="<?php echo ($p->intake_status === 'pending') ? 'pending' : esc_attr($p->case_status); ?>" data-search="<?php echo esc_attr(strtolower($p->full_name . ' ' . $p->father_phone . ' ' . $p->mother_phone)); ?>" style="padding:0; overflow:hidden;">
             <div style="padding:20px;">
                 <div style="display:flex; gap:15px; align-items:center;">
                     <div style="width:60px; height:60px; background:var(--control-bg); border-radius:12px; overflow:hidden; border:1px solid var(--control-border); flex-shrink:0;">
@@ -77,9 +78,15 @@ $status_labels = array(
                     <?php _e('الملف الكامل', 'control'); ?>
                 </a>
                 <?php if($can_manage): ?>
-                    <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="background:none; border:none; color:#ef4444; cursor:pointer;">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <?php if($p->intake_status === 'pending'): ?>
+                            <button class="approve-intake-btn" data-id="<?php echo $p->id; ?>" title="<?php _e('قبول الحالة', 'control'); ?>" style="background:none; border:none; color:#10b981; cursor:pointer;"><span class="dashicons dashicons-yes"></span></button>
+                            <button class="reject-intake-btn" data-id="<?php echo $p->id; ?>" title="<?php _e('رفض الحالة', 'control'); ?>" style="background:none; border:none; color:#f59e0b; cursor:pointer;"><span class="dashicons dashicons-no"></span></button>
+                        <?php endif; ?>
+                        <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="background:none; border:none; color:#ef4444; cursor:pointer;">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -130,6 +137,17 @@ jQuery(document).ready(function($) {
 
     $('#add-patient-btn').on('click', function() {
         openPatientModal();
+    });
+
+    $('.approve-intake-btn').on('click', function() {
+        const id = $(this).data('id');
+        $.post(control_ajax.ajax_url, { action: 'control_update_intake_status', id: id, status: 'approved', nonce: control_ajax.nonce }, () => location.reload());
+    });
+
+    $('.reject-intake-btn').on('click', function() {
+        const id = $(this).data('id');
+        if(!confirm('<?php _e('هل أنت متأكد من رفض هذا الطلب؟', 'control'); ?>')) return;
+        $.post(control_ajax.ajax_url, { action: 'control_update_intake_status', id: id, status: 'rejected', nonce: control_ajax.nonce }, () => location.reload());
     });
 });
 </script>

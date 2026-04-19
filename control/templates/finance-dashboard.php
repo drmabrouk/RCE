@@ -11,13 +11,10 @@ $outstanding = $wpdb->get_var("SELECT SUM(total_amount - paid_amount) FROM {$wpd
 $net_profit = $total_revenue - ($total_expenses + $total_payroll);
 ?>
 
-<div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-    <h2 style="font-weight:800; font-size:1.5rem; margin:0; color:var(--control-text-dark);"><?php _e('لوحة التحكم المالية', 'control'); ?></h2>
-    <div style="display:flex; gap:10px;">
-        <button onclick="window.print()" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);">
-            <span class="dashicons dashicons-printer" style="margin-left:5px;"></span><?php _e('طباعة التقرير', 'control'); ?>
-        </button>
-    </div>
+<div style="display:flex; justify-content: flex-end; margin-bottom: 20px;">
+    <button onclick="window.print()" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);">
+        <span class="dashicons dashicons-printer" style="margin-left:5px;"></span><?php _e('طباعة التقرير', 'control'); ?>
+    </button>
 </div>
 
 <!-- Stats Cards -->

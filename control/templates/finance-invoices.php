@@ -5,15 +5,12 @@ $invoices = $wpdb->get_results("SELECT i.*, p.full_name FROM {$wpdb->prefix}cont
 $patients = $wpdb->get_results("SELECT id, full_name FROM {$wpdb->prefix}control_patients ORDER BY full_name ASC");
 ?>
 
-<div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-    <h2 style="font-weight:800; font-size:1.5rem; margin:0; color:var(--control-text-dark);"><?php _e('الفواتير والمدفوعات', 'control'); ?></h2>
-    <div style="display:flex; gap:10px;">
-        <?php if($can_manage): ?>
-            <button id="add-invoice-btn" class="control-btn" style="background:var(--control-primary); border:none;">
-                <span class="dashicons dashicons-plus-alt" style="margin-left:5px;"></span><?php _e('إنشاء فاتورة جديدة', 'control'); ?>
-            </button>
-        <?php endif; ?>
-    </div>
+<div style="display:flex; justify-content: flex-end; margin-bottom: 20px;">
+    <?php if($can_manage): ?>
+        <button id="add-invoice-btn" class="control-btn" style="background:var(--control-primary); border:none;">
+            <span class="dashicons dashicons-plus-alt" style="margin-left:5px;"></span><?php _e('إنشاء فاتورة جديدة', 'control'); ?>
+        </button>
+    <?php endif; ?>
 </div>
 
 <div class="control-card" style="padding:0; overflow:hidden;">

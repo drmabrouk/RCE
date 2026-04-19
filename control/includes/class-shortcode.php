@@ -58,32 +58,11 @@ class Control_Shortcode {
 					include CONTROL_PATH . 'templates/patient-view.php';
 				}
 				break;
-			case 'fin_dashboard':
+			case 'finance':
 				if ( ! Control_Auth::has_permission('finance_payroll_view') ) {
 					echo $no_access_html;
 				} else {
-					include CONTROL_PATH . 'templates/finance-dashboard.php';
-				}
-				break;
-			case 'fin_invoices':
-				if ( ! Control_Auth::has_permission('finance_invoicing') ) {
-					echo $no_access_html;
-				} else {
-					include CONTROL_PATH . 'templates/finance-invoices.php';
-				}
-				break;
-			case 'fin_payroll':
-				if ( ! Control_Auth::has_permission('finance_payroll_view') ) {
-					echo $no_access_html;
-				} else {
-					include CONTROL_PATH . 'templates/finance-payroll.php';
-				}
-				break;
-			case 'fin_expenses':
-				if ( ! Control_Auth::has_permission('finance_manage') ) {
-					echo $no_access_html;
-				} else {
-					include CONTROL_PATH . 'templates/finance-expenses.php';
+					include CONTROL_PATH . 'templates/finance-mgmt.php';
 				}
 				break;
 			case 'roles':

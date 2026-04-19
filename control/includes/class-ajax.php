@@ -27,7 +27,7 @@ class Control_Ajax {
 			'delete_fin_package', 'save_fin_invoice', 'delete_fin_invoice',
 			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
 			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense',
-			'update_intake_status'
+			'update_intake_status', 'add_custom_permission'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1043,12 +1043,15 @@ class Control_Ajax {
 		);
 
 		if ( $id ) {
-			// System roles only update permissions
-			unset($data['role_key']);
 			$wpdb->update( $wpdb->prefix . 'control_roles', $data, array( 'id' => $id ) );
 			Control_Audit::log('edit_role', "Updated role: $role_name");
 		} else {
-			$this->send_error( 'Creating new roles is restricted to standard system roles.' );
+			// Check key uniqueness
+			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_roles WHERE role_key = %s", $role_key ) );
+			if ( $exists ) $this->send_error( 'Role key already exists' );
+
+			$wpdb->insert( $wpdb->prefix . 'control_roles', $data );
+			Control_Audit::log('add_role', "Added role: $role_name");
 		}
 
 		// Re-sync WP roles
@@ -1057,7 +1060,56 @@ class Control_Ajax {
 	}
 
 	public function delete_role() {
-		$this->send_error( 'Role deletion is permanently disabled. System roles are standardized.' );
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('roles_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] );
+		$replacement_key = sanitize_key( $_POST['replacement_role_key'] ?? 'admin' );
+
+		$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_roles WHERE id = %d", $id ) );
+
+		if ( ! $role ) $this->send_error( 'Role not found' );
+
+		// Map existing staff members
+		$wpdb->update(
+			"{$wpdb->prefix}control_staff",
+			array( 'role' => $replacement_key ),
+			array( 'role' => $role->role_key )
+		);
+
+		// Reassign WP Users
+		$users = get_users( array( 'role' => $role->role_key ) );
+		foreach ( $users as $user ) {
+			$user->set_role( $replacement_key );
+		}
+
+		$wpdb->delete( "{$wpdb->prefix}control_roles", array( 'id' => $id ) );
+		Control_Audit::log('delete_role', "Deleted role: {$role->role_name}");
+
+		Control_Auth::sync_roles();
+		$this->send_success();
+	}
+
+	public function add_custom_permission() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('roles_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$key = sanitize_key( $_POST['perm_key'] );
+		$label = sanitize_text_field( $_POST['perm_label'] );
+		$category = sanitize_text_field( $_POST['perm_category'] );
+
+		if ( empty($key) || empty($label) ) $this->send_error( 'Key and label required' );
+
+		$wpdb->insert( "{$wpdb->prefix}control_custom_permissions", array(
+			'perm_key' => $key,
+			'perm_label' => $label,
+			'perm_category' => $category
+		) );
+
+		Control_Audit::log('add_permission', "Added new custom permission: $label");
+		$this->send_success();
 	}
 
 	public function save_policy() {

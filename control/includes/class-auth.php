@@ -316,7 +316,10 @@ class Control_Auth {
 	 * Centralized Permissions Registry
 	 */
 	public static function get_permissions_registry() {
-		return array(
+		global $wpdb;
+		$custom = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_custom_permissions");
+
+		$registry = array(
 			'dashboard'     => array( 'label' => __( 'عرض لوحة التحكم', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 			'users_view'    => array( 'label' => __( 'عرض قائمة الكوادر', 'control' ), 'category' => __( 'الكوادر', 'control' ) ),
 			'users_manage'  => array( 'label' => __( 'إضافة وتعديل الكوادر', 'control' ), 'category' => __( 'الكوادر', 'control' ) ),
@@ -333,5 +336,13 @@ class Control_Auth {
 			'finance_invoicing' => array( 'label' => __( 'إدارة الفواتير والمدفوعات', 'control' ), 'category' => __( 'الإدارة المالية', 'control' ) ),
 			'finance_payroll_view' => array( 'label' => __( 'عرض مستحقات الرواتب', 'control' ), 'category' => __( 'الإدارة المالية', 'control' ) ),
 		);
+
+		if ( ! empty($custom) ) {
+			foreach ( $custom as $cp ) {
+				$registry[$cp->perm_key] = array( 'label' => $cp->perm_label, 'category' => $cp->perm_category ?: __( 'صلاحيات مخصصة', 'control' ) );
+			}
+		}
+
+		return $registry;
 	}
 }

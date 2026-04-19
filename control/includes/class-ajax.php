@@ -9,6 +9,7 @@ class Control_Ajax {
 		// Private actions (Logged-in only)
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
+			'get_patient',
 			'update_profile', 'undo_activity', 'delete_activity', 'toggle_user_restriction',
 			'bulk_delete_users', 'bulk_restrict_users',
 			'export_data', 'import_data',
@@ -1280,6 +1281,17 @@ class Control_Ajax {
 		$id = intval( $_POST['id'] ?? 0 );
 		$fields = array(
 			'full_name'         => 'sanitize_text_field',
+			'name_first'        => 'sanitize_text_field',
+			'name_second'       => 'sanitize_text_field',
+			'name_third'        => 'sanitize_text_field',
+			'name_last'         => 'sanitize_text_field',
+			'temp_id'           => 'sanitize_text_field',
+			'permanent_id'      => 'sanitize_text_field',
+			'priority_level'    => 'sanitize_text_field',
+			'routing_dept'      => 'sanitize_text_field',
+			'activation_date'   => 'sanitize_text_field',
+			'parent_account_id' => 'intval',
+			'screening_metadata' => 'sanitize_textarea_field',
 			'dob'               => 'sanitize_text_field',
 			'gender'            => 'sanitize_text_field',
 			'nationality'       => 'sanitize_text_field',
@@ -1309,6 +1321,7 @@ class Control_Ajax {
 			'internal_classification' => 'sanitize_text_field',
 			'internal_notes'      => 'sanitize_textarea_field',
 			'system_id'           => 'sanitize_text_field',
+			'intake_status'       => 'sanitize_text_field',
 			'workflow_metadata'   => 'wp_unslash',
 		);
 
@@ -1604,6 +1617,21 @@ class Control_Ajax {
 		$this->send_success();
 	}
 
+	public function get_patient() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_basic') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval($_POST['id']);
+		$patient = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_patients WHERE id = %d", $id));
+
+		if ($patient) {
+			$this->send_success($patient);
+		} else {
+			$this->send_error('Patient not found');
+		}
+	}
+
 	public function delete_fin_payment() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 		if ( ! Control_Auth::has_permission('finance_manage') ) $this->send_error( 'Unauthorized', 403 );
@@ -1704,18 +1732,33 @@ class Control_Ajax {
 
 		$data = array(
 			'full_name'      => sanitize_text_field($_POST['full_name']),
+			'name_first'     => sanitize_text_field($_POST['name_first']),
+			'name_second'    => sanitize_text_field($_POST['name_second']),
+			'name_third'     => sanitize_text_field($_POST['name_third']),
+			'name_last'      => sanitize_text_field($_POST['name_last']),
 			'dob'            => sanitize_text_field($_POST['dob']),
 			'gender'         => sanitize_text_field($_POST['gender']),
-			'nationality'    => sanitize_text_field($_POST['nationality']),
-			'height'         => sanitize_text_field($_POST['height']),
-			'weight'         => sanitize_text_field($_POST['weight']),
 			'guardian_name'  => sanitize_text_field($_POST['guardian_name']),
 			'father_phone'   => sanitize_text_field($_POST['father_phone']),
+			'mother_phone'   => sanitize_text_field($_POST['mother_phone']),
 			'email'          => sanitize_email($_POST['email']),
+			'address'        => sanitize_text_field($_POST['address']),
+			'emergency_contact' => sanitize_text_field($_POST['emergency_contact']),
+			'blood_type'     => sanitize_text_field($_POST['blood_type']),
+			'pregnancy_history' => sanitize_textarea_field($_POST['pregnancy_history']),
+			'birth_history'  => sanitize_textarea_field($_POST['birth_history']),
+			'milestones_walking' => sanitize_text_field($_POST['milestones_walking']),
+			'milestones_speaking' => sanitize_text_field($_POST['milestones_speaking']),
+			'milestones_sitting' => sanitize_text_field($_POST['milestones_sitting']),
+			'chronic_conditions' => sanitize_textarea_field($_POST['chronic_conditions']),
+			'current_medications' => sanitize_textarea_field($_POST['current_medications']),
 			'intake_reason'  => sanitize_textarea_field($_POST['intake_reason']),
-			'intake_notes'   => sanitize_textarea_field($_POST['intake_notes']),
+			'initial_behavioral_observation' => sanitize_textarea_field($_POST['initial_behavioral_observation']),
+			'drug_allergies' => sanitize_text_field($_POST['drug_allergies']),
+			'initial_diagnosis' => sanitize_textarea_field($_POST['initial_diagnosis']),
 			'intake_status'  => 'pending',
 			'case_status'    => 'waiting_list',
+			'temp_id'        => 'REQ-' . strtoupper(wp_generate_password(8, false)),
 		);
 
 		$wpdb->insert("{$wpdb->prefix}control_patients", $data);

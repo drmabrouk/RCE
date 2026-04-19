@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define constants
-define( 'CONTROL_VERSION', '2.8.0' );
+define( 'CONTROL_VERSION', '2.9.0' );
 define( 'CONTROL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CONTROL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -57,6 +57,7 @@ class Control_System {
 
 	private function includes() {
 		// Module classes
+		require_once CONTROL_PATH . 'includes/class-i18n.php';
 		require_once CONTROL_PATH . 'includes/class-database.php';
 		require_once CONTROL_PATH . 'includes/class-auth.php';
 		require_once CONTROL_PATH . 'includes/class-users.php';

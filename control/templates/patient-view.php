@@ -81,8 +81,12 @@ $status_labels = array(
                     <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('البيانات الديموغرافية', 'control'); ?></h4>
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('الاسم الكامل', 'control'); ?></label>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('الاسم الكامل للطفل', 'control'); ?></label>
                             <span style="font-weight:700;"><?php echo esc_html($patient->full_name); ?></span>
+                        </div>
+                        <div>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('اسم ولي الأمر', 'control'); ?></label>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->guardian_name); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('تاريخ الميلاد', 'control'); ?></label>
@@ -98,11 +102,11 @@ $status_labels = array(
                     <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('معلومات التواصل', 'control'); ?></h4>
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف الأب', 'control'); ?></label>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف ولي الأمر (1)', 'control'); ?></label>
                             <span style="font-weight:700;"><?php echo esc_html($patient->father_phone); ?></span>
                         </div>
                         <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف الأم', 'control'); ?></label>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف بديل (2)', 'control'); ?></label>
                             <span style="font-weight:700;"><?php echo esc_html($patient->mother_phone); ?></span>
                         </div>
                         <div>
@@ -157,10 +161,29 @@ $status_labels = array(
                 </div>
             </div>
 
-            <div style="margin-top:40px;">
-                <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('الفريق المعين', 'control'); ?></h4>
-                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
-                    <p style="margin:0; font-weight:600; color:var(--control-primary);"><?php echo esc_html($patient->assigned_specialists) ?: __('لم يتم تعيين فريق عمل بعد.', 'control'); ?></p>
+            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:30px; margin-top:40px;">
+                <div>
+                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('البيانات الإدارية', 'control'); ?></h4>
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        <div>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('رقم النظام (System ID)', 'control'); ?></label>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->system_id) ?: '---'; ?></span>
+                        </div>
+                        <div>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('التصنيف الداخلي', 'control'); ?></label>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->internal_classification) ?: '---'; ?></span>
+                        </div>
+                        <div>
+                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('ملاحظات إدارية', 'control'); ?></label>
+                            <p style="margin:0; font-size:0.9rem;"><?php echo nl2br(esc_html($patient->internal_notes)); ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('الفريق المعين', 'control'); ?></h4>
+                    <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
+                        <p style="margin:0; font-weight:600; color:var(--control-primary);"><?php echo esc_html($patient->assigned_specialists) ?: __('لم يتم تعيين فريق عمل بعد.', 'control'); ?></p>
+                    </div>
                 </div>
             </div>
         </div>

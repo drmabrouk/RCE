@@ -184,6 +184,11 @@ class Control_Database {
 			intake_notes text,
 			intake_status varchar(50) DEFAULT 'none', /* none, pending, approved, rejected */
 
+			internal_classification varchar(255),
+			internal_notes text,
+			system_id varchar(100),
+			workflow_metadata longtext,
+
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
@@ -353,14 +358,6 @@ class Control_Database {
 		$table_roles = $wpdb->prefix . 'control_roles';
 		$table_staff = $wpdb->prefix . 'control_staff';
 
-		$standard_keys = array(
-			'admin', 'center_director', 'executive_manager', 'accountant',
-			'occupational_therapist', 'physical_rehab', 'sports_therapy',
-			'speech_therapist', 'sensory_integration', 'behavior_modification',
-			'psych_assessor', 'learning_difficulties', 'admin_assistant',
-			'receptionist', 'assistant_specialist'
-		);
-
 		// 1. Map legacy users to standard roles
 		$legacy_mapping = array(
 			'coach' => 'sports_therapy',
@@ -375,9 +372,10 @@ class Control_Database {
 			$wpdb->update($table_staff, array('role' => $new), array('role' => $old));
 		}
 
-		// 2. Remove non-standard roles from DB
-		$placeholders = implode(',', array_fill(0, count($standard_keys), '%s'));
-		$wpdb->query($wpdb->prepare("DELETE FROM $table_roles WHERE role_key NOT IN ($placeholders)", ...$standard_keys));
+		// 2. Remove only specific legacy roles from DB to allow future custom roles
+		$legacy_keys = array_keys($legacy_mapping);
+		$placeholders = implode(',', array_fill(0, count($legacy_keys), '%s'));
+		$wpdb->query($wpdb->prepare("DELETE FROM $table_roles WHERE role_key IN ($placeholders)", ...$legacy_keys));
 	}
 
 	private static function seed_data() {

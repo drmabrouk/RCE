@@ -27,7 +27,7 @@ class Control_Ajax {
 			'delete_fin_package', 'save_fin_invoice', 'delete_fin_invoice',
 			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
 			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense',
-			'update_intake_status', 'add_custom_permission'
+			'update_intake_status', 'add_custom_permission', 'update_session_lang'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1304,6 +1304,11 @@ class Control_Ajax {
 			'case_status'         => 'sanitize_text_field',
 			'assigned_specialists' => 'sanitize_text_field',
 			'is_draft'            => 'intval',
+			'guardian_name'       => 'sanitize_text_field',
+			'internal_classification' => 'sanitize_text_field',
+			'internal_notes'      => 'sanitize_textarea_field',
+			'system_id'           => 'sanitize_text_field',
+			'workflow_metadata'   => 'wp_unslash',
 		);
 
 		$data = array();
@@ -1703,6 +1708,7 @@ class Control_Ajax {
 			'nationality'    => sanitize_text_field($_POST['nationality']),
 			'height'         => sanitize_text_field($_POST['height']),
 			'weight'         => sanitize_text_field($_POST['weight']),
+			'guardian_name'  => sanitize_text_field($_POST['guardian_name']),
 			'father_phone'   => sanitize_text_field($_POST['father_phone']),
 			'email'          => sanitize_email($_POST['email']),
 			'intake_reason'  => sanitize_textarea_field($_POST['intake_reason']),
@@ -1713,6 +1719,13 @@ class Control_Ajax {
 
 		$wpdb->insert("{$wpdb->prefix}control_patients", $data);
 		Control_Audit::log('kiosk_intake', "New intake request from Kiosk: {$data['full_name']}");
+		$this->send_success();
+	}
+
+	public function update_session_lang() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		$lang = sanitize_text_field( $_POST['lang'] ?? 'ar' );
+		$_SESSION['control_lang'] = $lang;
 		$this->send_success();
 	}
 

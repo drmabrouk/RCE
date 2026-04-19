@@ -10,6 +10,10 @@ class Control_Auth {
 			session_start();
 		}
 
+		if ( ! isset( $_SESSION['control_lang'] ) ) {
+			$_SESSION['control_lang'] = 'ar';
+		}
+
 		add_action( 'admin_init', array( __CLASS__, 'restrict_admin_access' ) );
 		add_filter( 'show_admin_bar', array( __CLASS__, 'handle_admin_bar' ) );
 

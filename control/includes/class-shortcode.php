@@ -44,6 +44,20 @@ class Control_Shortcode {
 					include CONTROL_PATH . 'templates/users.php';
 				}
 				break;
+			case 'pediatric_records':
+				if ( ! Control_Auth::has_permission('pediatric_view_basic') ) {
+					echo $no_access_html;
+				} else {
+					include CONTROL_PATH . 'templates/pediatric-records.php';
+				}
+				break;
+			case 'patient_view':
+				if ( ! Control_Auth::has_permission('pediatric_view_basic') ) {
+					echo $no_access_html;
+				} else {
+					include CONTROL_PATH . 'templates/patient-view.php';
+				}
+				break;
 			case 'roles':
 				if ( ! Control_Auth::has_permission('roles_manage') ) {
 					echo $no_access_html;

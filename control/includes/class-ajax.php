@@ -19,7 +19,10 @@ class Control_Ajax {
 			'get_user_insights', 'check_uniqueness',
 			'send_admin_reset_email', 'process_password_reset',
 			'verify_recovery_otp', 'reset_password_recovery',
-			'get_email_templates', 'preview_email', 'send_manual_email'
+			'get_email_templates', 'preview_email', 'send_manual_email',
+			'save_patient', 'delete_patient', 'save_patient_assessment',
+			'delete_patient_assessment', 'save_patient_document', 'delete_patient_document',
+			'save_patient_referral', 'delete_patient_referral'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1245,6 +1248,151 @@ class Control_Ajax {
 
 		Control_Audit::log( 'email_blast', sprintf( __('إرسال بريد يدوي لـ %d مستخدم', 'control'), $success_count ) );
 		$this->send_success( sprintf( __('تم إرسال %d رسالة بنجاح.', 'control'), $success_count ) );
+	}
+
+	public function save_patient() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$data = array(
+			'full_name'         => sanitize_text_field( $_POST['full_name'] ),
+			'dob'               => sanitize_text_field( $_POST['dob'] ),
+			'gender'            => sanitize_text_field( $_POST['gender'] ),
+			'profile_photo'     => sanitize_text_field( $_POST['profile_photo'] ),
+			'father_phone'      => sanitize_text_field( $_POST['father_phone'] ),
+			'mother_phone'      => sanitize_text_field( $_POST['mother_phone'] ),
+			'email'             => sanitize_email( $_POST['email'] ),
+			'address'           => sanitize_textarea_field( $_POST['address'] ),
+			'emergency_contact' => sanitize_text_field( $_POST['emergency_contact'] ),
+			'blood_type'        => sanitize_text_field( $_POST['blood_type'] ),
+			'drug_allergies'    => sanitize_textarea_field( $_POST['drug_allergies'] ),
+			'pregnancy_history' => sanitize_textarea_field( $_POST['pregnancy_history'] ),
+			'birth_history'     => sanitize_textarea_field( $_POST['birth_history'] ),
+			'milestones_walking'  => sanitize_text_field( $_POST['milestones_walking'] ),
+			'milestones_speaking' => sanitize_text_field( $_POST['milestones_speaking'] ),
+			'milestones_sitting'  => sanitize_text_field( $_POST['milestones_sitting'] ),
+			'chronic_conditions'  => sanitize_textarea_field( $_POST['chronic_conditions'] ),
+			'current_medications' => sanitize_textarea_field( $_POST['current_medications'] ),
+			'initial_diagnosis'   => sanitize_textarea_field( $_POST['initial_diagnosis'] ),
+			'external_diagnosis_source' => sanitize_text_field( $_POST['external_diagnosis_source'] ),
+			'initial_behavioral_observation' => sanitize_textarea_field( $_POST['initial_behavioral_observation'] ),
+			'case_status'         => sanitize_text_field( $_POST['case_status'] ),
+			'assigned_specialists' => sanitize_text_field( $_POST['assigned_specialists'] ),
+		);
+
+		if ( $id ) {
+			$wpdb->update( "{$wpdb->prefix}control_patients", $data, array( 'id' => $id ) );
+			Control_Audit::log( 'edit_patient', "Updated patient: {$data['full_name']}" );
+		} else {
+			$wpdb->insert( "{$wpdb->prefix}control_patients", $data );
+			$id = $wpdb->insert_id;
+			Control_Audit::log( 'add_patient', "Added new patient: {$data['full_name']}" );
+		}
+
+		$this->send_success( array( 'id' => $id ) );
+	}
+
+	public function delete_patient() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		$id = intval( $_POST['id'] );
+		global $wpdb;
+		$wpdb->delete( "{$wpdb->prefix}control_patients", array( 'id' => $id ) );
+		$wpdb->delete( "{$wpdb->prefix}control_patient_assessments", array( 'patient_id' => $id ) );
+		$wpdb->delete( "{$wpdb->prefix}control_patient_documents", array( 'patient_id' => $id ) );
+		$wpdb->delete( "{$wpdb->prefix}control_patient_referrals", array( 'patient_id' => $id ) );
+
+		Control_Audit::log( 'delete_patient', "Deleted patient ID: $id" );
+		$this->send_success();
+	}
+
+	public function save_patient_assessment() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_clinical') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$data = array(
+			'patient_id' => intval( $_POST['patient_id'] ),
+			'test_name'   => sanitize_text_field( $_POST['test_name'] ),
+			'test_result' => sanitize_textarea_field( $_POST['test_result'] ),
+			'test_date'   => sanitize_text_field( $_POST['test_date'] ),
+			'assessor_id' => Control_Auth::current_user()->id,
+		);
+
+		if ( $id ) {
+			$wpdb->update( "{$wpdb->prefix}control_patient_assessments", $data, array( 'id' => $id ) );
+		} else {
+			$wpdb->insert( "{$wpdb->prefix}control_patient_assessments", $data );
+		}
+
+		$this->send_success();
+	}
+
+	public function delete_patient_assessment() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_clinical') ) $this->send_error( 'Unauthorized', 403 );
+
+		$id = intval( $_POST['id'] );
+		global $wpdb;
+		$wpdb->delete( "{$wpdb->prefix}control_patient_assessments", array( 'id' => $id ) );
+		$this->send_success();
+	}
+
+	public function save_patient_document() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_basic') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$data = array(
+			'patient_id' => intval( $_POST['patient_id'] ),
+			'doc_type'   => sanitize_text_field( $_POST['doc_type'] ),
+			'doc_url'    => esc_url_raw( $_POST['doc_url'] ),
+			'doc_name'   => sanitize_text_field( $_POST['doc_name'] ),
+		);
+
+		$wpdb->insert( "{$wpdb->prefix}control_patient_documents", $data );
+		$this->send_success();
+	}
+
+	public function delete_patient_document() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_basic') ) $this->send_error( 'Unauthorized', 403 );
+
+		$id = intval( $_POST['id'] );
+		global $wpdb;
+		$wpdb->delete( "{$wpdb->prefix}control_patient_documents", array( 'id' => $id ) );
+		$this->send_success();
+	}
+
+	public function save_patient_referral() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_clinical') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$data = array(
+			'patient_id'      => intval( $_POST['patient_id'] ),
+			'from_department' => sanitize_text_field( $_POST['from_department'] ),
+			'to_department'   => sanitize_text_field( $_POST['to_department'] ),
+			'referral_date'   => sanitize_text_field( $_POST['referral_date'] ),
+			'notes'           => sanitize_textarea_field( $_POST['notes'] ),
+		);
+
+		$wpdb->insert( "{$wpdb->prefix}control_patient_referrals", $data );
+		$this->send_success();
+	}
+
+	public function delete_patient_referral() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_view_clinical') ) $this->send_error( 'Unauthorized', 403 );
+
+		$id = intval( $_POST['id'] );
+		global $wpdb;
+		$wpdb->delete( "{$wpdb->prefix}control_patient_referrals", array( 'id' => $id ) );
+		$this->send_success();
 	}
 }
 

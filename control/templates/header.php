@@ -73,6 +73,12 @@
                 </a>
             <?php endif; ?>
 
+            <?php if ( Control_Auth::has_permission('pediatric_view_basic') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'pediatric_records'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'pediatric_records') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-welcome-learn-more"></span> <?php _e('سجلات الأطفال', 'control'); ?>
+                </a>
+            <?php endif; ?>
+
             <?php if ( Control_Auth::has_permission('roles_manage') ) : ?>
                 <a href="<?php echo add_query_arg('control_view', 'roles'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'roles') ? 'active' : ''; ?>">
                     <span class="dashicons dashicons-shield"></span> <?php _e('الأدوار والصلاحيات', 'control'); ?>
@@ -117,6 +123,14 @@
             <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="mobile-nav-item <?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
                 <span class="dashicons dashicons-performance"></span>
                 <small><?php _e('الرئيسية', 'control'); ?></small>
+            </a>
+            <div class="mobile-divider"></div>
+        <?php endif; ?>
+
+        <?php if ( Control_Auth::has_permission('pediatric_view_basic') ) : ?>
+            <a href="<?php echo add_query_arg('control_view', 'pediatric_records'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'pediatric_records') ? 'active' : ''; ?>">
+                <span class="dashicons dashicons-welcome-learn-more"></span>
+                <small><?php _e('الأطفال', 'control'); ?></small>
             </a>
             <div class="mobile-divider"></div>
         <?php endif; ?>

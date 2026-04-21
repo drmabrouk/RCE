@@ -1348,8 +1348,6 @@ class Control_Ajax {
 			'case_status'       => 'sanitize_text_field',
 			'assigned_specialists' => 'sanitize_textarea_field',
 			'is_draft'          => 'intval',
-			'internal_classification' => 'sanitize_text_field',
-			'internal_notes'    => 'sanitize_textarea_field',
 			'system_id'         => 'sanitize_text_field',
 			'intake_status'     => 'sanitize_text_field',
 			'workflow_metadata' => 'wp_unslash',

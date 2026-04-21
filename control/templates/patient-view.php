@@ -153,11 +153,11 @@ $status_labels = array(
                     <div style="flex:1;">
                         <div style="font-weight:800; font-size:1.1rem; margin-bottom:5px;"><?php echo esc_html($patient->full_name); ?></div>
                         <div style="font-size:0.7rem; color:rgba(255,255,255,0.7); display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                            <span><?php _e('العمر:', 'control'); ?> <strong style="color:#fff;"><?php
+                            <span style="grid-column: 1 / -1;"><?php _e('العمر:', 'control'); ?> <strong style="color:#fff;"><?php
                                 $dob = new DateTime($patient->dob);
                                 $now = new DateTime();
                                 $age = $now->diff($dob);
-                                echo $age->y . ' ' . __('سنة', 'control');
+                                echo sprintf(__('%d سنوات، %d شهور، %d أيام', 'control'), $age->y, $age->m, $age->d);
                             ?></strong></span>
                             <span><?php _e('رقم الملف:', 'control'); ?> <strong style="color:#fff;">#<?php echo $patient->id; ?></strong></span>
                             <span><?php _e('الطول:', 'control'); ?> <strong style="color:#fff;"><?php echo $patient->height ?: '---'; ?></strong></span>
@@ -372,6 +372,98 @@ $status_labels = array(
             </table>
         </div>
         <?php endif; ?>
+    </div>
+</div>
+
+<!-- Assessment Modal -->
+<div id="assessment-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div class="control-card" style="width:100%; max-width:500px; padding:30px; border-radius:20px;">
+        <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('إضافة نتيجة اختبار', 'control'); ?></h3>
+        <form id="assessment-form">
+            <input type="hidden" name="patient_id" id="assessment-patient-id">
+            <input type="hidden" name="id" id="assessment-id" value="0">
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('اسم الاختبار / التقييم', 'control'); ?></label>
+                <input type="text" name="test_name" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+            </div>
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('النتيجة / الملاحظات', 'control'); ?></label>
+                <textarea name="test_result" rows="4" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;"></textarea>
+            </div>
+            <div class="wiz-field" style="margin-bottom:20px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('التاريخ', 'control'); ?></label>
+                <input type="date" name="test_date" required value="<?php echo date('Y-m-d'); ?>" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ البيانات', 'control'); ?></button>
+                <button type="button" onclick="jQuery('#assessment-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Document Modal -->
+<div id="document-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div class="control-card" style="width:100%; max-width:500px; padding:30px; border-radius:20px;">
+        <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('رفع مستند جديد', 'control'); ?></h3>
+        <form id="document-form">
+            <input type="hidden" name="patient_id" id="doc-patient-id">
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('نوع المستند', 'control'); ?></label>
+                <select name="doc_type" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+                    <option value="medical_report"><?php _e('تقرير طبي', 'control'); ?></option>
+                    <option value="eeg"><?php _e('رسم مخ (EEG)', 'control'); ?></option>
+                    <option value="scan"><?php _e('أشعة مقطعية / رنين', 'control'); ?></option>
+                    <option value="gene_test"><?php _e('تحليل جينات', 'control'); ?></option>
+                    <option value="birth_certificate"><?php _e('شهادة ميلاد', 'control'); ?></option>
+                    <option value="id"><?php _e('هوية ولي الأمر', 'control'); ?></option>
+                    <option value="agreement"><?php _e('عقد اتفاق', 'control'); ?></option>
+                </select>
+            </div>
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('اسم المستند', 'control'); ?></label>
+                <input type="text" name="doc_name" id="doc-name" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+            </div>
+            <div class="wiz-field" style="margin-bottom:20px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('الملف', 'control'); ?></label>
+                <input type="hidden" name="doc_url" id="doc-url">
+                <button type="button" id="upload-doc-btn" class="control-btn" style="width:100%; background:#f8fafc; color:var(--control-text-dark) !important; border:1.5px dashed #cbd5e1;"><?php _e('اختر ملف...', 'control'); ?></button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ المستند', 'control'); ?></button>
+                <button type="button" onclick="jQuery('#document-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Referral Modal -->
+<div id="referral-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div class="control-card" style="width:100%; max-width:500px; padding:30px; border-radius:20px;">
+        <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('إضافة تحويل داخلي', 'control'); ?></h3>
+        <form id="referral-form">
+            <input type="hidden" name="patient_id" id="referral-patient-id">
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('من قسم', 'control'); ?></label>
+                <input type="text" name="from_department" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+            </div>
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('إلى قسم', 'control'); ?></label>
+                <input type="text" name="to_department" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+            </div>
+            <div class="wiz-field" style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('تاريخ التحويل', 'control'); ?></label>
+                <input type="date" name="referral_date" required value="<?php echo date('Y-m-d'); ?>" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
+            </div>
+            <div class="wiz-field" style="margin-bottom:20px;">
+                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('ملاحظات التحويل', 'control'); ?></label>
+                <textarea name="notes" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ التحويل', 'control'); ?></button>
+                <button type="button" onclick="jQuery('#referral-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+            </div>
+        </form>
     </div>
 </div>
 

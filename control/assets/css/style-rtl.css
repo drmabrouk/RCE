@@ -39,12 +39,12 @@
     font-family: dashicons !important;
 }
 
-html, body {
-    height: 100%;
-    overflow: hidden;
+body.control-dashboard-active {
+    height: 100vh !important;
+    overflow: hidden !important;
 }
 
-body, .control-dashboard {
+body.control-dashboard-active .control-dashboard {
     direction: rtl;
     text-align: right;
     background: var(--control-bg);

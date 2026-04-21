@@ -1328,10 +1328,15 @@ class Control_Ajax {
 		$data = array();
 		foreach ($fields as $field => $sanitizer) {
 			if (isset($_POST[$field])) {
-				if (is_array($_POST[$field])) {
-					$data[$field] = implode(', ', array_map('sanitize_text_field', $_POST[$field]));
+				$val = wp_unslash($_POST[$field]);
+				if (is_array($val)) {
+					$data[$field] = implode(', ', array_map('sanitize_text_field', $val));
 				} else {
-					$data[$field] = $sanitizer($_POST[$field]);
+					if ($sanitizer === 'sanitize_textarea_field') {
+						$data[$field] = sanitize_textarea_field($val);
+					} else {
+						$data[$field] = $sanitizer($val);
+					}
 				}
 			}
 		}
@@ -1735,12 +1740,15 @@ class Control_Ajax {
 		global $wpdb;
 
 		// Utility to handle arrays from multi-select/checkboxes
-		$get_val = function($key, $is_email = false) {
-			$val = $_POST[$key] ?? '';
+		$get_val = function($key, $type = 'text') {
+			$val = wp_unslash($_POST[$key] ?? '');
 			if (is_array($val)) {
 				return implode(', ', array_map('sanitize_text_field', $val));
 			}
-			return $is_email ? sanitize_email($val) : sanitize_text_field($val);
+
+			if ($type === 'email') return sanitize_email($val);
+			if ($type === 'textarea') return sanitize_textarea_field($val);
+			return sanitize_text_field($val);
 		};
 
 		$data = array(
@@ -1754,22 +1762,22 @@ class Control_Ajax {
 			'guardian_name'  => $get_val('guardian_name'),
 			'father_phone'   => $get_val('father_phone'),
 			'mother_phone'   => $get_val('mother_phone'),
-			'email'          => $get_val('email', true),
-			'address'        => $get_val('address'),
+			'email'          => $get_val('email', 'email'),
+			'address'        => $get_val('address', 'textarea'),
 			'emergency_contact' => $get_val('emergency_contact'),
 			'blood_type'     => $get_val('blood_type'),
-			'pregnancy_history' => $get_val('pregnancy_history'),
-			'birth_history'  => $get_val('birth_history'),
+			'pregnancy_history' => $get_val('pregnancy_history', 'textarea'),
+			'birth_history'  => $get_val('birth_history', 'textarea'),
 			'milestones_walking' => $get_val('milestones_walking'),
 			'milestones_speaking' => $get_val('milestones_speaking'),
 			'milestones_sitting' => $get_val('milestones_sitting'),
 			'chronic_conditions' => $get_val('chronic_conditions'),
-			'current_medications' => $get_val('current_medications'),
-			'intake_reason'  => $get_val('intake_reason'),
-			'initial_behavioral_observation' => $get_val('initial_behavioral_observation'),
-			'screening_metadata' => $get_val('screening_metadata'),
-			'drug_allergies' => $get_val('drug_allergies'),
-			'initial_diagnosis' => $get_val('initial_diagnosis'),
+			'current_medications' => $get_val('current_medications', 'textarea'),
+			'intake_reason'  => $get_val('intake_reason', 'textarea'),
+			'initial_behavioral_observation' => $get_val('initial_behavioral_observation', 'textarea'),
+			'screening_metadata' => $get_val('screening_metadata', 'textarea'),
+			'drug_allergies' => $get_val('drug_allergies', 'textarea'),
+			'initial_diagnosis' => $get_val('initial_diagnosis', 'textarea'),
 			'intake_status'  => 'pending',
 			'case_status'    => 'waiting_list',
 			'temp_id'        => 'REQ-' . strtoupper(wp_generate_password(8, false)),

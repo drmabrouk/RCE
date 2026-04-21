@@ -3,26 +3,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $strings = Control_I18n::get_all();
 ?>
 
-<div id="kiosk-app-root" style="direction:rtl; font-family:'Rubik', sans-serif; min-height:100vh; background:#f8fafc; padding:40px 20px; display:flex; align-items:center; justify-content:center;">
+<div id="kiosk-app-root" style="direction:rtl; font-family:'Rubik', sans-serif; min-height:600px; background:#f8fafc; padding:40px 20px; display:flex; align-items:center; justify-content:center;">
     <div style="max-width:850px; width:100%; background:#fff; border-radius:30px; box-shadow:0 25px 60px rgba(0,0,0,0.08); overflow:hidden; position:relative;">
 
-        <!-- Language Selection Overlay -->
-        <div id="k-lang-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:30px;">
-            <h2 style="margin-bottom:30px; color:var(--control-primary); font-weight:800;"><?php echo Control_I18n::t('select_lang'); ?></h2>
-            <div style="display:flex; gap:25px;">
-                <button onclick="setKLang('ar')" class="lang-sel-btn">
-                    <span style="font-size:3.5rem; margin-bottom:15px;">🇸🇦</span>
-                    <span style="font-weight:800; font-size:1.2rem;"><?php echo $strings['ar']['lang_ar']; ?></span>
-                </button>
-                <button onclick="setKLang('en')" class="lang-sel-btn">
-                    <span style="font-size:3.5rem; margin-bottom:15px;">🇺🇸</span>
-                    <span style="font-weight:800; font-size:1.2rem;"><?php echo $strings['en']['lang_en']; ?></span>
-                </button>
-            </div>
-        </div>
-
         <!-- Progress Header -->
-        <div id="k-header" style="display:none; background:var(--control-primary); padding:35px 40px; color:#fff; text-align:center;">
+        <div id="k-header" style="background:var(--control-primary); padding:35px 40px; color:#fff; text-align:center; position:relative;">
+            <div style="position:absolute; top:20px; left:20px; display:flex; gap:10px;">
+                <button type="button" onclick="setKLang('ar')" style="background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.3); color:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">AR</button>
+                <button type="button" onclick="setKLang('en')" style="background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.3); color:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">EN</button>
+            </div>
             <h3 id="k-header-title" style="margin:0; font-size:1.5rem; color:#fff; font-weight:800;"><?php echo Control_I18n::t('registration_title'); ?></h3>
             <div style="display:flex; justify-content:center; gap:12px; margin-top:25px;">
                 <div class="k-dot active" data-step="1"></div>
@@ -32,7 +21,7 @@ $strings = Control_I18n::get_all();
             </div>
         </div>
 
-        <form id="kiosk-form" style="display:none; padding:45px;">
+        <form id="kiosk-form" style="padding:45px;">
             <input type="hidden" name="k_lang" id="k-selected-lang" value="ar">
             <input type="hidden" name="full_name" id="k-full-name-concat">
 
@@ -47,6 +36,29 @@ $strings = Control_I18n::get_all();
                     <div class="wiz-field"><label data-t="dob"><?php echo Control_I18n::t('dob'); ?> *</label><input type="date" name="dob" required></div>
                     <div class="wiz-field"><label data-t="gender"><?php echo Control_I18n::t('gender'); ?></label>
                         <select name="gender"><option value="male" data-t="male"><?php echo Control_I18n::t('male'); ?></option><option value="female" data-t="female"><?php echo Control_I18n::t('female'); ?></option></select>
+                    </div>
+                    <div class="wiz-field"><label data-t="nationality"><?php echo Control_I18n::t('nationality'); ?></label>
+                        <select name="nationality">
+                            <option value="SA">🇸🇦 Saudi Arabia</option>
+                            <option value="AE">🇦🇪 United Arab Emirates</option>
+                            <option value="EG">🇪🇬 Egypt</option>
+                            <option value="KW">🇰🇼 Kuwait</option>
+                            <option value="QA">🇶🇦 Qatar</option>
+                            <option value="BH">🇧🇭 Bahrain</option>
+                            <option value="OM">🇴🇲 Oman</option>
+                            <option value="JO">🇯🇴 Jordan</option>
+                            <option value="LB">🇱🇧 Lebanon</option>
+                            <option value="SY">🇸🇾 Syria</option>
+                            <option value="IQ">🇮🇶 Iraq</option>
+                            <option value="SD">🇸🇩 Sudan</option>
+                            <option value="MA">🇲🇦 Morocco</option>
+                            <option value="DZ">🇩🇿 Algeria</option>
+                            <option value="TN">🇹🇳 Tunisia</option>
+                            <option value="LY">🇱🇾 Libya</option>
+                            <option value="YE">🇾🇪 Yemen</option>
+                            <option value="PS">🇵🇸 Palestine</option>
+                            <option value="other">Other</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -72,6 +84,21 @@ $strings = Control_I18n::get_all();
             <!-- Phase 3: Medical -->
             <div id="k-step-3" class="k-step-content" style="display:none;">
                 <h4 style="color:var(--control-primary); margin-bottom:30px; font-weight:800;" data-t="phase_3_title"><?php echo Control_I18n::t('phase_3_title'); ?></h4>
+                <div class="wiz-grid">
+                    <div class="wiz-field"><label data-t="pregnancy_history"><?php echo Control_I18n::t('pregnancy_history'); ?></label><textarea name="pregnancy_history" rows="2"></textarea></div>
+                    <div class="wiz-field"><label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label><textarea name="birth_history" rows="2"></textarea></div>
+                </div>
+                <div class="wiz-grid">
+                    <div class="wiz-field"><label data-t="walking"><?php echo Control_I18n::t('walking'); ?></label>
+                        <select name="milestones_walking"><option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option><option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option><option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option></select>
+                    </div>
+                    <div class="wiz-field"><label data-t="speaking"><?php echo Control_I18n::t('speaking'); ?></label>
+                        <select name="milestones_speaking"><option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option><option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option><option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option></select>
+                    </div>
+                    <div class="wiz-field"><label data-t="sitting"><?php echo Control_I18n::t('sitting'); ?></label>
+                        <select name="milestones_sitting"><option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option><option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option><option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option></select>
+                    </div>
+                </div>
                 <div class="wiz-field">
                     <label data-t="chronic_conditions"><?php echo Control_I18n::t('chronic_conditions'); ?></label>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; background:#f8fafc; padding:20px; border-radius:15px; border:1.5px solid #e2e8f0;">
@@ -141,8 +168,6 @@ let kStep = 1;
 
 function setKLang(lang) {
     jQuery('#k-selected-lang').val(lang);
-    jQuery('#k-lang-overlay').fadeOut();
-    jQuery('#k-header, #kiosk-form').fadeIn();
     const s = kStrings[lang];
     jQuery('#k-header-title').text(s.registration_title);
     jQuery('[data-t]').each(function() {
@@ -201,10 +226,17 @@ jQuery(document).ready(function($) {
 
     $('#kiosk-form').on('submit', function(e) {
         e.preventDefault();
+        if (typeof control_ajax === 'undefined') {
+            alert('Error: System variables not loaded. Please refresh the page.');
+            return;
+        }
         const $btn = $('#k-submit'); $btn.prop('disabled', true).text('...');
         $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_submit_kiosk_registration&nonce=' + control_ajax.nonce, (res) => {
             if (res.success) { $('#kiosk-form, #k-header').hide(); $('#kiosk-success').fadeIn(); }
-            else { alert(res.data); $btn.prop('disabled', false).text(kStrings[$('#k-selected-lang').val()].save); }
+            else { alert(res.data || 'Error saving data.'); $btn.prop('disabled', false).text(kStrings[$('#k-selected-lang').val()].save); }
+        }).fail(function() {
+            alert('Network error. Please check your connection.');
+            $btn.prop('disabled', false).text(kStrings[$('#k-selected-lang').val()].save);
         });
     });
 });

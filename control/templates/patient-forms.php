@@ -86,6 +86,30 @@ $strings = Control_I18n::get_all();
                             <option value="female" data-t="female"><?php echo Control_I18n::t('female'); ?></option>
                         </select>
                     </div>
+                    <div class="wiz-field">
+                        <label data-t="nationality"><?php echo Control_I18n::t('nationality'); ?></label>
+                        <select name="nationality">
+                            <option value="SA">🇸🇦 Saudi Arabia</option>
+                            <option value="AE">🇦🇪 United Arab Emirates</option>
+                            <option value="EG">🇪🇬 Egypt</option>
+                            <option value="KW">🇰🇼 Kuwait</option>
+                            <option value="QA">🇶🇦 Qatar</option>
+                            <option value="BH">🇧🇭 Bahrain</option>
+                            <option value="OM">🇴🇲 Oman</option>
+                            <option value="JO">🇯🇴 Jordan</option>
+                            <option value="LB">🇱🇧 Lebanon</option>
+                            <option value="SY">🇸🇾 Syria</option>
+                            <option value="IQ">🇮🇶 Iraq</option>
+                            <option value="SD">🇸🇩 Sudan</option>
+                            <option value="MA">🇲🇦 Morocco</option>
+                            <option value="DZ">🇩🇿 Algeria</option>
+                            <option value="TN">🇹🇳 Tunisia</option>
+                            <option value="LY">🇱🇾 Libya</option>
+                            <option value="YE">🇾🇪 Yemen</option>
+                            <option value="PS">🇵🇸 Palestine</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -133,6 +157,16 @@ $strings = Control_I18n::get_all();
 
             <!-- Phase 3: Medical Screening -->
             <div class="wiz-step" id="wiz-step-3" style="display:none;">
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="pregnancy_history"><?php echo Control_I18n::t('pregnancy_history'); ?></label>
+                        <textarea name="pregnancy_history" rows="2"></textarea>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label>
+                        <textarea name="birth_history" rows="2"></textarea>
+                    </div>
+                </div>
                 <div class="wiz-grid">
                     <div class="wiz-field">
                         <label data-t="chronic_conditions"><?php echo Control_I18n::t('chronic_conditions'); ?></label>
@@ -208,6 +242,10 @@ $strings = Control_I18n::get_all();
                     <label data-t="behavioral_observation"><?php echo Control_I18n::t('behavioral_observation'); ?></label>
                     <textarea name="initial_behavioral_observation" rows="3" placeholder="Additional notes..."></textarea>
                 </div>
+                    <div class="wiz-field">
+                        <label data-t="assigned_team"><?php echo Control_I18n::t('assigned_team'); ?></label>
+                        <textarea name="assigned_specialists" rows="2" placeholder="e.g., John Doe (Speech), Jane Doe (OT)"></textarea>
+                    </div>
                 <div class="wiz-field">
                     <label data-t="initial_diagnosis"><?php echo Control_I18n::t('initial_diagnosis'); ?></label>
                     <textarea name="initial_diagnosis" rows="2"></textarea>

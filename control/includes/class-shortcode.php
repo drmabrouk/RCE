@@ -6,6 +6,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Control_Shortcode {
 
 	public function __construct() {
+		add_action( 'init', array( $this, 'register_shortcodes' ) );
+	}
+
+	public function register_shortcodes() {
 		add_shortcode( 'control_system', array( $this, 'render_dashboard' ) );
 		add_shortcode( 'control_policies', array( $this, 'render_policies' ) );
 		add_shortcode( 'control_kiosk_registration', array( $this, 'render_kiosk' ) );
@@ -95,7 +99,16 @@ class Control_Shortcode {
 
 	public function render_kiosk() {
 		ob_start();
-		include CONTROL_PATH . 'templates/kiosk-registration.php';
+		$template_path = CONTROL_PATH . 'templates/kiosk-registration.php';
+
+		if ( file_exists( $template_path ) ) {
+			include $template_path;
+		} else {
+			echo '<div style="padding:20px; border:2px dashed #ef4444; color:#b91c1c; background:#fef2f2; border-radius:12px; text-align:center;">';
+			echo '<strong>[Control System Error]:</strong> Kiosk registration template not found.';
+			echo '</div>';
+		}
+
 		return ob_get_clean();
 	}
 

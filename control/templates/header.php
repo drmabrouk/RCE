@@ -34,6 +34,7 @@
     .control-text-dark, .control-card h3 { color: #000 !important; font-weight: 800; }
     <?php endif; ?>
 </style>
+<script>document.body.classList.add('control-dashboard-active');</script>
 <div class="control-dashboard" id="control-system-root">
     <div class="control-mobile-header" style="display:none; background:#000; padding:10px 15px; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10005; border-bottom:1px solid #1a1a1a; direction: rtl;">
         <div class="mobile-header-logo" style="flex: 1; text-align: right;">

@@ -39,64 +39,48 @@ $strings = Control_I18n::get_all();
                     </div>
                     <div class="wiz-field"><label data-t="nationality"><?php echo Control_I18n::t('nationality'); ?></label>
                         <select name="nationality">
-                            <option value="SA">🇸🇦 Saudi Arabia</option>
-                            <option value="AE">🇦🇪 United Arab Emirates</option>
-                            <option value="EG">🇪🇬 Egypt</option>
-                            <option value="KW">🇰🇼 Kuwait</option>
-                            <option value="QA">🇶🇦 Qatar</option>
-                            <option value="BH">🇧🇭 Bahrain</option>
-                            <option value="OM">🇴🇲 Oman</option>
-                            <option value="JO">🇯🇴 Jordan</option>
-                            <option value="LB">🇱🇧 Lebanon</option>
-                            <option value="SY">🇸🇾 Syria</option>
-                            <option value="IQ">🇮🇶 Iraq</option>
-                            <option value="SD">🇸🇩 Sudan</option>
-                            <option value="MA">🇲🇦 Morocco</option>
-                            <option value="DZ">🇩🇿 Algeria</option>
-                            <option value="TN">🇹🇳 Tunisia</option>
-                            <option value="LY">🇱🇾 Libya</option>
-                            <option value="YE">🇾🇪 Yemen</option>
-                            <option value="PS">🇵🇸 Palestine</option>
-                            <option value="other">Other</option>
+                            <option value="SA">🇸🇦 Saudi Arabia</option><option value="AE">🇦🇪 UAE</option><option value="EG">🇪🇬 Egypt</option><option value="KW">🇰🇼 Kuwait</option><option value="QA">🇶🇦 Qatar</option><option value="BH">🇧🇭 Bahrain</option><option value="OM">🇴🇲 Oman</option><option value="JO">🇯🇴 Jordan</option><option value="other">Other</option>
                         </select>
                     </div>
+                    <div class="wiz-field"><label data-t="country_residence"><?php echo Control_I18n::t('country_residence'); ?></label><input type="text" name="country_residence"></div>
+                    <div class="wiz-field"><label data-t="city_residence"><?php echo Control_I18n::t('city_residence'); ?></label><input type="text" name="city_residence"></div>
+                    <div class="wiz-field"><label data-t="national_id"><?php echo Control_I18n::t('national_id'); ?></label><input type="text" name="national_id"></div>
                 </div>
             </div>
 
-            <!-- Phase 2: Contact -->
+            <!-- Phase 2: Guardian -->
             <div id="k-step-2" class="k-step-content" style="display:none;">
                 <h4 style="color:var(--control-primary); margin-bottom:30px; font-weight:800;" data-t="phase_2_title"><?php echo Control_I18n::t('phase_2_title'); ?></h4>
                 <div class="wiz-grid">
                     <div class="wiz-field"><label data-t="guardian_name"><?php echo Control_I18n::t('guardian_name'); ?> *</label><input type="text" name="guardian_name" required></div>
-                    <div class="wiz-field"><label data-t="father_phone"><?php echo Control_I18n::t('father_phone'); ?> *</label><input type="tel" name="father_phone" required pattern="[0-9]*"></div>
-                    <div class="wiz-field"><label data-t="mother_phone"><?php echo Control_I18n::t('mother_phone'); ?></label><input type="tel" name="mother_phone" pattern="[0-9]*"></div>
+                    <div class="wiz-field"><label data-t="relationship"><?php echo Control_I18n::t('relationship'); ?></label>
+                        <select name="guardian_relationship"><option value="father">Father</option><option value="mother">Mother</option><option value="relative">Relative</option><option value="legal">Legal Guardian</option></select>
+                    </div>
+                    <div class="wiz-field"><label data-t="father_phone"><?php echo Control_I18n::t('father_phone'); ?> *</label><input type="tel" name="father_phone" required></div>
                     <div class="wiz-field"><label data-t="email"><?php echo Control_I18n::t('email'); ?></label><input type="email" name="email"></div>
-                </div>
-                <div class="wiz-field"><label data-t="address"><?php echo Control_I18n::t('address'); ?></label><input type="text" name="address"></div>
-                <div class="wiz-grid">
                     <div class="wiz-field"><label data-t="emergency_contact"><?php echo Control_I18n::t('emergency_contact'); ?></label><input type="text" name="emergency_contact"></div>
                     <div class="wiz-field"><label data-t="blood_type"><?php echo Control_I18n::t('blood_type'); ?></label>
                         <select name="blood_type"><option value="">-</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
                     </div>
                 </div>
+                <div class="wiz-field"><label data-t="address"><?php echo Control_I18n::t('address'); ?></label><input type="text" name="address"></div>
             </div>
 
-            <!-- Phase 3: Medical -->
+            <!-- Phase 3: Medical Screening -->
             <div id="k-step-3" class="k-step-content" style="display:none;">
                 <h4 style="color:var(--control-primary); margin-bottom:30px; font-weight:800;" data-t="phase_3_title"><?php echo Control_I18n::t('phase_3_title'); ?></h4>
                 <div class="wiz-grid">
-                    <div class="wiz-field"><label data-t="pregnancy_history"><?php echo Control_I18n::t('pregnancy_history'); ?></label><textarea name="pregnancy_history" rows="2"></textarea></div>
-                    <div class="wiz-field"><label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label><textarea name="birth_history" rows="2"></textarea></div>
-                </div>
-                <div class="wiz-grid">
-                    <div class="wiz-field"><label data-t="walking"><?php echo Control_I18n::t('walking'); ?></label>
-                        <select name="milestones_walking"><option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option><option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option><option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option></select>
+                    <div class="wiz-field"><label data-t="diag_prev"><?php echo Control_I18n::t('diag_prev'); ?></label>
+                        <select name="diag_prev"><option value="no">No</option><option value="yes">Yes</option></select>
                     </div>
-                    <div class="wiz-field"><label data-t="speaking"><?php echo Control_I18n::t('speaking'); ?></label>
-                        <select name="milestones_speaking"><option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option><option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option><option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option></select>
+                    <div class="wiz-field"><label data-t="prev_rehab"><?php echo Control_I18n::t('prev_rehab'); ?></label>
+                        <select name="prev_rehab_centers"><option value="no">No</option><option value="yes">Yes</option></select>
                     </div>
-                    <div class="wiz-field"><label data-t="sitting"><?php echo Control_I18n::t('sitting'); ?></label>
-                        <select name="milestones_sitting"><option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option><option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option><option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option></select>
+                    <div class="wiz-field"><label data-t="motor_delay"><?php echo Control_I18n::t('motor_delay'); ?></label>
+                        <select name="motor_delay"><option value="no">No</option><option value="yes">Yes</option></select>
+                    </div>
+                    <div class="wiz-field"><label data-t="speech_delay"><?php echo Control_I18n::t('speech_delay'); ?></label>
+                        <select name="speech_delay"><option value="no">No</option><option value="yes">Yes</option></select>
                     </div>
                 </div>
                 <div class="wiz-field">
@@ -108,21 +92,20 @@ $strings = Control_I18n::get_all();
                         <label style="font-size:0.95rem; display:flex; align-items:center; gap:10px;"><input type="checkbox" name="chronic_conditions[]" value="vision"> <span data-t="vision_issues"><?php echo Control_I18n::t('vision_issues'); ?></span></label>
                     </div>
                 </div>
-                <div class="wiz-field">
-                    <label data-t="medications"><?php echo Control_I18n::t('medications'); ?></label>
-                    <div style="display:flex; gap:20px; margin-bottom:15px;">
-                        <label style="font-size:1rem;"><input type="radio" name="has_meds" value="no" checked> <span data-t="medication_no"><?php echo Control_I18n::t('medication_no'); ?></span></label>
-                        <label style="font-size:1rem;"><input type="radio" name="has_meds" value="yes"> <span data-t="medication_yes"><?php echo Control_I18n::t('medication_yes'); ?></span></label>
-                    </div>
-                    <div id="k-meds-details" style="display:none; gap:12px; flex-direction:column;">
-                        <input type="text" name="current_medications" data-t="medications" placeholder="<?php echo Control_I18n::t('medications'); ?>">
-                    </div>
-                </div>
+                <div class="wiz-field"><label data-t="medications"><?php echo Control_I18n::t('medications'); ?></label><input type="text" name="current_medications"></div>
             </div>
 
-            <!-- Phase 4: Assessment -->
+            <!-- Phase 4: Functional Screening -->
             <div id="k-step-4" class="k-step-content" style="display:none;">
                 <h4 style="color:var(--control-primary); margin-bottom:30px; font-weight:800;" data-t="phase_4_title"><?php echo Control_I18n::t('phase_4_title'); ?></h4>
+                <div class="wiz-grid">
+                    <div class="wiz-field"><label data-t="eval_social"><?php echo Control_I18n::t('eval_social'); ?></label>
+                        <select name="eval_social"><option value="positive" data-t="good">Good</option><option value="limited" data-t="average">Average</option><option value="isolated" data-t="poor">Poor</option></select>
+                    </div>
+                    <div class="wiz-field"><label data-t="eval_language"><?php echo Control_I18n::t('eval_language'); ?></label>
+                        <select name="eval_language"><option value="non_verbal">Non-verbal</option><option value="words">Words</option><option value="sentences">Sentences</option></select>
+                    </div>
+                </div>
                 <div class="wiz-field">
                     <label data-t="intake_desc"><?php echo Control_I18n::t('intake_desc'); ?> *</label>
                     <textarea name="intake_reason" rows="4" required></textarea>

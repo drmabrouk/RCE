@@ -110,6 +110,18 @@ $strings = Control_I18n::get_all();
                             <option value="other">Other</option>
                         </select>
                     </div>
+                    <div class="wiz-field">
+                        <label data-t="country_residence"><?php echo Control_I18n::t('country_residence'); ?></label>
+                        <input type="text" name="country_residence">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="city_residence"><?php echo Control_I18n::t('city_residence'); ?></label>
+                        <input type="text" name="city_residence">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="national_id"><?php echo Control_I18n::t('national_id'); ?></label>
+                        <input type="text" name="national_id">
+                    </div>
                 </div>
             </div>
 
@@ -119,6 +131,19 @@ $strings = Control_I18n::get_all();
                     <div class="wiz-field">
                         <label data-t="guardian_name"><?php echo Control_I18n::t('guardian_name'); ?> *</label>
                         <input type="text" name="guardian_name" required>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="relationship"><?php echo Control_I18n::t('relationship'); ?></label>
+                        <select name="guardian_relationship">
+                            <option value="father">Father</option>
+                            <option value="mother">Mother</option>
+                            <option value="relative">Relative</option>
+                            <option value="legal">Legal Guardian</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="guardian_id"><?php echo Control_I18n::t('guardian_id'); ?></label>
+                        <input type="text" name="guardian_id">
                     </div>
                     <div class="wiz-field">
                         <label data-t="father_phone"><?php echo Control_I18n::t('father_phone'); ?> *</label>
@@ -132,12 +157,24 @@ $strings = Control_I18n::get_all();
                         <label data-t="email"><?php echo Control_I18n::t('email'); ?></label>
                         <input type="email" name="email" placeholder="example@email.com">
                     </div>
+                    <div class="wiz-field">
+                        <label data-t="guardian_nationality"><?php echo Control_I18n::t('guardian_nationality'); ?></label>
+                        <input type="text" name="guardian_nationality">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="guardian_country"><?php echo Control_I18n::t('guardian_country'); ?></label>
+                        <input type="text" name="guardian_country">
+                    </div>
                 </div>
                 <div class="wiz-field">
                     <label data-t="address"><?php echo Control_I18n::t('address'); ?></label>
                     <input type="text" name="address">
                 </div>
                 <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="guardian_workplace"><?php echo Control_I18n::t('guardian_workplace'); ?></label>
+                        <input type="text" name="guardian_workplace">
+                    </div>
                     <div class="wiz-field">
                         <label data-t="emergency_contact"><?php echo Control_I18n::t('emergency_contact'); ?></label>
                         <input type="text" name="emergency_contact">
@@ -152,6 +189,14 @@ $strings = Control_I18n::get_all();
                             <option value="O+">O+</option><option value="O-">O-</option>
                         </select>
                     </div>
+                    <div class="wiz-field">
+                        <label data-t="communication_status"><?php echo Control_I18n::t('communication_status'); ?></label>
+                        <select name="communication_status">
+                            <option value="active">Active</option>
+                            <option value="periodic">Periodic</option>
+                            <option value="urgent_only">Urgent Only</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -159,15 +204,23 @@ $strings = Control_I18n::get_all();
             <div class="wiz-step" id="wiz-step-3" style="display:none;">
                 <div class="wiz-grid">
                     <div class="wiz-field">
-                        <label data-t="pregnancy_history"><?php echo Control_I18n::t('pregnancy_history'); ?></label>
-                        <textarea name="pregnancy_history" rows="2"></textarea>
+                        <label data-t="diag_prev"><?php echo Control_I18n::t('diag_prev'); ?></label>
+                        <select name="diag_prev">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
                     </div>
                     <div class="wiz-field">
-                        <label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label>
-                        <textarea name="birth_history" rows="2"></textarea>
+                        <label data-t="diag_prev_details"><?php echo Control_I18n::t('diag_prev_details'); ?></label>
+                        <input type="text" name="diag_prev_details">
                     </div>
-                </div>
-                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="prev_rehab"><?php echo Control_I18n::t('prev_rehab'); ?></label>
+                        <select name="prev_rehab_centers">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
                     <div class="wiz-field">
                         <label data-t="chronic_conditions"><?php echo Control_I18n::t('chronic_conditions'); ?></label>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background:#f8fafc; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0;">
@@ -178,74 +231,141 @@ $strings = Control_I18n::get_all();
                         </div>
                     </div>
                     <div class="wiz-field">
+                        <label data-t="drug_allergies"><?php echo Control_I18n::t('drug_allergies'); ?></label>
+                        <input type="text" name="drug_allergies">
+                    </div>
+                    <div class="wiz-field">
                         <label data-t="medications"><?php echo Control_I18n::t('medications'); ?></label>
-                        <div style="display:flex; gap:15px; margin-bottom:10px;">
-                            <label style="font-size:0.85rem;"><input type="radio" name="has_meds" value="no" checked> <span data-t="medication_no"><?php echo Control_I18n::t('medication_no'); ?></span></label>
-                            <label style="font-size:0.85rem;"><input type="radio" name="has_meds" value="yes"> <span data-t="medication_yes"><?php echo Control_I18n::t('medication_yes'); ?></span></label>
-                        </div>
-                        <div id="wiz-meds-details" style="display:none; gap:10px; flex-direction:column;">
-                            <input type="text" name="current_med_name" data-t="med_name" placeholder="<?php echo Control_I18n::t('med_name'); ?>">
-                            <input type="text" name="current_med_freq" data-t="med_freq" placeholder="<?php echo Control_I18n::t('med_freq'); ?>">
-                        </div>
+                        <input type="text" name="current_medications">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="pregnancy_history"><?php echo Control_I18n::t('pregnancy_history'); ?></label>
+                        <textarea name="pregnancy_history" rows="2"></textarea>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="birth_history"><?php echo Control_I18n::t('birth_history'); ?></label>
+                        <textarea name="birth_history" rows="2"></textarea>
                     </div>
                 </div>
 
                 <div class="wiz-grid-3">
                     <div class="wiz-field">
-                        <label data-t="walking"><?php echo Control_I18n::t('walking'); ?></label>
-                        <select name="milestones_walking">
-                            <option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option>
-                            <option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option>
-                            <option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option>
+                        <label data-t="motor_delay"><?php echo Control_I18n::t('motor_delay'); ?></label>
+                        <select name="motor_delay">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
                         </select>
                     </div>
                     <div class="wiz-field">
-                        <label data-t="speaking"><?php echo Control_I18n::t('speaking'); ?></label>
-                        <select name="milestones_speaking">
-                            <option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option>
-                            <option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option>
-                            <option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option>
+                        <label data-t="speech_delay"><?php echo Control_I18n::t('speech_delay'); ?></label>
+                        <select name="speech_delay">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
                         </select>
                     </div>
                     <div class="wiz-field">
-                        <label data-t="sitting"><?php echo Control_I18n::t('sitting'); ?></label>
-                        <select name="milestones_sitting">
-                            <option value="on_time" data-t="on_time"><?php echo Control_I18n::t('on_time'); ?></option>
-                            <option value="early" data-t="early"><?php echo Control_I18n::t('early'); ?></option>
-                            <option value="delayed" data-t="delayed"><?php echo Control_I18n::t('delayed'); ?></option>
+                        <label data-t="sleep_issues"><?php echo Control_I18n::t('sleep_issues'); ?></label>
+                        <select name="sleep_issues">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="feeding_issues"><?php echo Control_I18n::t('feeding_issues'); ?></label>
+                        <select name="feeding_issues">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Phase 4: Functional & Behavioral Assessment -->
+            <!-- Phase 4: Functional & Behavioral Screening -->
             <div class="wiz-step" id="wiz-step-4" style="display:none;">
                 <div class="wiz-grid">
                     <div class="wiz-field">
-                        <label><?php _e('التفاعل الاجتماعي والتواصل البصري', 'control'); ?></label>
-                        <select name="eval_social">
+                        <label data-t="eval_attention"><?php echo Control_I18n::t('eval_attention'); ?></label>
+                        <select name="eval_attention">
                             <option value="good" data-t="good"><?php echo Control_I18n::t('good'); ?></option>
-                            <option value="average" data-t="average"><?php echo Control_I18n::t('average'); ?></option>
+                            <option value="moderate" data-t="average"><?php echo Control_I18n::t('average'); ?></option>
                             <option value="poor" data-t="poor"><?php echo Control_I18n::t('poor'); ?></option>
                         </select>
                     </div>
                     <div class="wiz-field">
-                        <label><?php _e('اتباع التعليمات البسيطة', 'control'); ?></label>
+                        <label data-t="eval_name_response"><?php echo Control_I18n::t('eval_name_response'); ?></label>
+                        <select name="eval_name_response">
+                            <option value="good" data-t="good"><?php echo Control_I18n::t('good'); ?></option>
+                            <option value="moderate" data-t="average"><?php echo Control_I18n::t('average'); ?></option>
+                            <option value="poor" data-t="poor"><?php echo Control_I18n::t('poor'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_eye_contact"><?php echo Control_I18n::t('eval_eye_contact'); ?></label>
+                        <select name="eval_eye_contact">
+                            <option value="good" data-t="good"><?php echo Control_I18n::t('good'); ?></option>
+                            <option value="moderate" data-t="average"><?php echo Control_I18n::t('average'); ?></option>
+                            <option value="poor" data-t="poor"><?php echo Control_I18n::t('poor'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_social"><?php echo Control_I18n::t('eval_social'); ?></label>
+                        <select name="eval_social">
+                            <option value="positive" data-t="good"><?php echo Control_I18n::t('good'); ?></option>
+                            <option value="limited" data-t="average"><?php echo Control_I18n::t('average'); ?></option>
+                            <option value="isolated" data-t="poor"><?php echo Control_I18n::t('poor'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_tantrums"><?php echo Control_I18n::t('eval_tantrums'); ?></label>
+                        <select name="eval_tantrums">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_instructions"><?php echo Control_I18n::t('eval_instructions'); ?></label>
                         <select name="eval_instructions">
                             <option value="high" data-t="high"><?php echo Control_I18n::t('high'); ?></option>
                             <option value="moderate" data-t="moderate"><?php echo Control_I18n::t('moderate'); ?></option>
                             <option value="low" data-t="low"><?php echo Control_I18n::t('low'); ?></option>
                         </select>
                     </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_activity_level"><?php echo Control_I18n::t('eval_activity_level'); ?></label>
+                        <select name="eval_activity_level">
+                            <option value="low" data-t="low"><?php echo Control_I18n::t('low'); ?></option>
+                            <option value="normal" data-t="average"><?php echo Control_I18n::t('average'); ?></option>
+                            <option value="high" data-t="high"><?php echo Control_I18n::t('high'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_independence"><?php echo Control_I18n::t('eval_independence'); ?></label>
+                        <select name="eval_independence">
+                            <option value="high" data-t="high"><?php echo Control_I18n::t('high'); ?></option>
+                            <option value="medium" data-t="moderate"><?php echo Control_I18n::t('moderate'); ?></option>
+                            <option value="low" data-t="low"><?php echo Control_I18n::t('low'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_language"><?php echo Control_I18n::t('eval_language'); ?></label>
+                        <select name="eval_language">
+                            <option value="non_verbal">Non-verbal</option>
+                            <option value="words">Words</option>
+                            <option value="sentences">Sentences</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="eval_anxiety"><?php echo Control_I18n::t('eval_anxiety'); ?></label>
+                        <select name="eval_anxiety">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="wiz-field">
                     <label data-t="behavioral_observation"><?php echo Control_I18n::t('behavioral_observation'); ?></label>
-                    <textarea name="initial_behavioral_observation" rows="3" placeholder="Additional notes..."></textarea>
+                    <textarea name="initial_behavioral_observation" rows="3"></textarea>
                 </div>
-                    <div class="wiz-field">
-                        <label data-t="assigned_team"><?php echo Control_I18n::t('assigned_team'); ?></label>
-                        <textarea name="assigned_specialists" rows="2" placeholder="e.g., John Doe (Speech), Jane Doe (OT)"></textarea>
-                    </div>
                 <div class="wiz-field">
                     <label data-t="initial_diagnosis"><?php echo Control_I18n::t('initial_diagnosis'); ?></label>
                     <textarea name="initial_diagnosis" rows="2"></textarea>
@@ -258,8 +378,13 @@ $strings = Control_I18n::get_all();
                 <h4 style="color:var(--control-primary); margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;" data-t="phase_5_title"><?php echo Control_I18n::t('phase_5_title'); ?></h4>
                 <div class="wiz-grid">
                     <div class="wiz-field">
-                        <label data-t="temp_id"><?php echo Control_I18n::t('temp_id'); ?></label>
-                        <input type="text" name="temp_id" readonly style="background:#f8fafc;">
+                        <label data-t="case_classification"><?php echo Control_I18n::t('case_classification'); ?></label>
+                        <select name="case_classification">
+                            <option value="normal">Normal</option>
+                            <option value="possible_delay">Possible Delay</option>
+                            <option value="needs_evaluation">Needs Evaluation</option>
+                            <option value="needs_intervention">Needs Intervention</option>
+                        </select>
                     </div>
                     <div class="wiz-field">
                         <label data-t="priority_level"><?php echo Control_I18n::t('priority_level'); ?></label>
@@ -270,8 +395,28 @@ $strings = Control_I18n::get_all();
                         </select>
                     </div>
                     <div class="wiz-field">
-                        <label data-t="routing_dept"><?php echo Control_I18n::t('routing_dept'); ?></label>
-                        <input type="text" name="routing_dept">
+                        <label data-t="suggested_pathway"><?php echo Control_I18n::t('suggested_pathway'); ?></label>
+                        <select name="suggested_pathway">
+                            <option value="consultation">Consultation</option>
+                            <option value="assessment">Assessment</option>
+                            <option value="rehab_program">Rehabilitation Program</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="final_decision"><?php echo Control_I18n::t('final_decision'); ?></label>
+                        <select name="final_decision">
+                            <option value="pre_acceptance">Pre-acceptance</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="temp_id"><?php echo Control_I18n::t('temp_id'); ?></label>
+                        <input type="text" name="temp_id" id="wiz-temp-id" readonly style="background:#f8fafc;">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="assigned_team"><?php echo Control_I18n::t('assigned_team'); ?></label>
+                        <textarea name="assigned_specialists" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="wiz-field">
@@ -285,15 +430,21 @@ $strings = Control_I18n::get_all();
                 <div class="wiz-grid">
                     <div class="wiz-field">
                         <label data-t="permanent_id"><?php echo Control_I18n::t('permanent_id'); ?></label>
-                        <input type="text" name="permanent_id">
+                        <input type="text" name="permanent_id" id="wiz-perm-id">
                     </div>
                     <div class="wiz-field">
                         <label data-t="case_status"><?php echo Control_I18n::t('case_status'); ?></label>
                         <select name="case_status">
+                            <option value="active">Active in System</option>
                             <option value="waiting_list">Waiting List</option>
-                            <option value="active">Active File</option>
-                            <option value="completed">Completed</option>
+                            <option value="completed">Completed Rehabilitation</option>
                         </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="account_activation"><?php echo Control_I18n::t('account_activation'); ?></label>
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                            <input type="checkbox" name="activate_account" value="1"> <span>Activate Guardian Account</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -357,9 +508,27 @@ jQuery(document).ready(function($) {
     });
 
     $('#wiz-dob-input').on('change', function() {
-        const dob = new Date($(this).val());
-        const age = Math.floor((new Date() - dob) / (365.25 * 24 * 60 * 60 * 1000));
-        $('#wiz-age-badge').text(age + ' ' + (wizStrings[$('#wiz-selected-lang').val()].years)).fadeIn();
+        const dobVal = $(this).val();
+        if (!dobVal) return;
+        const dob = new Date(dobVal);
+        const now = new Date();
+
+        let years = now.getFullYear() - dob.getFullYear();
+        let months = now.getMonth() - dob.getMonth();
+        let days = now.getDate() - dob.getDate();
+
+        if (days < 0) {
+            months--;
+            const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            days += lastMonth.getDate();
+        }
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        const s = wizStrings[$('#wiz-selected-lang').val()];
+        $('#wiz-age-badge').text(`${years} ${s.years}, ${months} ${s.months}, ${days} ${s.days}`).fadeIn();
     });
 
     $('#wiz-next-btn').on('click', function() {
@@ -412,13 +581,28 @@ window.openPatientModal = function(data = null) {
     window.updateWizUI();
     $('.wiz-step').hide();
     $('#wiz-step-1').show();
+
+    if(!data) {
+        // Auto-generate temp ID for new records
+        $('#wiz-temp-id').val('TEMP-' + Math.random().toString(36).substr(2, 9).toUpperCase());
+    }
+
     if(data) {
         $('#wiz-lang-overlay').hide();
         setWizLang('ar');
         $('#wiz-patient-id').val(data.id);
         Object.keys(data).forEach(key => {
             const field = $(`#patient-wizard-form [name="${key}"]`);
-            if (field.length) field.val(data[key]);
+            if (field.length) {
+                if(field.is(':checkbox')) {
+                    if(data[key]) {
+                        const vals = data[key].split(', ');
+                        field.each(function() { if(vals.includes($(this).val())) $(this).prop('checked', true); });
+                    }
+                } else {
+                    field.val(data[key]);
+                }
+            }
         });
         $('#wiz-dob-input').trigger('change');
     }

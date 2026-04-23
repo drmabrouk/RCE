@@ -61,15 +61,15 @@ $strings = Control_I18n::get_all();
                 <div class="wiz-grid">
                     <div class="wiz-grid-3" style="grid-column: 1 / -1;">
                         <div class="wiz-field">
-                            <label data-t="first_name"><?php echo Control_I18n::t('first_name'); ?> *</label>
+                            <label data-t="name_first"><?php echo Control_I18n::t('name_first'); ?> *</label>
                             <input type="text" name="name_first" required class="name-part">
                         </div>
                         <div class="wiz-field">
-                            <label data-t="second_name"><?php echo Control_I18n::t('second_name'); ?> *</label>
+                            <label data-t="name_second"><?php echo Control_I18n::t('name_second'); ?> *</label>
                             <input type="text" name="name_second" required class="name-part">
                         </div>
                         <div class="wiz-field">
-                            <label data-t="last_name"><?php echo Control_I18n::t('last_name'); ?> *</label>
+                            <label data-t="name_last"><?php echo Control_I18n::t('name_last'); ?> *</label>
                             <input type="text" name="name_last" required class="name-part">
                         </div>
                     </div>
@@ -559,8 +559,18 @@ jQuery(document).ready(function($) {
         $btn.prop('disabled', true).text('Processing...');
         const formData = $('#patient-wizard-form').serialize() + '&action=control_save_patient&nonce=' + control_ajax.nonce;
         $.post(control_ajax.ajax_url, formData, (res) => {
-            if(res.success) location.reload();
-            else { alert(res.data); $btn.prop('disabled', false).text('Save'); }
+            if(res.success) {
+                const kioskUrl = '<?php echo get_permalink(get_page_by_path("kiosk-registration")); ?>';
+                if(kioskUrl && !$('#wiz-patient-id').val()) {
+                    window.location.href = kioskUrl + (kioskUrl.includes('?') ? '&' : '?') + 'resume_id=' + res.data.id;
+                } else {
+                    location.reload();
+                }
+            } else {
+                const msg = (typeof res.data === 'string') ? res.data : (res.data.message || 'Error occurred');
+                alert(msg);
+                $btn.prop('disabled', false).text(wizStrings[$('#wiz-selected-lang').val()].save);
+            }
         });
     });
 

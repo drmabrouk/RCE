@@ -182,8 +182,9 @@ class Control_Database {
 			communication_status varchar(50),
 
 			/* Medical History */
-			diag_prev_details text,
+			diag_prev varchar(50),
 			prev_rehab_centers varchar(255),
+			diag_prev_details text,
 			chronic_conditions text,
 			drug_allergies text,
 			current_medications text,
@@ -224,8 +225,6 @@ class Control_Database {
 			intake_notes text,
 			intake_status varchar(50) DEFAULT 'none',
 
-			internal_classification varchar(255),
-			internal_notes text,
 			system_id varchar(100),
 			workflow_metadata longtext,
 

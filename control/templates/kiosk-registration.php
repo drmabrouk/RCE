@@ -3,8 +3,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $strings = Control_I18n::get_all();
 ?>
 
-<div id="kiosk-app-root" style="direction:rtl; font-family:'Rubik', sans-serif; min-height:100vh; background:#f1f5f9; padding:20px; display:flex; align-items:center; justify-content:center; box-sizing:border-box;">
-    <div style="max-width:900px; width:100%; background:#fff; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.05); overflow:hidden; position:relative; border:1px solid #e2e8f0;">
+<div id="kiosk-app-root" style="direction:rtl; font-family:'Rubik', sans-serif; height:100vh; background:#f1f5f9; padding:0; display:flex; align-items:center; justify-content:center; box-sizing:border-box; overflow: hidden;">
+    <div style="max-width:1000px; width:100%; height:100%; background:#fff; overflow:hidden; position:relative; display:flex; flex-direction:column;">
 
         <!-- Compact Progress Header -->
         <div id="k-header" style="background:var(--control-primary); padding:25px 30px; color:#fff; text-align:center; position:relative;">
@@ -21,7 +21,7 @@ $strings = Control_I18n::get_all();
             </div>
         </div>
 
-        <form id="kiosk-form" style="padding:30px 40px;">
+        <form id="kiosk-form" style="padding:25px 40px; flex: 1; overflow-y: auto; margin-bottom: 80px;">
             <input type="hidden" name="k_lang" id="k-selected-lang" value="ar">
             <input type="hidden" name="full_name" id="k-full-name-concat">
 
@@ -29,10 +29,11 @@ $strings = Control_I18n::get_all();
             <div id="k-step-1" class="k-step-content">
                 <h4 style="color:var(--control-primary); margin-bottom:20px; font-weight:800; border-bottom:2px solid #f1f5f9; padding-bottom:10px;" data-t="phase_1_title"><?php echo Control_I18n::t('phase_1_title'); ?></h4>
                 <div class="wiz-grid">
-                    <div class="wiz-field"><label data-t="first_name"><?php echo Control_I18n::t('first_name'); ?> *</label><input type="text" name="name_first" required class="k-name-part" data-p="first_name"></div>
-                    <div class="wiz-field"><label data-t="second_name"><?php echo Control_I18n::t('second_name'); ?> *</label><input type="text" name="name_second" required class="k-name-part" data-p="second_name"></div>
-                    <div class="wiz-field"><label data-t="third_name"><?php echo Control_I18n::t('third_name'); ?> *</label><input type="text" name="name_third" required class="k-name-part" data-p="third_name"></div>
-                    <div class="wiz-field"><label data-t="last_name"><?php echo Control_I18n::t('last_name'); ?> *</label><input type="text" name="name_last" required class="k-name-part" data-p="last_name"></div>
+                    <div class="wiz-grid-3" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div class="wiz-field"><label data-t="first_name"><?php echo Control_I18n::t('first_name'); ?> *</label><input type="text" name="name_first" required class="k-name-part" data-p="first_name"></div>
+                        <div class="wiz-field"><label data-t="second_name"><?php echo Control_I18n::t('second_name'); ?> *</label><input type="text" name="name_second" required class="k-name-part" data-p="second_name"></div>
+                        <div class="wiz-field"><label data-t="last_name"><?php echo Control_I18n::t('last_name'); ?> *</label><input type="text" name="name_last" required class="k-name-part" data-p="last_name"></div>
+                    </div>
                     <div class="wiz-field"><label data-t="dob"><?php echo Control_I18n::t('dob'); ?> *</label><input type="date" name="dob" required></div>
                     <div class="wiz-field"><label data-t="gender"><?php echo Control_I18n::t('gender'); ?></label>
                         <select name="gender" data-source="gender"></select>
@@ -111,7 +112,7 @@ $strings = Control_I18n::get_all();
                 <div style="background:#fefce8; border:1px solid #fef08a; padding:15px; border-radius:12px; color:#854d0e; font-size:0.85rem;" data-t="screening_desc">⚠️ <?php echo Control_I18n::t('screening_desc'); ?></div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; margin-top:30px; gap:15px;">
+            <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; padding: 20px 40px; border-top: 1px solid #f1f5f9; display:flex; justify-content:space-between; gap:15px; box-sizing: border-box;">
                 <button type="button" id="k-prev" onclick="prevKStep()" class="k-btn-secondary" style="display:none;"><?php echo Control_I18n::t('prev'); ?></button>
                 <div style="flex:1;"></div>
                 <button type="button" id="k-next" onclick="nextKStep()" class="k-btn-primary"><?php echo Control_I18n::t('next'); ?></button>
@@ -280,7 +281,7 @@ jQuery(document).ready(function($) {
     setKLang('ar');
 
     $('.k-name-part').on('input', function() {
-        $('#k-full-name-concat').val(`${$('[name="name_first"]').val()} ${$('[name="name_second"]').val()} ${$('[name="name_third"]').val()} ${$('[name="name_last"]').val()}`.trim());
+        $('#k-full-name-concat').val(`${$('[name="name_first"]').val()} ${$('[name="name_second"]').val()} ${$('[name="name_last"]').val()}`.trim());
     });
 
     $('.k-numeric').on('input', function() {

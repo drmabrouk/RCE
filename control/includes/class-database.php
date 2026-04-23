@@ -159,6 +159,7 @@ class Control_Database {
 			dob date,
 			gender varchar(20),
 			nationality varchar(100),
+			preferred_lang varchar(20),
 			country_residence varchar(100),
 			city_residence varchar(100),
 			national_id varchar(100),

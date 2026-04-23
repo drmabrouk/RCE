@@ -22,9 +22,9 @@ $active_records   = array_filter($patients, function($p) { return $p->intake_sta
     </div>
     <div style="display:flex; gap:12px;">
         <?php if($can_manage): ?>
-            <button id="add-patient-btn" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 25px; font-weight:800;">
-                <span class="dashicons dashicons-plus-alt" style="margin-left:8px;"></span><?php _e('إضافة طفل جديد (النظام)', 'control'); ?>
-            </button>
+            <a href="<?php echo get_permalink(get_page_by_path('kiosk-registration')); ?>" class="control-btn" style="background:var(--control-accent); color: var(--control-primary) !important; border:none; padding:12px 25px; font-weight:800;">
+                <span class="dashicons dashicons-plus-alt" style="margin-left:8px;"></span><?php _e('تسجيل طفل جديد', 'control'); ?>
+            </a>
         <?php endif; ?>
     </div>
 </div>
@@ -56,9 +56,9 @@ $active_records   = array_filter($patients, function($p) { return $p->intake_sta
                     </div>
                 </div>
                 <div style="background:#f8fafc; padding:12px 20px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <button class="control-btn process-intake-btn" data-id="<?php echo $p->id; ?>" style="background:var(--control-primary); border:none; padding:6px 20px; font-size:0.85rem;">
-                        <?php _e('بدء التقييم (مرحلة 5)', 'control'); ?>
-                    </button>
+                    <a href="<?php echo add_query_arg(array('resume_id' => $p->id), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="background:var(--control-primary); border:none; padding:6px 20px; font-size:0.85rem;">
+                        <?php _e('إكمال ملف الطفل', 'control'); ?>
+                    </a>
                     <div style="display:flex; gap:10px;">
                         <button class="reject-intake-btn" data-id="<?php echo $p->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;" title="رفض الطلب"><span class="dashicons dashicons-no"></span></button>
                         <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="color:#64748b; background:none; border:none; cursor:pointer;" title="حذف نهائي"><span class="dashicons dashicons-trash"></span></button>
@@ -156,10 +156,15 @@ $active_records   = array_filter($patients, function($p) { return $p->intake_sta
                 </div>
             </div>
 
-            <div style="background:#fff; padding:12px 20px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id)); ?>" class="control-btn" style="padding:6px 18px; font-size:0.8rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:700; border-radius:10px;">
-                    <?php _e('ملف الطفل', 'control'); ?>
+            <div style="background:#fff; padding:12px 20px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; gap: 8px;">
+                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id)); ?>" class="control-btn" style="flex: 1; padding:6px 12px; font-size:0.75rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:700; border-radius:10px; text-align:center;">
+                    <?php _e('عرض الملف', 'control'); ?>
                 </a>
+                <?php if($can_manage): ?>
+                    <a href="<?php echo add_query_arg(array('resume_id' => $p->id), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="flex: 1; padding:6px 12px; font-size:0.75rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:700; border-radius:10px; text-align:center;">
+                        <?php _e('إكمال الملف', 'control'); ?>
+                    </a>
+                <?php endif; ?>
                 <?php if($can_manage): ?>
                     <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="background:none; border:none; color:#cbd5e1; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
                         <span class="dashicons dashicons-trash"></span>

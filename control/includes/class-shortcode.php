@@ -102,6 +102,15 @@ class Control_Shortcode {
 		$template_path = CONTROL_PATH . 'templates/kiosk-registration.php';
 
 		if ( file_exists( $template_path ) ) {
+			global $wpdb;
+			$is_staff = Control_Auth::is_logged_in();
+			$resume_id = isset($_GET['resume_id']) ? intval($_GET['resume_id']) : 0;
+			$resume_data = null;
+
+			if ($resume_id && $is_staff) {
+				$resume_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_patients WHERE id = %d", $resume_id), ARRAY_A);
+			}
+
 			include $template_path;
 		} else {
 			echo '<div style="padding:20px; border:2px dashed #ef4444; color:#b91c1c; background:#fef2f2; border-radius:12px; text-align:center;">';

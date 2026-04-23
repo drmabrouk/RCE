@@ -59,21 +59,19 @@ $strings = Control_I18n::get_all();
                 </div>
 
                 <div class="wiz-grid">
-                    <div class="wiz-field">
-                        <label data-t="first_name"><?php echo Control_I18n::t('first_name'); ?> *</label>
-                        <input type="text" name="name_first" required class="name-part">
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="second_name"><?php echo Control_I18n::t('second_name'); ?> *</label>
-                        <input type="text" name="name_second" required class="name-part">
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="third_name"><?php echo Control_I18n::t('third_name'); ?> *</label>
-                        <input type="text" name="name_third" required class="name-part">
-                    </div>
-                    <div class="wiz-field">
-                        <label data-t="last_name"><?php echo Control_I18n::t('last_name'); ?> *</label>
-                        <input type="text" name="name_last" required class="name-part">
+                    <div class="wiz-grid-3" style="grid-column: 1 / -1;">
+                        <div class="wiz-field">
+                            <label data-t="first_name"><?php echo Control_I18n::t('first_name'); ?> *</label>
+                            <input type="text" name="name_first" required class="name-part">
+                        </div>
+                        <div class="wiz-field">
+                            <label data-t="second_name"><?php echo Control_I18n::t('second_name'); ?> *</label>
+                            <input type="text" name="name_second" required class="name-part">
+                        </div>
+                        <div class="wiz-field">
+                            <label data-t="last_name"><?php echo Control_I18n::t('last_name'); ?> *</label>
+                            <input type="text" name="name_last" required class="name-part">
+                        </div>
                     </div>
                     <div class="wiz-field">
                         <label data-t="dob"><?php echo Control_I18n::t('dob'); ?> *</label>
@@ -498,9 +496,8 @@ jQuery(document).ready(function($) {
     $('.name-part').on('input', function() {
         const f = $('[name="name_first"]').val().trim();
         const s = $('[name="name_second"]').val().trim();
-        const t = $('[name="name_third"]').val().trim();
         const l = $('[name="name_last"]').val().trim();
-        $('#wiz-full-name-concat').val(`${f} ${s} ${t} ${l}`.trim());
+        $('#wiz-full-name-concat').val(`${f} ${s} ${l}`.trim());
     });
 
     $('[name="has_meds"]').on('change', function() {

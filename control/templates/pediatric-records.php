@@ -71,56 +71,94 @@ $active_records   = array_filter($patients, function($p) { return $p->intake_sta
 <?php endif; ?>
 
 <!-- Active Records Search & Filter -->
-<div class="control-card" style="padding:20px; margin-bottom:25px; border:none; background:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
-    <div style="display:flex; gap:15px; align-items: center; flex-wrap: wrap;">
-        <div style="flex:1; position:relative; min-width: 300px;">
-            <span class="dashicons dashicons-search" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--control-muted);"></span>
-            <input type="text" id="patient-search-input" placeholder="<?php _e('ابحث باسم الطفل، رقم الملف، أو هاتف ولي الأمر...', 'control'); ?>" style="padding:12px 45px 12px 15px; border-radius:12px; border:1.5px solid #eee; width:100%;">
+<div class="control-card" style="padding:15px 20px; margin-bottom:25px; border:none; background:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+    <div style="display:flex; gap:12px; align-items: center; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
+        <div style="flex:2; position:relative; min-width: 250px;">
+            <span class="dashicons dashicons-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--control-muted); font-size: 18px;"></span>
+            <input type="text" id="patient-search-input" placeholder="<?php _e('بحث شامل (الاسم، الهاتف، الرقم)...', 'control'); ?>" style="padding:10px 40px 10px 12px; border-radius:10px; border:1.5px solid #f1f5f9; width:100%; font-size: 0.9rem;">
         </div>
-        <select id="patient-status-filter" style="padding:12px; border-radius:12px; border:1.5px solid #eee; min-width:180px;">
-            <option value=""><?php _e('كل الحالات النشطة', 'control'); ?></option>
+        <select id="patient-status-filter" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; min-width:140px; font-size: 0.85rem; font-weight: 600;">
+            <option value=""><?php _e('كل الحالات', 'control'); ?></option>
             <?php foreach($status_labels as $val => $label): ?>
                 <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
             <?php endforeach; ?>
+        </select>
+        <select id="patient-diag-filter" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; min-width:140px; font-size: 0.85rem; font-weight: 600;">
+            <option value=""><?php _e('كل التشخيصات', 'control'); ?></option>
+            <option value="autism">ASD</option>
+            <option value="adhd">ADHD</option>
+            <option value="speech">Speech Delay</option>
+            <option value="cp">Cerebral Palsy</option>
+        </select>
+        <select id="patient-priority-filter" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; min-width:140px; font-size: 0.85rem; font-weight: 600;">
+            <option value=""><?php _e('كل الأولويات', 'control'); ?></option>
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent</option>
+            <option value="critical">Critical</option>
         </select>
     </div>
 </div>
 
 <!-- Active Files Grid -->
-<div id="patients-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-    <?php if($active_records): foreach($active_records as $p): ?>
-        <div class="control-card patient-card" data-status="<?php echo esc_attr($p->case_status); ?>" data-search="<?php echo esc_attr(strtolower($p->full_name . ' ' . $p->permanent_id . ' ' . $p->father_phone)); ?>" style="padding:0; overflow:hidden; transition:0.3s; border:1px solid #f1f5f9;">
+<div id="patients-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+    <?php if($active_records): foreach($active_records as $p):
+        $dob = new DateTime($p->dob);
+        $age = $dob->diff(new DateTime())->y;
+        $nat = $p->nationality ?: 'SA';
+    ?>
+        <div class="control-card patient-card"
+             data-status="<?php echo esc_attr($p->case_status); ?>"
+             data-diag="<?php echo esc_attr(strtolower($p->initial_diagnosis)); ?>"
+             data-priority="<?php echo esc_attr($p->priority_level ?: 'normal'); ?>"
+             data-search="<?php echo esc_attr(strtolower($p->full_name . ' ' . $p->permanent_id . ' ' . $p->father_phone . ' ' . $p->initial_diagnosis)); ?>"
+             style="padding:0; overflow:hidden; transition:0.3s; border:1px solid #f1f5f9; border-radius: 18px;">
+
             <div style="padding:20px;">
-                <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
-                    <div style="width:65px; height:65px; background:var(--control-bg); border-radius:15px; overflow:hidden; border:2px solid #fff; box-shadow:0 5px 15px rgba(0,0,0,0.05); flex-shrink:0;">
+                <div style="display:flex; gap:15px; align-items:center; margin-bottom:18px;">
+                    <div style="width:70px; height:70px; background:var(--control-bg); border-radius:18px; overflow:hidden; border:2px solid #fff; box-shadow:0 8px 20px rgba(0,0,0,0.06); flex-shrink:0;">
                         <?php if($p->profile_photo): ?>
                             <img src="<?php echo esc_url($p->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
                         <?php else: ?>
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#94a3b8;">
-                                <span class="dashicons dashicons-admin-users" style="font-size:35px; width:35px; height:35px;"></span>
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#cbd5e1;">
+                                <span class="dashicons dashicons-admin-users" style="font-size:40px; width:40px; height:40px;"></span>
                             </div>
                         <?php endif; ?>
                     </div>
                     <div style="flex:1; min-width:0;">
-                        <h3 style="margin:0 0 5px 0; font-size:1.05rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?php echo esc_html($p->full_name); ?></h3>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <span class="patient-status-badge status-<?php echo esc_attr($p->case_status); ?>" style="font-size:0.65rem; padding:3px 10px; border-radius:8px; font-weight:800;">
+                        <h3 style="margin:0 0 4px 0; font-size:1.1rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary);"><?php echo esc_html($p->full_name); ?></h3>
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap;">
+                            <span class="patient-status-badge status-<?php echo esc_attr($p->case_status); ?>" style="font-size:0.65rem; padding:2px 8px; border-radius:6px; font-weight:800;">
                                 <?php echo $status_labels[$p->case_status] ?? $p->case_status; ?>
                             </span>
-                            <small style="color:var(--control-muted); font-weight:600;">ID: <?php echo esc_html($p->permanent_id ?: '#'.$p->id); ?></small>
+                            <span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:6px; font-size:0.65rem; font-weight:700;">
+                                <?php echo $age; ?> <?php _e('سنة', 'control'); ?>
+                            </span>
+                            <span style="background:var(--control-accent-soft); color:var(--control-accent); padding:2px 8px; border-radius:6px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
+                                <?php echo esc_html($p->preferred_lang ?: 'ar'); ?>
+                            </span>
+                            <span title="Nationality" style="font-size: 1.1rem;"><?php
+                                $flags = array('SA'=>'🇸🇦','AE'=>'🇦🇪','EG'=>'🇪🇬','KW'=>'🇰🇼','QA'=>'🇶🇦','BH'=>'🇧🇭','OM'=>'🇴🇲','JO'=>'🇯🇴');
+                                echo $flags[$nat] ?? '🏳️';
+                            ?></span>
                         </div>
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.8rem; background:#f8fafc; padding:12px; border-radius:12px;">
-                    <div><span style="color:var(--control-muted); font-size:0.7rem;"><?php _e('تاريخ الميلاد', 'control'); ?></span><br><strong><?php echo $p->dob ?: '---'; ?></strong></div>
-                    <div><span style="color:var(--control-muted); font-size:0.7rem;"><?php _e('درجة الأولوية', 'control'); ?></span><br><strong style="color:var(--control-primary);"><?php echo strtoupper($p->priority_level ?: 'normal'); ?></strong></div>
+                <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom: 5px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+                        <span style="color:var(--control-muted); font-size:0.75rem; font-weight:600;"><?php _e('التشخيص:', 'control'); ?></span>
+                        <strong style="font-size: 0.8rem; color: var(--control-primary);"><?php echo esc_html($p->initial_diagnosis) ?: __('غير محدد', 'control'); ?></strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--control-muted); font-size:0.75rem; font-weight:600;"><?php _e('رقم الملف:', 'control'); ?></span>
+                        <strong style="font-size: 0.8rem;">#<?php echo esc_html($p->permanent_id ?: $p->id); ?></strong>
+                    </div>
                 </div>
             </div>
 
-            <div style="background:#fff; padding:15px 20px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id)); ?>" class="control-btn" style="padding:7px 20px; font-size:0.85rem; background:#fff; color:var(--control-primary) !important; border:1.5px solid var(--control-primary); font-weight:800;">
-                    <?php _e('الملف السريري', 'control'); ?>
+            <div style="background:#fff; padding:12px 20px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id)); ?>" class="control-btn" style="padding:6px 18px; font-size:0.8rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:700; border-radius:10px;">
+                    <?php _e('ملف الطفل', 'control'); ?>
                 </a>
                 <?php if($can_manage): ?>
                     <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="background:none; border:none; color:#cbd5e1; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
@@ -146,20 +184,26 @@ $active_records   = array_filter($patients, function($p) { return $p->intake_sta
 
 <script>
 jQuery(document).ready(function($) {
-    $('#patient-search-input, #patient-status-filter').on('keyup change', function() {
+    $('#patient-search-input, #patient-status-filter, #patient-diag-filter, #patient-priority-filter').on('keyup change', function() {
         const query = $('#patient-search-input').val().toLowerCase();
         const status = $('#patient-status-filter').val();
+        const diag = $('#patient-diag-filter').val().toLowerCase();
+        const priority = $('#patient-priority-filter').val();
 
         $('.patient-card').each(function() {
             const card = $(this);
             const searchVal = card.data('search');
             const cardStatus = card.data('status');
+            const cardDiag = card.data('diag');
+            const cardPriority = card.data('priority');
 
             const matchesSearch = !query || searchVal.includes(query);
             const matchesStatus = !status || cardStatus === status;
+            const matchesDiag = !diag || cardDiag.includes(diag);
+            const matchesPriority = !priority || cardPriority === priority;
 
-            if (matchesSearch && matchesStatus) {
-                card.show();
+            if (matchesSearch && matchesStatus && matchesDiag && matchesPriority) {
+                card.fadeIn(200);
             } else {
                 card.hide();
             }

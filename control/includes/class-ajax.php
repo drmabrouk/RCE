@@ -28,7 +28,7 @@ class Control_Ajax {
 			'delete_fin_package', 'save_fin_invoice', 'delete_fin_invoice',
 			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
 			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense',
-			'update_intake_status', 'add_custom_permission', 'update_session_lang'
+			'update_intake_status', 'add_custom_permission', 'update_session_lang', 'restore_patient'
 		);
 
 		foreach ( $private_actions as $action ) {

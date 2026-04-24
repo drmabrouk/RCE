@@ -523,6 +523,9 @@ function setWizLang(lang) {
         if(s[key]) jQuery(this).text(s[key]);
     });
     jQuery('#patient-wizard-form').css('direction', lang === 'ar' ? 'rtl' : 'ltr');
+
+    // Persist language to session
+    jQuery.post(control_ajax.ajax_url, { action: 'control_update_session_lang', lang: lang, nonce: control_ajax.nonce });
 }
 
 jQuery(document).ready(function($) {

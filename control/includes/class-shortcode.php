@@ -19,6 +19,7 @@ class Control_Shortcode {
 		global $wpdb;
 		ob_start();
 
+		try {
 		if ( ! Control_Auth::is_logged_in() ) {
 			include CONTROL_PATH . 'templates/login.php';
 			return ob_get_clean();
@@ -94,6 +95,15 @@ class Control_Shortcode {
 		}
 
 		include CONTROL_PATH . 'templates/footer.php';
+		} catch ( Throwable $e ) {
+			ob_end_clean();
+			return '<div class="control-error-fallback" style="padding:40px; text-align:center; background:#fff1f2; border:2px solid #fda4af; border-radius:20px; margin:40px auto; max-width:800px; font-family:sans-serif;">
+				<div style="color:#e11d48; font-size:40px; margin-bottom:20px;"><span class="dashicons dashicons-warning" style="font-size:40px; width:40px; height:40px;"></span></div>
+				<h2 style="color:#9f1239; margin-bottom:10px;">' . __( 'عذراً، حدث خطأ تقني في النظام', 'control' ) . '</h2>
+				<p style="color:#be123c;">' . __( 'نحن نعتذر عن هذا الخلل. يرجى محاولة تحديث الصفحة أو التواصل مع الدعم الفني إذا استمرت المشكلة.', 'control' ) . '</p>
+				' . ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? '<div style="margin-top:20px; padding:15px; background:#fff; border-radius:10px; text-align:left; font-size:12px; font-family:monospace; color:#444; overflow-x:auto;"><strong>Debug Info:</strong> ' . esc_html( $e->getMessage() ) . ' in ' . esc_html( $e->getFile() ) . ':' . $e->getLine() . '</div>' : '' ) . '
+			</div>';
+		}
 		return ob_get_clean();
 	}
 

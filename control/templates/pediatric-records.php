@@ -1,6 +1,141 @@
 <div class="view-section-container">
 <?php
 global $wpdb;
+
+if ( ! function_exists( 'render_patient_cards' ) ) {
+    function render_patient_cards($records, $status_labels, $can_manage) {
+        if(!empty($records) && is_array($records)): foreach($records as $p):
+            try {
+            if(!is_object($p)) continue;
+            $p_case_status = $p->case_status ?? 'waiting_list';
+            $p_id = $p->id ?? 0;
+            $p_full_name = $p->full_name ?? __('بدون اسم', 'control');
+            $p_perm_id = $p->permanent_id ?? '';
+            $p_phone = $p->father_phone ?? '';
+            $p_diag = $p->initial_diagnosis ?? '';
+            $p_priority = $p->priority_level ?? 'normal';
+            $p_gender = $p->gender ?? 'male';
+            $dob_val = !empty($p->dob) ? $p->dob : date('Y-m-d');
+            try {
+                $dob = new DateTime($dob_val);
+                $age_diff = $dob->diff(new DateTime());
+                $age_str = sprintf(__('%d سنة، %d شهر', 'control'), $age_diff->y, $age_diff->m);
+            } catch (Exception $e) {
+                $age_str = __('غير معروف', 'control');
+            }
+            $nat_label = Control_I18n::get_country_name(!empty($p->nationality) ? $p->nationality : 'SA');
+            $lang_label = (isset($p->preferred_lang) && $p->preferred_lang === 'en') ? 'English' : 'Arabic';
+        ?>
+            <div class="control-card patient-card"
+                 data-status="<?php echo esc_attr($p_case_status); ?>"
+                 data-diag="<?php echo esc_attr(strtolower($p_diag)); ?>"
+                 data-priority="<?php echo esc_attr($p_priority); ?>"
+                 data-search="<?php echo esc_attr(strtolower($p_full_name . ' ' . $p_perm_id . ' ' . $p_phone . ' ' . $p_diag)); ?>"
+                 style="padding:0; overflow:hidden; transition:0.3s; border:1px solid #f1f5f9; border-radius: 20px; position:relative;">
+
+                <div style="padding:24px;">
+                    <div style="display:flex; gap:18px; align-items:flex-start; margin-bottom:20px;">
+                        <div style="width:75px; height:75px; background:#f8fafc; border-radius:20px; overflow:hidden; border:2px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.06); flex-shrink:0;">
+                            <?php if(!empty($p->profile_photo)): ?>
+                                <img src="<?php echo esc_url($p->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
+                            <?php else: ?>
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#cbd5e1;">
+                                    <span class="dashicons dashicons-admin-users" style="font-size:45px; width:45px; height:45px;"></span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <h3 style="margin:0 0 6px 0; font-size:1.15rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary); letter-spacing:-0.2px;"><?php echo esc_html($p_full_name); ?></h3>
+                            <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap; margin-bottom:8px;">
+                                <span class="patient-status-badge status-<?php echo esc_attr($p_case_status); ?>" style="font-size:0.65rem; padding:3px 10px; border-radius:8px; font-weight:800; text-transform:uppercase;">
+                                    <?php echo $status_labels[$p_case_status] ?? $p_case_status; ?>
+                                </span>
+                                <span class="badge-pastel badge-age" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800;">
+                                    <?php echo $age_str; ?>
+                                </span>
+                                <span class="badge-pastel badge-gender" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
+                                    <?php echo $p_gender === 'male' ? __('ذكر', 'control') : __('أنثى', 'control'); ?>
+                                </span>
+                                <?php if(!empty($p_priority)): ?>
+                                    <span class="badge-pastel badge-priority priority-<?php echo esc_attr($p_priority); ?>" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
+                                        <?php
+                                            $priorities = ['normal' => __('عادي', 'control'), 'urgent' => __('عاجل', 'control'), 'critical' => __('حرج', 'control')];
+                                            echo $priorities[$p_priority] ?? $p_priority;
+                                        ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span class="badge-pastel badge-nat" style="padding:2px 12px; border-radius:20px; font-size:0.65rem; font-weight:700;">
+                                    <?php echo esc_html($nat_label); ?>
+                                </span>
+                                <span style="color:var(--control-muted); font-size:0.65rem; font-weight:700; border:1px solid #e2e8f0; padding:1px 12px; border-radius:20px; background:#fff;">
+                                    <?php echo esc_html($lang_label); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background:#f8fafc; padding:15px; border-radius:15px; margin-bottom: 5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('تشخيص الحالة', 'control'); ?></span>
+                                <span class="badge-pastel badge-diagnosis" style="padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:800; display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                    <?php echo esc_html($p_diag) ?: __('غير محدد', 'control'); ?>
+                                </span>
+                            </div>
+                            <div style="width:1px; height:25px; background:#e2e8f0; margin:0 15px;"></div>
+                            <div style="flex:1; text-align:left;">
+                                <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('رقم الملف', 'control'); ?></span>
+                                <strong style="font-size: 0.8rem; font-family:monospace; letter-spacing:1px; display:block;">#<?php echo esc_html($p_perm_id ?: $p_id); ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#fff; padding:15px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; gap: 10px;">
+                    <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p_id)); ?>" class="control-btn" style="flex: 1; padding:10px; font-size:0.8rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:12px; text-align:center;">
+                        <?php echo Control_I18n::t('view_file'); ?>
+                    </a>
+
+                    <?php if($can_manage): ?>
+                        <?php if($p_case_status === 'evaluation_only' || $p_case_status === 'closed' || $p_case_status === 'completed'): ?>
+                            <button class="restore-patient-btn" data-id="<?php echo $p_id; ?>" style="background:var(--control-accent); color:var(--control-primary); border:none; padding:10px 15px; font-size:0.8rem; border-radius:12px; font-weight:800; cursor:pointer;" title="<?php _e('إعادة تنشيط الملف', 'control'); ?>">
+                                <span class="dashicons dashicons-undo"></span>
+                            </button>
+                        <?php elseif(empty($p_perm_id) || $p_case_status === 'waiting_list'): ?>
+                            <a href="<?php echo add_query_arg(array('resume_id' => $p_id), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="flex: 0.8; padding:10px; font-size:0.8rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:800; border-radius:12px; text-align:center;">
+                                <?php _e('إكمال الملف', 'control'); ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php if($can_manage): ?>
+                        <div style="display:flex; gap:5px;">
+                            <?php if($p_case_status === 'active'): ?>
+                                <button class="close-patient-btn" data-id="<?php echo $p_id; ?>" style="background:none; border:none; color:#94a3b8; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" title="<?php _e('إغلاق الملف', 'control'); ?>">
+                                    <span class="dashicons dashicons-no-alt"></span>
+                                </button>
+                            <?php endif; ?>
+                            <button class="delete-patient-btn" data-id="<?php echo $p_id; ?>" style="background:none; border:none; color:#cbd5e1; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
+                                <span class="dashicons dashicons-trash"></span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php } catch (Throwable $e) { continue; } ?>
+        <?php endforeach; else: ?>
+            <div style="grid-column: 1 / -1; text-align:center; padding:80px 40px; background:#fff; border-radius:20px; border:2px dashed #e2e8f0;">
+                <div style="width:100px; height:100px; background:#f8fafc; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 25px; color:#cbd5e1;">
+                    <span class="dashicons dashicons-groups" style="font-size:50px; width:50px; height:50px;"></span>
+                </div>
+                <p style="color:var(--control-muted); font-size:1.2rem; font-weight:600;"><?php _e('لا توجد سجلات في هذا القسم حالياً.', 'control'); ?></p>
+            </div>
+        <?php endif;
+    }
+}
+
 $patients = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_patients ORDER BY created_at DESC" );
 $patients = is_array($patients) ? $patients : array();
 $can_manage = Control_Auth::has_permission('pediatric_manage');
@@ -14,13 +149,13 @@ $status_labels = array(
     'closed'          => __('ملف مغلق', 'control'),
 );
 
-$pending_requests = array_filter($patients, function($p) { return isset($p->intake_status) && $p->intake_status === 'pending'; });
+$pending_requests = array_filter($patients, function($p) { return is_object($p) && isset($p->intake_status) && $p->intake_status === 'pending'; });
 
 // Strict Tab Segmentation
-$active_records   = array_filter($patients, function($p) { return isset($p->case_status) && $p->case_status === 'active'; });
-$evaluation_cases = array_filter($patients, function($p) { return isset($p->case_status) && $p->case_status === 'evaluation_only'; });
-$waiting_cases    = array_filter($patients, function($p) { return isset($p->case_status) && $p->case_status === 'waiting_list' && isset($p->intake_status) && $p->intake_status !== 'pending'; });
-$closed_cases     = array_filter($patients, function($p) { return isset($p->case_status) && in_array($p->case_status, ['closed', 'completed', 'dropped_out']); });
+$active_records   = array_filter($patients, function($p) { return is_object($p) && isset($p->case_status) && $p->case_status === 'active'; });
+$evaluation_cases = array_filter($patients, function($p) { return is_object($p) && isset($p->case_status) && $p->case_status === 'evaluation_only'; });
+$waiting_cases    = array_filter($patients, function($p) { return is_object($p) && isset($p->case_status) && $p->case_status === 'waiting_list' && isset($p->intake_status) && $p->intake_status !== 'pending'; });
+$closed_cases     = array_filter($patients, function($p) { return is_object($p) && isset($p->case_status) && in_array($p->case_status, ['closed', 'completed', 'dropped_out']); });
 ?>
 
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
@@ -79,40 +214,7 @@ $closed_cases     = array_filter($patients, function($p) { return isset($p->case
 <?php endif; ?>
 
 <div style="display:flex; gap:30px; align-items:flex-start;" class="pediatric-records-layout">
-    <!-- Left Column: Patient Grids -->
-    <div style="flex:1;">
-        <div id="patient-tabs-content">
-            <!-- Active Tab Content -->
-            <div id="tab-active" class="p-tab-pane">
-                <div id="active-grid" class="control-grid grid-layout">
-                    <?php render_patient_cards($active_records, $status_labels, $can_manage); ?>
-                </div>
-            </div>
-
-            <!-- Evaluation Tab Content -->
-            <div id="tab-evaluation" class="p-tab-pane" style="display:none;">
-                <div id="evaluation-grid" class="control-grid grid-layout">
-                    <?php render_patient_cards($evaluation_cases, $status_labels, $can_manage); ?>
-                </div>
-            </div>
-
-            <!-- Waiting List Tab Content -->
-            <div id="tab-waiting" class="p-tab-pane" style="display:none;">
-                <div id="waiting-grid" class="control-grid grid-layout">
-                    <?php render_patient_cards($waiting_cases, $status_labels, $can_manage); ?>
-                </div>
-            </div>
-
-            <!-- Closed Tab Content -->
-            <div id="tab-closed" class="p-tab-pane" style="display:none;">
-                <div id="closed-grid" class="control-grid grid-layout">
-                    <?php render_patient_cards($closed_cases, $status_labels, $can_manage); ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column: Navigation & Search Sidebar -->
+    <!-- Right Column: Navigation & Search Sidebar (First in DOM to be on the right in RTL) -->
     <div class="p-internal-sidebar" style="width:300px; flex-shrink:0; position:sticky; top:100px;">
         <!-- 1. Real-time Search Box (Top) -->
         <div class="control-card" style="padding:15px; border-radius:20px; background:#fff; border:2px solid var(--control-primary-soft); margin-bottom:20px; box-shadow:0 12px 30px rgba(0,0,0,0.04);">
@@ -211,133 +313,41 @@ $closed_cases     = array_filter($patients, function($p) { return isset($p->case
             </div>
         </div>
     </div>
+
+    <!-- Left Column: Patient Grids -->
+    <div style="flex:1;">
+        <div id="patient-tabs-content">
+            <!-- Active Tab Content -->
+            <div id="tab-active" class="p-tab-pane">
+                <div id="active-grid" class="control-grid grid-layout">
+                    <?php render_patient_cards($active_records, $status_labels, $can_manage); ?>
+                </div>
+            </div>
+
+            <!-- Evaluation Tab Content -->
+            <div id="tab-evaluation" class="p-tab-pane" style="display:none;">
+                <div id="evaluation-grid" class="control-grid grid-layout">
+                    <?php render_patient_cards($evaluation_cases, $status_labels, $can_manage); ?>
+                </div>
+            </div>
+
+            <!-- Waiting List Tab Content -->
+            <div id="tab-waiting" class="p-tab-pane" style="display:none;">
+                <div id="waiting-grid" class="control-grid grid-layout">
+                    <?php render_patient_cards($waiting_cases, $status_labels, $can_manage); ?>
+                </div>
+            </div>
+
+            <!-- Closed Tab Content -->
+            <div id="tab-closed" class="p-tab-pane" style="display:none;">
+                <div id="closed-grid" class="control-grid grid-layout">
+                    <?php render_patient_cards($closed_cases, $status_labels, $can_manage); ?>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<?php
-if ( ! function_exists( 'render_patient_cards' ) ) {
-function render_patient_cards($records, $status_labels, $can_manage) {
-    if(!empty($records) && is_array($records)): foreach($records as $p):
-        if(!is_object($p)) continue;
-        $dob_val = !empty($p->dob) ? $p->dob : date('Y-m-d');
-        try {
-            $dob = new DateTime($dob_val);
-            $age_diff = $dob->diff(new DateTime());
-            $age_str = sprintf(__('%d سنة، %d شهر', 'control'), $age_diff->y, $age_diff->m);
-        } catch (Exception $e) {
-            $age_str = __('غير معروف', 'control');
-        }
-        $nat_label = Control_I18n::get_country_name(!empty($p->nationality) ? $p->nationality : 'SA');
-        $lang_label = (isset($p->preferred_lang) && $p->preferred_lang === 'en') ? 'English' : 'Arabic';
-    ?>
-        <div class="control-card patient-card"
-             data-status="<?php echo esc_attr($p->case_status ?? 'waiting_list'); ?>"
-             data-diag="<?php echo esc_attr(strtolower($p->initial_diagnosis ?? '')); ?>"
-             data-priority="<?php echo esc_attr($p->priority_level ?: 'normal'); ?>"
-             data-search="<?php echo esc_attr(strtolower(($p->full_name ?? '') . ' ' . ($p->permanent_id ?? '') . ' ' . ($p->father_phone ?? '') . ' ' . ($p->initial_diagnosis ?? ''))); ?>"
-             style="padding:0; overflow:hidden; transition:0.3s; border:1px solid #f1f5f9; border-radius: 20px; position:relative;">
-
-            <div style="padding:24px;">
-                <div style="display:flex; gap:18px; align-items:flex-start; margin-bottom:20px;">
-                    <div style="width:75px; height:75px; background:#f8fafc; border-radius:20px; overflow:hidden; border:2px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.06); flex-shrink:0;">
-                        <?php if(!empty($p->profile_photo)): ?>
-                            <img src="<?php echo esc_url($p->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
-                        <?php else: ?>
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#cbd5e1;">
-                                <span class="dashicons dashicons-admin-users" style="font-size:45px; width:45px; height:45px;"></span>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    <div style="flex:1; min-width:0;">
-                        <h3 style="margin:0 0 6px 0; font-size:1.15rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary); letter-spacing:-0.2px;"><?php echo esc_html($p->full_name ?? __('بدون اسم', 'control')); ?></h3>
-                        <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap; margin-bottom:8px;">
-                            <span class="patient-status-badge status-<?php echo esc_attr($p->case_status ?? 'waiting_list'); ?>" style="font-size:0.65rem; padding:3px 10px; border-radius:8px; font-weight:800; text-transform:uppercase;">
-                                <?php echo $status_labels[$p->case_status ?? 'waiting_list'] ?? ($p->case_status ?? 'waiting_list'); ?>
-                            </span>
-                            <span class="badge-pastel badge-age" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800;">
-                                <?php echo $age_str; ?>
-                            </span>
-                            <span class="badge-pastel badge-gender" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
-                                <?php echo (isset($p->gender) && $p->gender === 'male') ? __('ذكر', 'control') : __('أنثى', 'control'); ?>
-                            </span>
-                            <?php if(!empty($p->priority_level)): ?>
-                                <span class="badge-pastel badge-priority priority-<?php echo esc_attr($p->priority_level); ?>" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
-                                    <?php
-                                        $priorities = ['normal' => __('عادي', 'control'), 'urgent' => __('عاجل', 'control'), 'critical' => __('حرج', 'control')];
-                                        echo $priorities[$p->priority_level] ?? $p->priority_level;
-                                    ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <span class="badge-pastel badge-nat" style="padding:2px 12px; border-radius:20px; font-size:0.65rem; font-weight:700;">
-                                <?php echo esc_html($nat_label); ?>
-                            </span>
-                            <span style="color:var(--control-muted); font-size:0.65rem; font-weight:700; border:1px solid #e2e8f0; padding:1px 12px; border-radius:20px; background:#fff;">
-                                <?php echo esc_html($lang_label); ?>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="background:#f8fafc; padding:15px; border-radius:15px; margin-bottom: 5px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="flex:1;">
-                            <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('تشخيص الحالة', 'control'); ?></span>
-                            <span class="badge-pastel badge-diagnosis" style="padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:800; display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                <?php echo esc_html($p->initial_diagnosis ?? '') ?: __('غير محدد', 'control'); ?>
-                            </span>
-                        </div>
-                        <div style="width:1px; height:25px; background:#e2e8f0; margin:0 15px;"></div>
-                        <div style="flex:1; text-align:left;">
-                            <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('رقم الملف', 'control'); ?></span>
-                            <strong style="font-size: 0.8rem; font-family:monospace; letter-spacing:1px; display:block;">#<?php echo esc_html(($p->permanent_id ?? '') ?: ($p->id ?? '0')); ?></strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="background:#fff; padding:15px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; gap: 10px;">
-                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id ?? 0)); ?>" class="control-btn" style="flex: 1; padding:10px; font-size:0.8rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:12px; text-align:center;">
-                    <?php echo Control_I18n::t('view_file'); ?>
-                </a>
-
-                <?php if($can_manage): ?>
-                    <?php if(isset($p->case_status) && ($p->case_status === 'evaluation_only' || $p->case_status === 'closed' || $p->case_status === 'completed')): ?>
-                        <button class="restore-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="background:var(--control-accent); color:var(--control-primary); border:none; padding:10px 15px; font-size:0.8rem; border-radius:12px; font-weight:800; cursor:pointer;" title="<?php _e('إعادة تنشيط الملف', 'control'); ?>">
-                            <span class="dashicons dashicons-undo"></span>
-                        </button>
-                    <?php elseif(empty($p->permanent_id) || (isset($p->case_status) && $p->case_status === 'waiting_list')): ?>
-                        <a href="<?php echo add_query_arg(array('resume_id' => $p->id ?? 0), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="flex: 0.8; padding:10px; font-size:0.8rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:800; border-radius:12px; text-align:center;">
-                            <?php _e('إكمال الملف', 'control'); ?>
-                        </a>
-                    <?php endif; ?>
-                <?php endif; ?>
-
-                <?php if($can_manage): ?>
-                    <div style="display:flex; gap:5px;">
-                        <?php if(isset($p->case_status) && $p->case_status === 'active'): ?>
-                            <button class="close-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="background:none; border:none; color:#94a3b8; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" title="<?php _e('إغلاق الملف', 'control'); ?>">
-                                <span class="dashicons dashicons-no-alt"></span>
-                            </button>
-                        <?php endif; ?>
-                        <button class="delete-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="background:none; border:none; color:#cbd5e1; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
-                            <span class="dashicons dashicons-trash"></span>
-                        </button>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    <?php endforeach; else: ?>
-        <div style="grid-column: 1 / -1; text-align:center; padding:80px 40px; background:#fff; border-radius:20px; border:2px dashed #e2e8f0;">
-            <div style="width:100px; height:100px; background:#f8fafc; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 25px; color:#cbd5e1;">
-                <span class="dashicons dashicons-groups" style="font-size:50px; width:50px; height:50px;"></span>
-            </div>
-            <p style="color:var(--control-muted); font-size:1.2rem; font-weight:600;"><?php _e('لا توجد سجلات في هذا القسم حالياً.', 'control'); ?></p>
-        </div>
-    <?php endif;
-}
-}
-?>
 
 <div id="pediatric-toast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#1e293b; color:#fff; padding:12px 30px; border-radius:50px; z-index:100000; box-shadow:0 10px 30px rgba(0,0,0,0.2); font-weight:700;"></div>
 

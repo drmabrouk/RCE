@@ -1378,6 +1378,16 @@ class Control_Ajax {
 			}
 		}
 
+		// Duplicate ID prevention
+		if ( ! empty( $data['national_id'] ) ) {
+			$dup_national = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_patients WHERE national_id = %s AND id != %d", $data['national_id'], $id ) );
+			if ( $dup_national ) $this->send_error( __('رقم الهوية / الإقامة مسجل مسبقاً لطفل آخر.', 'control') );
+		}
+		if ( ! empty( $data['permanent_id'] ) ) {
+			$dup_perm = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_patients WHERE permanent_id = %s AND id != %d", $data['permanent_id'], $id ) );
+			if ( $dup_perm ) $this->send_error( __('رقم الملف الطبي الدائم مسجل مسبقاً لطفل آخر.', 'control') );
+		}
+
 		if ( $id ) {
 			$wpdb->update( "{$wpdb->prefix}control_patients", $data, array( 'id' => $id ) );
 			Control_Audit::log( 'edit_patient', "Updated patient: {$data['full_name']}" );
@@ -1839,6 +1849,7 @@ class Control_Ajax {
 			'eval_social'    => $get_val('eval_social'),
 			'eval_language'  => $get_val('eval_language'),
 			'intake_reason'  => $get_val('intake_reason', 'textarea'),
+			'national_id'    => $get_val('national_id'),
 			'intake_status'  => 'pending',
 			'case_status'    => 'waiting_list',
 			'temp_id'        => 'REQ-' . strtoupper(wp_generate_password(8, false)),
@@ -1849,6 +1860,12 @@ class Control_Ajax {
 			'amount_per_cycle'  => floatval($get_val('amount_per_cycle')),
 			'total_expected_revenue' => floatval($get_val('total_expected_revenue')),
 		);
+
+		// Duplicate National ID check for Kiosk
+		if ( ! empty( $data['national_id'] ) ) {
+			$dup = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_patients WHERE national_id = %s", $data['national_id'] ) );
+			if ( $dup ) $this->send_error( __('عذراً، هذا الرقم (الهوية/الإقامة) مسجل مسبقاً في النظام. يرجى التواصل مع الاستقبال.', 'control') );
+		}
 
 		$result = $wpdb->insert("{$wpdb->prefix}control_patients", $data);
 		if ($result === false) {

@@ -1,5 +1,6 @@
 <div class="view-section-container">
 <?php
+global $wpdb;
 $users = Control_Auth::get_all_users();
 $can_manage = Control_Auth::is_admin();
 $role_labels = Control_Auth::get_roles();

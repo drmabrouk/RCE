@@ -336,8 +336,16 @@ class Control_I18n {
 		)
 	);
 
-	public static function t( $key ) {
+	public static function get_lang() {
+		if ( ! isset( $_SESSION ) ) {
+			return 'ar';
+		}
 		$lang = $_SESSION['control_lang'] ?? 'ar';
+		return in_array( $lang, array( 'ar', 'en' ) ) ? $lang : 'ar';
+	}
+
+	public static function t( $key ) {
+		$lang = self::get_lang();
 		return self::$strings[$lang][$key] ?? $key;
 	}
 
@@ -346,7 +354,7 @@ class Control_I18n {
 	}
 
 	public static function get_country_name( $code ) {
-		$lang = $_SESSION['control_lang'] ?? 'ar';
+		$lang = self::get_lang();
 		$countries = array(
 			'ar' => array(
 				'SA' => 'المملكة العربية السعودية',
@@ -367,6 +375,14 @@ class Control_I18n {
 				'LY' => 'ليبيا',
 				'YE' => 'اليمن',
 				'PS' => 'فلسطين',
+				'US' => 'الولايات المتحدة الأمريكية',
+				'GB' => 'المملكة المتحدة',
+				'CA' => 'كندا',
+				'FR' => 'فرنسا',
+				'DE' => 'ألمانيا',
+				'TR' => 'تركيا',
+				'IN' => 'الهند',
+				'PK' => 'باكستان',
 				'other' => 'جنسيات أخرى',
 			),
 			'en' => array(
@@ -388,6 +404,14 @@ class Control_I18n {
 				'LY' => 'Libya',
 				'YE' => 'Yemen',
 				'PS' => 'Palestine',
+				'US' => 'United States',
+				'GB' => 'United Kingdom',
+				'CA' => 'Canada',
+				'FR' => 'France',
+				'DE' => 'Germany',
+				'TR' => 'Turkey',
+				'IN' => 'India',
+				'PK' => 'Pakistan',
 				'other' => 'Other',
 			)
 		);

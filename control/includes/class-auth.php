@@ -28,6 +28,10 @@ class Control_Auth {
 		global $wpdb;
 		$results = $wpdb->get_results( "SELECT role_key, role_name FROM {$wpdb->prefix}control_roles ORDER BY id ASC", OBJECT_K );
 
+		if ( ! is_array( $results ) ) {
+			return array();
+		}
+
 		$roles = array();
 		foreach ( $results as $key => $row ) {
 			$roles[$key] = $row->role_name;
@@ -64,6 +68,10 @@ class Control_Auth {
 		global $wpdb;
 		$roles = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_roles" );
 
+		if ( empty( $roles ) || ! is_array( $roles ) ) {
+			return;
+		}
+
 		$keep_roles = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' ); // Keep core WP roles
 
 		foreach ( $roles as $role ) {
@@ -89,21 +97,34 @@ class Control_Auth {
 	 * Check if current user has a specific permission.
 	 */
 	public static function has_permission( $permission ) {
+		if ( ! function_exists( 'current_user_can' ) ) {
+			return false;
+		}
+
 		if ( current_user_can( 'manage_options' ) ) {
 			return true; // WP Super Admin has all permissions
 		}
 
 		$user = self::current_user();
-		if ( ! $user ) return false;
+		if ( ! $user || ! isset( $user->role ) ) {
+			return false;
+		}
 
 		global $wpdb;
 		$role = $wpdb->get_row( $wpdb->prepare( "SELECT permissions FROM {$wpdb->prefix}control_roles WHERE role_key = %s", $user->role ) );
 
-		if ( ! $role ) return false;
+		if ( ! $role || empty( $role->permissions ) ) {
+			return false;
+		}
 
 		$perms = json_decode( $role->permissions, true );
+		if ( ! is_array( $perms ) ) {
+			return false;
+		}
 
-		if ( isset($perms['all']) && $perms['all'] ) return true;
+		if ( ( isset( $perms['all'] ) && $perms['all'] ) || ( isset( $perms['full_access'] ) && $perms['full_access'] ) ) {
+			return true;
+		}
 
 		return isset( $perms[$permission] ) && $perms[$permission];
 	}
@@ -247,25 +268,34 @@ class Control_Auth {
 	}
 
 	public static function current_user() {
+		if ( ! function_exists( 'current_user_can' ) ) {
+			return null;
+		}
+
 		if ( current_user_can( 'manage_options' ) ) {
 			$wp_user = wp_get_current_user();
+			if ( ! $wp_user || ! $wp_user->exists() ) {
+				return null;
+			}
 			return (object) array(
-				'id'   => 'wp_' . $wp_user->ID,
+				'id'       => 'wp_' . $wp_user->ID,
 				'username' => $wp_user->user_login,
-				'role' => 'admin',
-				'name' => $wp_user->display_name
+				'role'     => 'admin',
+				'name'     => $wp_user->display_name
 			);
 		}
 
-		if ( ! isset( $_SESSION['control_user_id'] ) ) return null;
+		if ( ! isset( $_SESSION ) || ! isset( $_SESSION['control_user_id'] ) ) {
+			return null;
+		}
 
 		return (object) array(
-			'id'   => $_SESSION['control_user_id'],
-			'phone' => $_SESSION['control_phone'],
-			'role' => $_SESSION['control_user_role'],
-			'first_name' => $_SESSION['control_user_first_name'],
-			'last_name'  => $_SESSION['control_user_last_name'],
-			'name'       => $_SESSION['control_user_first_name'] . ' ' . $_SESSION['control_user_last_name']
+			'id'         => $_SESSION['control_user_id'] ?? 0,
+			'phone'      => $_SESSION['control_phone'] ?? '',
+			'role'       => $_SESSION['control_user_role'] ?? '',
+			'first_name' => $_SESSION['control_user_first_name'] ?? '',
+			'last_name'  => $_SESSION['control_user_last_name'] ?? '',
+			'name'       => ( $_SESSION['control_user_first_name'] ?? '' ) . ' ' . ( $_SESSION['control_user_last_name'] ?? '' )
 		);
 	}
 
@@ -280,7 +310,8 @@ class Control_Auth {
 	public static function get_all_users() {
 		global $wpdb;
 		$table = $wpdb->prefix . 'control_staff';
-		return $wpdb->get_results( "SELECT * FROM $table ORDER BY id DESC" );
+		$results = $wpdb->get_results( "SELECT * FROM $table ORDER BY id DESC" );
+		return is_array( $results ) ? $results : array();
 	}
 
 	/**

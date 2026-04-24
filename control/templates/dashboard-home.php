@@ -23,6 +23,7 @@ if ( Control_Auth::is_admin() ) {
 
         <?php
         $roles_count = $wpdb->get_results("SELECT role, COUNT(*) as count FROM {$wpdb->prefix}control_staff GROUP BY role", OBJECT_K);
+        $roles_count = is_array($roles_count) ? $roles_count : array();
         $role_labels = Control_Auth::get_roles();
         $coach_count = $roles_count['coach']->count ?? 0;
         ?>
@@ -90,6 +91,7 @@ if ( Control_Auth::is_admin() ) {
                 <div style="padding: 10px 30px 30px 30px;">
                     <?php
                     $recent_logs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_activity_logs ORDER BY action_date DESC LIMIT 5");
+                    $recent_logs = is_array($recent_logs) ? $recent_logs : array();
                     if (empty($recent_logs)): ?>
                         <div style="text-align:center; padding:40px 20px;">
                             <span class="dashicons dashicons-info" style="font-size:30px; color:var(--control-border); width:30px; height:30px;"></span>

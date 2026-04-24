@@ -44,10 +44,14 @@ class Control_System {
 	}
 
 	private function version_check() {
-		$installed_ver = get_option( 'control_system_version' );
-		if ( $installed_ver !== CONTROL_VERSION ) {
-			Control_Database::create_tables();
-			update_option( 'control_system_version', CONTROL_VERSION );
+		try {
+			$installed_ver = get_option( 'control_system_version' );
+			if ( $installed_ver !== CONTROL_VERSION ) {
+				Control_Database::create_tables();
+				update_option( 'control_system_version', CONTROL_VERSION );
+			}
+		} catch ( Throwable $e ) {
+			error_log( '[Control System] Database migration failed: ' . $e->getMessage() );
 		}
 	}
 

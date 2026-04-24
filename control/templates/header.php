@@ -3,6 +3,7 @@
     $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
     $system_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
     $design = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_settings WHERE setting_key LIKE 'design_%' OR setting_key LIKE 'auth_%'", OBJECT_K);
+    $design = is_array($design) ? $design : array();
 ?>
 <style id="control-dynamic-styles">
     :root {

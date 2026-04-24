@@ -2,6 +2,7 @@
 <?php
 global $wpdb;
 $roles = $wpdb->get_results( "SELECT r.*, (SELECT COUNT(*) FROM {$wpdb->prefix}control_staff WHERE role = r.role_key) as user_count FROM {$wpdb->prefix}control_roles r" );
+$roles = is_array($roles) ? $roles : array();
 $available_permissions = Control_Auth::get_permissions_registry();
 ?>
 

@@ -35,7 +35,8 @@ $strings = Control_I18n::get_all();
                 <div class="wiz-dot" data-step="4" title="Phase 4: Functional Assessment"></div>
                 <?php if($is_internal): ?>
                     <div class="wiz-dot" data-step="5" title="Phase 5: Evaluation"></div>
-                    <div class="wiz-dot" data-step="6" title="Phase 6: Activation"></div>
+                    <div class="wiz-dot" data-step="6" title="Phase 6: Financial Setup"></div>
+                    <div class="wiz-dot" data-step="7" title="Phase 7: Activation"></div>
                 <?php endif; ?>
             </div>
         </div>
@@ -424,6 +425,36 @@ $strings = Control_I18n::get_all();
             </div>
 
             <div class="wiz-step" id="wiz-step-6" style="display:none;">
+                <h4 style="color:var(--control-primary); margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;" data-t="financial_setup"><?php echo Control_I18n::t('financial_setup'); ?></h4>
+                <div class="wiz-grid">
+                    <div class="wiz-field">
+                        <label data-t="registration_cost"><?php echo Control_I18n::t('registration_cost'); ?></label>
+                        <input type="number" name="registration_cost" step="0.01">
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="payment_model"><?php echo Control_I18n::t('payment_model'); ?></label>
+                        <select name="payment_model">
+                            <option value="one_time" data-t="one_time"><?php echo Control_I18n::t('one_time'); ?></option>
+                            <option value="daily" data-t="daily"><?php echo Control_I18n::t('daily'); ?></option>
+                            <option value="weekly" data-t="weekly"><?php echo Control_I18n::t('weekly'); ?></option>
+                            <option value="monthly" data-t="monthly"><?php echo Control_I18n::t('monthly'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="billing_type"><?php echo Control_I18n::t('billing_type'); ?></label>
+                        <select name="billing_type">
+                            <option value="session_based" data-t="session_based"><?php echo Control_I18n::t('session_based'); ?></option>
+                            <option value="subscription_based" data-t="subscription_based"><?php echo Control_I18n::t('subscription_based'); ?></option>
+                        </select>
+                    </div>
+                    <div class="wiz-field">
+                        <label data-t="amount_per_cycle"><?php echo Control_I18n::t('amount_per_cycle'); ?></label>
+                        <input type="number" name="amount_per_cycle" step="0.01">
+                    </div>
+                </div>
+            </div>
+
+            <div class="wiz-step" id="wiz-step-7" style="display:none;">
                 <h4 style="color:var(--control-primary); margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;" data-t="phase_6_title"><?php echo Control_I18n::t('phase_6_title'); ?></h4>
                 <div class="wiz-grid">
                     <div class="wiz-field">
@@ -433,15 +464,17 @@ $strings = Control_I18n::get_all();
                     <div class="wiz-field">
                         <label data-t="case_status"><?php echo Control_I18n::t('case_status'); ?></label>
                         <select name="case_status">
-                            <option value="active">Active in System</option>
-                            <option value="waiting_list">Waiting List</option>
-                            <option value="completed">Completed Rehabilitation</option>
+                            <option value="active" data-t="active"><?php echo Control_I18n::t('active'); ?></option>
+                            <option value="evaluation_only" data-t="evaluation_only"><?php echo Control_I18n::t('evaluation_only'); ?></option>
+                            <option value="waiting_list" data-t="waiting_list"><?php echo Control_I18n::t('waiting_list'); ?></option>
+                            <option value="completed" data-t="completed"><?php echo Control_I18n::t('completed'); ?></option>
+                            <option value="closed" data-t="closed"><?php echo Control_I18n::t('closed'); ?></option>
                         </select>
                     </div>
                     <div class="wiz-field">
                         <label data-t="account_activation"><?php echo Control_I18n::t('account_activation'); ?></label>
                         <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                            <input type="checkbox" name="activate_account" value="1"> <span>Activate Guardian Account</span>
+                            <input type="checkbox" name="activate_account" value="1"> <span data-t="account_activation">Activate Guardian Account</span>
                         </label>
                     </div>
                 </div>
@@ -475,7 +508,7 @@ $strings = Control_I18n::get_all();
 const wizStrings = <?php echo json_encode($strings); ?>;
 let currentWizStep = 1;
 const isInternalUser = <?php echo $is_internal ? 'true' : 'false'; ?>;
-const totalWizSteps = isInternalUser ? 6 : 4;
+const totalWizSteps = isInternalUser ? 7 : 4;
 
 function setWizLang(lang) {
     jQuery('#wiz-selected-lang').val(lang);

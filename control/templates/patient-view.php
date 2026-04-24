@@ -157,10 +157,15 @@ $status_labels = array(
                         <div style="font-weight:800; font-size:1.1rem; margin-bottom:5px;"><?php echo esc_html($patient->full_name); ?></div>
                         <div style="font-size:0.7rem; color:rgba(255,255,255,0.7); display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
                             <span style="grid-column: 1 / -1;"><?php _e('العمر:', 'control'); ?> <strong style="color:#fff;"><?php
-                                $dob = new DateTime($patient->dob);
-                                $now = new DateTime();
-                                $age = $now->diff($dob);
-                                echo sprintf(__('%d سنوات، %d شهور، %d أيام', 'control'), $age->y, $age->m, $age->d);
+                                try {
+                                    $dob_val = !empty($patient->dob) ? $patient->dob : date('Y-m-d');
+                                    $dob = new DateTime($dob_val);
+                                    $now = new DateTime();
+                                    $age = $now->diff($dob);
+                                    echo sprintf(__('%d سنوات، %d شهور، %d أيام', 'control'), $age->y, $age->m, $age->d);
+                                } catch (Exception $e) {
+                                    echo __('غير معروف', 'control');
+                                }
                             ?></strong></span>
                             <span><?php _e('رقم الملف:', 'control'); ?> <strong style="color:#fff;">#<?php echo $patient->id; ?></strong></span>
                             <span><?php _e('الطول:', 'control'); ?> <strong style="color:#fff;"><?php echo $patient->height ?: '---'; ?></strong></span>

@@ -2,6 +2,7 @@
 <?php
 global $wpdb;
 $patients = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_patients ORDER BY created_at DESC" );
+$patients = is_array($patients) ? $patients : array();
 $can_manage = Control_Auth::has_permission('pediatric_manage');
 
 $status_labels = array(
@@ -13,13 +14,13 @@ $status_labels = array(
     'closed'          => __('ملف مغلق', 'control'),
 );
 
-$pending_requests = array_filter($patients, function($p) { return $p->intake_status === 'pending'; });
+$pending_requests = array_filter($patients, function($p) { return isset($p->intake_status) && $p->intake_status === 'pending'; });
 
 // Strict Tab Segmentation
-$active_records   = array_filter($patients, function($p) { return $p->case_status === 'active'; });
-$evaluation_cases = array_filter($patients, function($p) { return $p->case_status === 'evaluation_only'; });
-$waiting_cases    = array_filter($patients, function($p) { return $p->case_status === 'waiting_list' && $p->intake_status !== 'pending'; });
-$closed_cases     = array_filter($patients, function($p) { return in_array($p->case_status, ['closed', 'completed', 'dropped_out']); });
+$active_records   = array_filter($patients, function($p) { return isset($p->case_status) && $p->case_status === 'active'; });
+$evaluation_cases = array_filter($patients, function($p) { return isset($p->case_status) && $p->case_status === 'evaluation_only'; });
+$waiting_cases    = array_filter($patients, function($p) { return isset($p->case_status) && $p->case_status === 'waiting_list' && isset($p->intake_status) && $p->intake_status !== 'pending'; });
+$closed_cases     = array_filter($patients, function($p) { return isset($p->case_status) && in_array($p->case_status, ['closed', 'completed', 'dropped_out']); });
 ?>
 
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
@@ -37,38 +38,38 @@ $closed_cases     = array_filter($patients, function($p) { return in_array($p->c
 </div>
 
 <!-- Pending Intake Queue -->
-<?php if($pending_requests): ?>
+<?php if(!empty($pending_requests) && is_array($pending_requests)): ?>
 <div style="margin-bottom:40px;">
     <h3 style="font-weight:800; color:#d97706; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
         <span class="dashicons dashicons-clock" style="font-size:24px; width:24px; height:24px;"></span>
         <?php _e('طلبات الالتحاق الجديدة (قيد المراجعة)', 'control'); ?>
     </h3>
     <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
-        <?php foreach($pending_requests as $p): ?>
+        <?php foreach($pending_requests as $p): if(!is_object($p)) continue; ?>
             <div class="control-card" style="border-right:5px solid #fbbf24; padding:0; overflow:hidden;">
                 <div style="padding:20px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
                         <div>
-                            <h4 style="margin:0; font-weight:800;"><?php echo esc_html($p->full_name); ?></h4>
-                            <small style="color:var(--control-muted);">ID: <?php echo esc_html($p->temp_id ?: '#'.$p->id); ?></small>
+                            <h4 style="margin:0; font-weight:800;"><?php echo esc_html($p->full_name ?? __('بدون اسم', 'control')); ?></h4>
+                            <small style="color:var(--control-muted);">ID: <?php echo esc_html(($p->temp_id ?? '') ?: '#'.($p->id ?? '0')); ?></small>
                         </div>
                         <span style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:10px; font-size:0.7rem; font-weight:800;"><?php _e('انتظار', 'control'); ?></span>
                     </div>
                     <p style="font-size:0.85rem; color:#475569; margin:0 0 15px 0; line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                        <strong><?php _e('سبب الطلب:', 'control'); ?></strong> <?php echo esc_html($p->intake_reason); ?>
+                        <strong><?php _e('سبب الطلب:', 'control'); ?></strong> <?php echo esc_html($p->intake_reason ?? ''); ?>
                     </p>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.8rem;">
-                        <div><span style="color:var(--control-muted);"><?php _e('تاريخ الطلب:', 'control'); ?></span><br><strong><?php echo date('Y-m-d', strtotime($p->created_at)); ?></strong></div>
-                        <div><span style="color:var(--control-muted);"><?php _e('هاتف التواصل:', 'control'); ?></span><br><strong><?php echo esc_html($p->father_phone); ?></strong></div>
+                        <div><span style="color:var(--control-muted);"><?php _e('تاريخ الطلب:', 'control'); ?></span><br><strong><?php echo !empty($p->created_at) ? date('Y-m-d', strtotime($p->created_at)) : '-'; ?></strong></div>
+                        <div><span style="color:var(--control-muted);"><?php _e('هاتف التواصل:', 'control'); ?></span><br><strong><?php echo esc_html($p->father_phone ?? ''); ?></strong></div>
                     </div>
                 </div>
                 <div style="background:#f8fafc; padding:12px 20px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <a href="<?php echo add_query_arg(array('resume_id' => $p->id), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="background:var(--control-primary); border:none; padding:6px 20px; font-size:0.85rem;">
+                    <a href="<?php echo add_query_arg(array('resume_id' => $p->id ?? 0), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="background:var(--control-primary); border:none; padding:6px 20px; font-size:0.85rem;">
                         <?php _e('إكمال ملف الطفل', 'control'); ?>
                     </a>
                     <div style="display:flex; gap:10px;">
-                        <button class="reject-intake-btn" data-id="<?php echo $p->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;" title="رفض الطلب"><span class="dashicons dashicons-no"></span></button>
-                        <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="color:#64748b; background:none; border:none; cursor:pointer;" title="حذف نهائي"><span class="dashicons dashicons-trash"></span></button>
+                        <button class="reject-intake-btn" data-id="<?php echo $p->id ?? 0; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;" title="رفض الطلب"><span class="dashicons dashicons-no"></span></button>
+                        <button class="delete-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="color:#64748b; background:none; border:none; cursor:pointer;" title="حذف نهائي"><span class="dashicons dashicons-trash"></span></button>
                     </div>
                 </div>
             </div>
@@ -215,24 +216,30 @@ $closed_cases     = array_filter($patients, function($p) { return in_array($p->c
 <?php
 if ( ! function_exists( 'render_patient_cards' ) ) {
 function render_patient_cards($records, $status_labels, $can_manage) {
-    if($records): foreach($records as $p):
-        $dob = new DateTime($p->dob);
-        $age_diff = $dob->diff(new DateTime());
-        $age_str = sprintf(__('%d سنة، %d شهر', 'control'), $age_diff->y, $age_diff->m);
-        $nat_label = Control_I18n::get_country_name($p->nationality ?: 'SA');
-        $lang_label = ($p->preferred_lang === 'en') ? 'English' : 'Arabic';
+    if(!empty($records) && is_array($records)): foreach($records as $p):
+        if(!is_object($p)) continue;
+        $dob_val = !empty($p->dob) ? $p->dob : date('Y-m-d');
+        try {
+            $dob = new DateTime($dob_val);
+            $age_diff = $dob->diff(new DateTime());
+            $age_str = sprintf(__('%d سنة، %d شهر', 'control'), $age_diff->y, $age_diff->m);
+        } catch (Exception $e) {
+            $age_str = __('غير معروف', 'control');
+        }
+        $nat_label = Control_I18n::get_country_name(!empty($p->nationality) ? $p->nationality : 'SA');
+        $lang_label = (isset($p->preferred_lang) && $p->preferred_lang === 'en') ? 'English' : 'Arabic';
     ?>
         <div class="control-card patient-card"
-             data-status="<?php echo esc_attr($p->case_status); ?>"
-             data-diag="<?php echo esc_attr(strtolower($p->initial_diagnosis)); ?>"
+             data-status="<?php echo esc_attr($p->case_status ?? 'waiting_list'); ?>"
+             data-diag="<?php echo esc_attr(strtolower($p->initial_diagnosis ?? '')); ?>"
              data-priority="<?php echo esc_attr($p->priority_level ?: 'normal'); ?>"
-             data-search="<?php echo esc_attr(strtolower($p->full_name . ' ' . $p->permanent_id . ' ' . $p->father_phone . ' ' . $p->initial_diagnosis)); ?>"
+             data-search="<?php echo esc_attr(strtolower(($p->full_name ?? '') . ' ' . ($p->permanent_id ?? '') . ' ' . ($p->father_phone ?? '') . ' ' . ($p->initial_diagnosis ?? ''))); ?>"
              style="padding:0; overflow:hidden; transition:0.3s; border:1px solid #f1f5f9; border-radius: 20px; position:relative;">
 
             <div style="padding:24px;">
                 <div style="display:flex; gap:18px; align-items:flex-start; margin-bottom:20px;">
                     <div style="width:75px; height:75px; background:#f8fafc; border-radius:20px; overflow:hidden; border:2px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.06); flex-shrink:0;">
-                        <?php if($p->profile_photo): ?>
+                        <?php if(!empty($p->profile_photo)): ?>
                             <img src="<?php echo esc_url($p->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
                         <?php else: ?>
                             <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#cbd5e1;">
@@ -241,16 +248,16 @@ function render_patient_cards($records, $status_labels, $can_manage) {
                         <?php endif; ?>
                     </div>
                     <div style="flex:1; min-width:0;">
-                        <h3 style="margin:0 0 6px 0; font-size:1.15rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary); letter-spacing:-0.2px;"><?php echo esc_html($p->full_name); ?></h3>
+                        <h3 style="margin:0 0 6px 0; font-size:1.15rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary); letter-spacing:-0.2px;"><?php echo esc_html($p->full_name ?? __('بدون اسم', 'control')); ?></h3>
                         <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap; margin-bottom:8px;">
-                            <span class="patient-status-badge status-<?php echo esc_attr($p->case_status); ?>" style="font-size:0.65rem; padding:3px 10px; border-radius:8px; font-weight:800; text-transform:uppercase;">
-                                <?php echo $status_labels[$p->case_status] ?? $p->case_status; ?>
+                            <span class="patient-status-badge status-<?php echo esc_attr($p->case_status ?? 'waiting_list'); ?>" style="font-size:0.65rem; padding:3px 10px; border-radius:8px; font-weight:800; text-transform:uppercase;">
+                                <?php echo $status_labels[$p->case_status ?? 'waiting_list'] ?? ($p->case_status ?? 'waiting_list'); ?>
                             </span>
                             <span class="badge-pastel badge-age" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800;">
                                 <?php echo $age_str; ?>
                             </span>
                             <span class="badge-pastel badge-gender" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
-                                <?php echo $p->gender === 'male' ? __('ذكر', 'control') : __('أنثى', 'control'); ?>
+                                <?php echo (isset($p->gender) && $p->gender === 'male') ? __('ذكر', 'control') : __('أنثى', 'control'); ?>
                             </span>
                             <?php if(!empty($p->priority_level)): ?>
                                 <span class="badge-pastel badge-priority priority-<?php echo esc_attr($p->priority_level); ?>" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
@@ -277,30 +284,30 @@ function render_patient_cards($records, $status_labels, $can_manage) {
                         <div style="flex:1;">
                             <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('تشخيص الحالة', 'control'); ?></span>
                             <span class="badge-pastel badge-diagnosis" style="padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:800; display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                <?php echo esc_html($p->initial_diagnosis) ?: __('غير محدد', 'control'); ?>
+                                <?php echo esc_html($p->initial_diagnosis ?? '') ?: __('غير محدد', 'control'); ?>
                             </span>
                         </div>
                         <div style="width:1px; height:25px; background:#e2e8f0; margin:0 15px;"></div>
                         <div style="flex:1; text-align:left;">
                             <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('رقم الملف', 'control'); ?></span>
-                            <strong style="font-size: 0.8rem; font-family:monospace; letter-spacing:1px; display:block;">#<?php echo esc_html($p->permanent_id ?: $p->id); ?></strong>
+                            <strong style="font-size: 0.8rem; font-family:monospace; letter-spacing:1px; display:block;">#<?php echo esc_html(($p->permanent_id ?? '') ?: ($p->id ?? '0')); ?></strong>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div style="background:#fff; padding:15px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; gap: 10px;">
-                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id)); ?>" class="control-btn" style="flex: 1; padding:10px; font-size:0.8rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:12px; text-align:center;">
+                <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p->id ?? 0)); ?>" class="control-btn" style="flex: 1; padding:10px; font-size:0.8rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:12px; text-align:center;">
                     <?php echo Control_I18n::t('view_file'); ?>
                 </a>
 
                 <?php if($can_manage): ?>
-                    <?php if($p->case_status === 'evaluation_only' || $p->case_status === 'closed' || $p->case_status === 'completed'): ?>
-                        <button class="restore-patient-btn" data-id="<?php echo $p->id; ?>" style="background:var(--control-accent); color:var(--control-primary); border:none; padding:10px 15px; font-size:0.8rem; border-radius:12px; font-weight:800; cursor:pointer;" title="<?php _e('إعادة تنشيط الملف', 'control'); ?>">
+                    <?php if(isset($p->case_status) && ($p->case_status === 'evaluation_only' || $p->case_status === 'closed' || $p->case_status === 'completed')): ?>
+                        <button class="restore-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="background:var(--control-accent); color:var(--control-primary); border:none; padding:10px 15px; font-size:0.8rem; border-radius:12px; font-weight:800; cursor:pointer;" title="<?php _e('إعادة تنشيط الملف', 'control'); ?>">
                             <span class="dashicons dashicons-undo"></span>
                         </button>
-                    <?php elseif(empty($p->permanent_id) || $p->case_status === 'waiting_list'): ?>
-                        <a href="<?php echo add_query_arg(array('resume_id' => $p->id), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="flex: 0.8; padding:10px; font-size:0.8rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:800; border-radius:12px; text-align:center;">
+                    <?php elseif(empty($p->permanent_id) || (isset($p->case_status) && $p->case_status === 'waiting_list')): ?>
+                        <a href="<?php echo add_query_arg(array('resume_id' => $p->id ?? 0), get_permalink(get_page_by_path('kiosk-registration'))); ?>" class="control-btn" style="flex: 0.8; padding:10px; font-size:0.8rem; background:var(--control-primary); color:#fff !important; border:none; font-weight:800; border-radius:12px; text-align:center;">
                             <?php _e('إكمال الملف', 'control'); ?>
                         </a>
                     <?php endif; ?>
@@ -308,12 +315,12 @@ function render_patient_cards($records, $status_labels, $can_manage) {
 
                 <?php if($can_manage): ?>
                     <div style="display:flex; gap:5px;">
-                        <?php if($p->case_status === 'active'): ?>
-                            <button class="close-patient-btn" data-id="<?php echo $p->id; ?>" style="background:none; border:none; color:#94a3b8; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" title="<?php _e('إغلاق الملف', 'control'); ?>">
+                        <?php if(isset($p->case_status) && $p->case_status === 'active'): ?>
+                            <button class="close-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="background:none; border:none; color:#94a3b8; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" title="<?php _e('إغلاق الملف', 'control'); ?>">
                                 <span class="dashicons dashicons-no-alt"></span>
                             </button>
                         <?php endif; ?>
-                        <button class="delete-patient-btn" data-id="<?php echo $p->id; ?>" style="background:none; border:none; color:#cbd5e1; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
+                        <button class="delete-patient-btn" data-id="<?php echo $p->id ?? 0; ?>" style="background:none; border:none; color:#cbd5e1; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
                             <span class="dashicons dashicons-trash"></span>
                         </button>
                     </div>
@@ -524,9 +531,10 @@ jQuery(document).ready(function($) {
 
     $('.process-intake-btn').on('click', function() {
         const id = $(this).data('id');
+        if (!id) return;
         // Fetch full record and open modal at step 5
         $.post(control_ajax.ajax_url, {
-            action: 'control_get_patient', // This action needs to be verified/added
+            action: 'control_get_patient',
             id: id,
             nonce: control_ajax.nonce
         }, function(res) {

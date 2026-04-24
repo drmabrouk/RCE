@@ -28,7 +28,8 @@ class Control_Ajax {
 			'delete_fin_package', 'save_fin_invoice', 'delete_fin_invoice',
 			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
 			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense',
-			'update_intake_status', 'add_custom_permission', 'update_session_lang', 'restore_patient'
+			'update_intake_status', 'add_custom_permission', 'update_session_lang', 'restore_patient',
+			'close_patient'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1914,6 +1915,18 @@ class Control_Ajax {
 		$wpdb->update("{$wpdb->prefix}control_patients", array('case_status' => 'active'), array('id' => $id));
 
 		Control_Audit::log('restore_patient', "Patient record restored to Active status for ID: $id");
+		$this->send_success();
+	}
+
+	public function close_patient() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+
+		$id = intval($_POST['id']);
+		$wpdb->update("{$wpdb->prefix}control_patients", array('case_status' => 'closed'), array('id' => $id));
+
+		Control_Audit::log('close_patient', "Patient record closed for ID: $id");
 		$this->send_success();
 	}
 }

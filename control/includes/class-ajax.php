@@ -1352,6 +1352,13 @@ class Control_Ajax {
 			'system_id'         => 'sanitize_text_field',
 			'intake_status'     => 'sanitize_text_field',
 			'workflow_metadata' => 'wp_unslash',
+			'registration_cost'  => 'floatval',
+			'currency'          => 'sanitize_text_field',
+			'payment_model'     => 'sanitize_text_field',
+			'billing_type'      => 'sanitize_text_field',
+			'payment_frequency' => 'sanitize_text_field',
+			'amount_per_cycle'  => 'floatval',
+			'total_expected_revenue' => 'floatval',
 		);
 
 		$data = array();
@@ -1377,6 +1384,28 @@ class Control_Ajax {
 			$wpdb->insert( "{$wpdb->prefix}control_patients", $data );
 			$id = $wpdb->insert_id;
 			Control_Audit::log( 'add_patient', "Added new patient: {$data['full_name']}" );
+
+			// Automatic Invoice Generation for Registration Fee
+			if (!empty($data['registration_cost']) && $data['registration_cost'] > 0) {
+				$invoice_num = 'INV-REG-' . $id . '-' . time();
+				$wpdb->insert("{$wpdb->prefix}control_fin_invoices", array(
+					'patient_id' => $id,
+					'invoice_number' => $invoice_num,
+					'subtotal' => $data['registration_cost'],
+					'total_amount' => $data['registration_cost'],
+					'status' => 'pending',
+					'invoice_date' => current_time('mysql'),
+					'notes' => __('رسوم تسجيل تلقائية', 'control')
+				));
+				$inv_id = $wpdb->insert_id;
+				$wpdb->insert("{$wpdb->prefix}control_fin_invoice_items", array(
+					'invoice_id' => $inv_id,
+					'description' => __('رسوم فتح ملف وتسجيل', 'control'),
+					'quantity' => 1,
+					'unit_price' => $data['registration_cost'],
+					'total_price' => $data['registration_cost']
+				));
+			}
 		}
 
 		$this->send_success( array( 'id' => $id ) );
@@ -1812,14 +1841,44 @@ class Control_Ajax {
 			'intake_status'  => 'pending',
 			'case_status'    => 'waiting_list',
 			'temp_id'        => 'REQ-' . strtoupper(wp_generate_password(8, false)),
+			'registration_cost'  => floatval($get_val('registration_cost')),
+			'payment_model'     => $get_val('payment_model'),
+			'billing_type'      => $get_val('billing_type'),
+			'payment_frequency' => $get_val('payment_frequency'),
+			'amount_per_cycle'  => floatval($get_val('amount_per_cycle')),
+			'total_expected_revenue' => floatval($get_val('total_expected_revenue')),
 		);
 
 		$result = $wpdb->insert("{$wpdb->prefix}control_patients", $data);
 		if ($result === false) {
 			$this->send_error(__('فشل حفظ البيانات في قاعدة البيانات. يرجى مراجعة الإدارة.', 'control') . ' ' . $wpdb->last_error);
 		}
+		$id = $wpdb->insert_id;
+
+		// Automatic Invoice Generation for Registration Fee in Kiosk Mode
+		if (!empty($data['registration_cost']) && $data['registration_cost'] > 0) {
+			$invoice_num = 'INV-REG-' . $id . '-' . time();
+			$wpdb->insert("{$wpdb->prefix}control_fin_invoices", array(
+				'patient_id' => $id,
+				'invoice_number' => $invoice_num,
+				'subtotal' => $data['registration_cost'],
+				'total_amount' => $data['registration_cost'],
+				'status' => 'pending',
+				'invoice_date' => current_time('mysql'),
+				'notes' => __('رسوم تسجيل تلقائية من الكشك', 'control')
+			));
+			$inv_id = $wpdb->insert_id;
+			$wpdb->insert("{$wpdb->prefix}control_fin_invoice_items", array(
+				'invoice_id' => $inv_id,
+				'description' => __('رسوم فتح ملف وتسجيل (كشك)', 'control'),
+				'quantity' => 1,
+				'unit_price' => $data['registration_cost'],
+				'total_price' => $data['registration_cost']
+			));
+		}
+
 		Control_Audit::log('kiosk_intake', "New intake request from Kiosk: {$data['full_name']}");
-		$this->send_success();
+		$this->send_success( array( 'id' => $id ) );
 	}
 
 	public function update_session_lang() {
@@ -1843,6 +1902,18 @@ class Control_Ajax {
 			Control_Audit::log('intake_approved', "Intake request approved for ID: $id");
 		}
 
+		$this->send_success();
+	}
+
+	public function restore_patient() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+
+		$id = intval($_POST['id']);
+		$wpdb->update("{$wpdb->prefix}control_patients", array('case_status' => 'active'), array('id' => $id));
+
+		Control_Audit::log('restore_patient', "Patient record restored to Active status for ID: $id");
 		$this->send_success();
 	}
 }

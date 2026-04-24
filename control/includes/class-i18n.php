@@ -152,6 +152,18 @@ class Control_I18n {
 			'internal_analysis_1' => 'تحليل وتصنيف الحالة إدارياً',
 			'internal_analysis_2' => 'تحديد الفريق والقرار النهائي',
 			'final_activation' => 'التفعيل النهائي للملف الدائم',
+			'financial_setup' => 'الإعدادات المالية للملف',
+			'registration_cost' => 'تكلفة التسجيل (AED)',
+			'payment_model' => 'نموذج الدفع',
+			'billing_type' => 'نوع الفوترة',
+			'payment_frequency' => 'دورية الدفع',
+			'amount_per_cycle' => 'المبلغ لكل دورة',
+			'one_time' => 'دفع لمرة واحدة',
+			'daily' => 'دفع يومي',
+			'weekly' => 'اشتراك أسبوعي',
+			'monthly' => 'اشتراك شهري',
+			'session_based' => 'فوترة حسب الجلسات',
+			'subscription_based' => 'فوترة بنظام الاشتراك',
 			'welcome_user' => 'مرحباً بك',
 		),
 		'en' => array(
@@ -300,6 +312,18 @@ class Control_I18n {
 			'internal_analysis_1' => 'Case Analysis & Admin Classification',
 			'internal_analysis_2' => 'Team Assignment & Final Decision',
 			'final_activation' => 'Final Permanent File Activation',
+			'financial_setup' => 'Financial Setup',
+			'registration_cost' => 'Registration Cost (AED)',
+			'payment_model' => 'Payment Model',
+			'billing_type' => 'Billing Type',
+			'payment_frequency' => 'Payment Frequency',
+			'amount_per_cycle' => 'Amount per Cycle',
+			'one_time' => 'One-time registration fee',
+			'daily' => 'Daily payment',
+			'weekly' => 'Weekly subscription',
+			'monthly' => 'Monthly subscription',
+			'session_based' => 'Session-based',
+			'subscription_based' => 'Subscription-based',
 			'welcome_user' => 'Welcome',
 		)
 	);
@@ -311,5 +335,54 @@ class Control_I18n {
 
 	public static function get_all() {
 		return self::$strings;
+	}
+
+	public static function get_country_name( $code ) {
+		$lang = $_SESSION['control_lang'] ?? 'ar';
+		$countries = array(
+			'ar' => array(
+				'SA' => 'المملكة العربية السعودية',
+				'AE' => 'الإمارات العربية المتحدة',
+				'EG' => 'جمهورية مصر العربية',
+				'KW' => 'الكويت',
+				'QA' => 'قطر',
+				'BH' => 'البحرين',
+				'OM' => 'سلطنة عمان',
+				'JO' => 'الأردن',
+				'LB' => 'لبنان',
+				'SY' => 'سوريا',
+				'IQ' => 'العراق',
+				'SD' => 'السودان',
+				'MA' => 'المغرب',
+				'DZ' => 'الجزائر',
+				'TN' => 'تونس',
+				'LY' => 'ليبيا',
+				'YE' => 'اليمن',
+				'PS' => 'فلسطين',
+				'other' => 'جنسيات أخرى',
+			),
+			'en' => array(
+				'SA' => 'Saudi Arabia',
+				'AE' => 'United Arab Emirates',
+				'EG' => 'Egypt',
+				'KW' => 'Kuwait',
+				'QA' => 'Qatar',
+				'BH' => 'Bahrain',
+				'OM' => 'Oman',
+				'JO' => 'Jordan',
+				'LB' => 'Lebanon',
+				'SY' => 'Syria',
+				'IQ' => 'Iraq',
+				'SD' => 'Sudan',
+				'MA' => 'Morocco',
+				'DZ' => 'Algeria',
+				'TN' => 'Tunisia',
+				'LY' => 'Libya',
+				'YE' => 'Yemen',
+				'PS' => 'Palestine',
+				'other' => 'Other',
+			)
+		);
+		return $countries[$lang][$code] ?? $code;
 	}
 }

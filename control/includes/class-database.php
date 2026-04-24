@@ -219,12 +219,21 @@ class Control_Database {
 			priority_level varchar(50),
 			suggested_pathway varchar(100),
 			final_decision varchar(100),
-			case_status varchar(50) DEFAULT 'waiting_list',
+			case_status varchar(50) DEFAULT 'waiting_list', /* active, evaluation_only, closed, waiting_list, dropped_out, completed */
 			assigned_specialists text,
 			is_draft tinyint(1) DEFAULT 0,
 			intake_reason text,
 			intake_notes text,
 			intake_status varchar(50) DEFAULT 'none',
+
+			/* Financial Model Integration */
+			registration_cost decimal(10,2) DEFAULT 0,
+			currency varchar(10) DEFAULT 'AED',
+			payment_model varchar(50), /* one_time, daily, weekly, monthly */
+			billing_type varchar(50), /* session_based, subscription_based */
+			payment_frequency varchar(50),
+			amount_per_cycle decimal(10,2) DEFAULT 0,
+			total_expected_revenue decimal(10,2) DEFAULT 0,
 
 			system_id varchar(100),
 			workflow_metadata longtext,

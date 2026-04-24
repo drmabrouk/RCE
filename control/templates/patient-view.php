@@ -18,10 +18,12 @@ $documents = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}c
 $referrals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_referrals WHERE patient_id = %d ORDER BY referral_date DESC", $patient_id ) );
 
 $status_labels = array(
-    'active'       => __('نشط', 'control'),
-    'waiting_list' => __('قائمة الانتظار', 'control'),
-    'dropped_out'  => __('منقطع', 'control'),
-    'completed'    => __('تم التأهيل', 'control'),
+    'active'          => __('نشط', 'control'),
+    'evaluation_only' => __('تقييم فقط', 'control'),
+    'waiting_list'    => __('قائمة الانتظار', 'control'),
+    'dropped_out'     => __('منقطع', 'control'),
+    'completed'       => __('تم التأهيل', 'control'),
+    'closed'          => __('ملف مغلق', 'control'),
 );
 ?>
 
@@ -68,6 +70,7 @@ $status_labels = array(
             <button class="tab-btn" data-tab="tab-medical"><?php _e('التاريخ الطبي', 'control'); ?></button>
             <button class="tab-btn" data-tab="tab-assessments"><?php _e('التقييمات والتشخيص', 'control'); ?></button>
             <button class="tab-btn" data-tab="tab-behavioral"><?php _e('الملاحظة السلوكية', 'control'); ?></button>
+            <button class="tab-btn" data-tab="tab-financial"><?php _e('الإعدادات المالية', 'control'); ?></button>
         <?php endif; ?>
         <button class="tab-btn" data-tab="tab-documents"><?php _e('الوثائق والملفات', 'control'); ?></button>
         <?php if($can_view_clinical || $can_manage): ?>
@@ -335,6 +338,35 @@ $status_labels = array(
         </div>
 
         <?php if($can_view_clinical || $can_manage): ?>
+        <!-- Financial Tab -->
+        <div id="tab-financial" class="tab-content" style="display:none;">
+            <h4 style="color:var(--control-primary); margin-bottom:20px;"><?php _e('البيانات المالية للطفل', 'control'); ?></h4>
+            <div class="control-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
+                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('تكلفة التسجيل', 'control'); ?></label>
+                    <div style="font-size:1.2rem; font-weight:800; color:var(--control-primary);"><?php echo number_format($patient->registration_cost, 2); ?> AED</div>
+                </div>
+                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
+                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('نموذج الدفع', 'control'); ?></label>
+                    <div style="font-weight:700;"><?php
+                        $models = ['one_time' => __('دفع لمرة واحدة', 'control'), 'daily' => __('دفع يومي', 'control'), 'weekly' => __('اشتراك أسبوعي', 'control'), 'monthly' => __('اشتراك شهري', 'control')];
+                        echo $models[$patient->payment_model] ?? $patient->payment_model;
+                    ?></div>
+                </div>
+                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
+                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('نوع الفوترة', 'control'); ?></label>
+                    <div style="font-weight:700;"><?php
+                        $types = ['session_based' => __('فوترة حسب الجلسات', 'control'), 'subscription_based' => __('فوترة بنظام الاشتراك', 'control')];
+                        echo $types[$patient->billing_type] ?? $patient->billing_type;
+                    ?></div>
+                </div>
+                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
+                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('المبلغ لكل دورة / اشتراك', 'control'); ?></label>
+                    <div style="font-size:1.2rem; font-weight:800; color:#059669;"><?php echo number_format($patient->amount_per_cycle, 2); ?> AED</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Referrals Tab -->
         <div id="tab-referrals" class="tab-content" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">

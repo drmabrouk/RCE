@@ -167,7 +167,8 @@ if (isStaff) {
     stepTree.push(
         { id: '5.1', phase: 5, title: 'internal_analysis_1', fields: ['case_classification', 'priority_level', 'suggested_pathway'] },
         { id: '5.2', phase: 5, title: 'internal_analysis_2', fields: ['final_decision', 'temp_id', 'assigned_specialists', 'internal_notes'] },
-        { id: '6.1', phase: 6, title: 'final_activation', fields: ['permanent_id', 'case_status', 'activate_account'] }
+        { id: '6.1', phase: 6, title: 'financial_setup', fields: ['registration_cost', 'payment_model', 'billing_type', 'amount_per_cycle'] },
+        { id: '7.1', phase: 7, title: 'final_activation', fields: ['permanent_id', 'case_status', 'activate_account'] }
     );
 }
 
@@ -198,7 +199,9 @@ const optionData = {
     priority: { ar: [{v:'normal', t:'طبيعية (Normal)'}, {v:'urgent', t:'عاجلة (Urgent)'}, {v:'critical', t:'حالة حرجة (Critical)'}], en: [{v:'normal', t:'Normal'}, {v:'urgent', t:'Urgent'}, {v:'critical', t:'Critical'}] },
     pathway: { ar: [{v:'consultation', t:'جلسة استشارية'}, {v:'assessment', t:'تقييم شامل'}, {v:'rehab_program', t:'برنامج تأهيلي مكثف'}], en: [{v:'consultation', t:'Consultation'}, {v:'assessment', t:'Comprehensive Assessment'}, {v:'rehab_program', t:'Intensive Rehab Program'}] },
     decision: { ar: [{v:'pre_acceptance', t:'قبول مبدئي (Pre-acceptance)'}, {v:'rejected', t:'مرفوض (Rejected)'}, {v:'closed', t:'ملف مغلق (Closed)'}], en: [{v:'pre_acceptance', t:'Pre-acceptance'}, {v:'rejected', t:'Rejected'}, {v:'closed', t:'Closed'}] },
-    status: { ar: [{v:'active', t:'ملف نشط بالنظام'}, {v:'waiting_list', t:'قائمة الانتظار'}, {v:'completed', t:'أتم التأهيل (Completed)'}], en: [{v:'active', t:'Active in System'}, {v:'waiting_list', t:'Waiting List'}, {v:'completed', t:'Completed Rehabilitation'}] }
+    status: { ar: [{v:'active', t:'ملف نشط بالنظام'}, {v:'evaluation_only', t:'تقييم فقط'}, {v:'waiting_list', t:'قائمة الانتظار'}, {v:'completed', t:'أتم التأهيل (Completed)'}, {v:'closed', t:'ملف مغلق'}], en: [{v:'active', t:'Active in System'}, {v:'evaluation_only', t:'Evaluation Only'}, {v:'waiting_list', t:'Waiting List'}, {v:'completed', t:'Completed Rehabilitation'}, {v:'closed', t:'Closed File'}] },
+    payment_model: { ar: [{v:'one_time', t:'دفع لمرة واحدة'}, {v:'daily', t:'دفع يومي'}, {v:'weekly', t:'اشتراك أسبوعي'}, {v:'monthly', t:'اشتراك شهري'}], en: [{v:'one_time', t:'One-time fee'}, {v:'daily', t:'Daily'}, {v:'weekly', t:'Weekly'}, {v:'monthly', t:'Monthly'}] },
+    billing_type: { ar: [{v:'session_based', t:'حسب الجلسات'}, {v:'subscription_based', t:'نظام اشتراك'}], en: [{v:'session_based', t:'Session-based'}, {v:'subscription_based', t:'Subscription-based'}] }
 };
 
 function renderStep() {
@@ -221,7 +224,7 @@ function renderStep() {
             html += `<div class="wiz-field">`;
             html += `<label>${s[f] || f}</label>`;
 
-            if (['gender', 'nationality', 'guardian_relationship', 'blood_type', 'diag_prev', 'prev_rehab_centers', 'motor_delay', 'speech_delay', 'sleep_issues', 'feeding_issues', 'eval_social', 'eval_language', 'case_classification', 'priority_level', 'suggested_pathway', 'final_decision', 'case_status'].includes(f)) {
+            if (['gender', 'nationality', 'guardian_relationship', 'blood_type', 'diag_prev', 'prev_rehab_centers', 'motor_delay', 'speech_delay', 'sleep_issues', 'feeding_issues', 'eval_social', 'eval_language', 'case_classification', 'priority_level', 'suggested_pathway', 'final_decision', 'case_status', 'payment_model', 'billing_type'].includes(f)) {
                 let source = f;
                 if (['diag_prev', 'prev_rehab_centers', 'motor_delay', 'speech_delay', 'sleep_issues', 'feeding_issues'].includes(f)) source = 'boolean';
                 if (f === 'eval_social') source = 'social';
@@ -247,9 +250,14 @@ function renderStep() {
                             <span style="font-size:0.9rem; color:var(--control-primary);">${s.account_activation}</span>
                          </label>`;
             } else {
-                const type = f === 'dob' ? 'date' : (f === 'email' ? 'email' : (f === 'father_phone' ? 'tel' : 'text'));
+                let type = 'text';
+                if (f === 'dob') type = 'date';
+                else if (f === 'email') type = 'email';
+                else if (f === 'father_phone') type = 'tel';
+                else if (['registration_cost', 'amount_per_cycle'].includes(f)) type = 'number';
+
                 const required = ['name_first', 'name_second', 'name_last', 'dob', 'guardian_name', 'father_phone'].includes(f) ? 'required' : '';
-                html += `<input type="${type}" name="${f}" value="${val}" ${required}>`;
+                html += `<input type="${type}" name="${f}" value="${val}" ${required} step="0.01">`;
             }
             html += `</div>`;
         });
@@ -343,7 +351,9 @@ jQuery(document).ready(function($) {
         const l = $('[name="name_last"]').val() || '';
         $('#k-full-name-concat').val(`${f} ${s} ${l}`.trim());
 
-        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_patient&nonce=' + control_ajax.nonce, (res) => {
+        const ajaxAction = isStaff ? 'control_save_patient' : 'control_submit_kiosk_registration';
+
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=' + ajaxAction + '&nonce=' + control_ajax.nonce, (res) => {
             if (res.success) {
                 $('#kiosk-form, #k-header, #k-step-header').hide();
                 $('#kiosk-success').css('display', 'flex');

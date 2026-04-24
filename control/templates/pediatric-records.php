@@ -84,36 +84,7 @@ $closed_cases = array_filter($patients, function($p) {
 </div>
 <?php endif; ?>
 
-<!-- Active Records Search & Filter -->
-<div class="control-card" style="padding:15px 20px; margin-bottom:25px; border:none; background:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
-    <div style="display:flex; gap:12px; align-items: center; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
-        <div style="flex:2; position:relative; min-width: 250px;">
-            <span class="dashicons dashicons-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--control-muted); font-size: 18px;"></span>
-            <input type="text" id="patient-search-input" placeholder="<?php _e('بحث شامل (الاسم، الهاتف، الرقم)...', 'control'); ?>" style="padding:10px 40px 10px 12px; border-radius:10px; border:1.5px solid #f1f5f9; width:100%; font-size: 0.9rem;">
-        </div>
-        <select id="patient-status-filter" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; min-width:140px; font-size: 0.85rem; font-weight: 600;">
-            <option value=""><?php _e('كل الحالات', 'control'); ?></option>
-            <?php foreach($status_labels as $val => $label): ?>
-                <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select id="patient-diag-filter" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; min-width:140px; font-size: 0.85rem; font-weight: 600;">
-            <option value=""><?php _e('كل التشخيصات', 'control'); ?></option>
-            <option value="autism">ASD</option>
-            <option value="adhd">ADHD</option>
-            <option value="speech">Speech Delay</option>
-            <option value="cp">Cerebral Palsy</option>
-        </select>
-        <select id="patient-priority-filter" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; min-width:140px; font-size: 0.85rem; font-weight: 600;">
-            <option value=""><?php _e('كل الأولويات', 'control'); ?></option>
-            <option value="normal">Normal</option>
-            <option value="urgent">Urgent</option>
-            <option value="critical">Critical</option>
-        </select>
-    </div>
-</div>
-
-<div style="display:flex; gap:30px; align-items:flex-start;">
+<div style="display:flex; gap:30px; align-items:flex-start;" class="pediatric-records-layout">
     <!-- Left Column: Patient Grids -->
     <div style="flex:1;">
         <div id="patient-tabs-content">
@@ -140,27 +111,78 @@ $closed_cases = array_filter($patients, function($p) {
         </div>
     </div>
 
-    <!-- Right Column: Navigation Sidebar -->
-    <div style="width:280px; flex-shrink:0; position:sticky; top:100px;">
-        <div class="control-card" style="padding:10px; border-radius:20px; background:#fff; border:1px solid #f1f5f9; box-shadow:0 10px 30px rgba(0,0,0,0.02);">
-            <div class="p-nav-item active" data-tab="tab-active" style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-radius:15px; cursor:pointer; transition:0.3s; margin-bottom:5px;">
-                <span class="dashicons dashicons-id" style="color:var(--control-primary);"></span>
-                <span style="font-weight:800; flex:1;"><?php _e('سجلات الأطفال النشطة', 'control'); ?></span>
-                <span style="background:var(--control-primary); color:#fff; font-size:0.7rem; padding:2px 8px; border-radius:10px;"><?php echo count($active_records); ?></span>
-            </div>
-            <div class="p-nav-item" data-tab="tab-evaluation" style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-radius:15px; cursor:pointer; transition:0.3s; margin-bottom:5px;">
-                <span class="dashicons dashicons-clipboard" style="color:#d97706;"></span>
-                <span style="font-weight:800; flex:1;"><?php _e('حالات التقييم فقط', 'control'); ?></span>
-                <span style="background:#fef3c7; color:#92400e; font-size:0.7rem; padding:2px 8px; border-radius:10px;"><?php echo count($evaluation_cases); ?></span>
-            </div>
-            <div class="p-nav-item" data-tab="tab-closed" style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-radius:15px; cursor:pointer; transition:0.3s;">
-                <span class="dashicons dashicons-archive" style="color:#64748b;"></span>
-                <span style="font-weight:800; flex:1;"><?php _e('الحالات المغلقة / المنتهية', 'control'); ?></span>
-                <span style="background:#f1f5f9; color:#475569; font-size:0.7rem; padding:2px 8px; border-radius:10px;"><?php echo count($closed_cases); ?></span>
+    <!-- Right Column: Navigation & Search Sidebar -->
+    <div class="p-internal-sidebar" style="width:300px; flex-shrink:0; position:sticky; top:100px;">
+        <!-- Real-time Search Box -->
+        <div class="control-card" style="padding:15px; border-radius:20px; background:#fff; border:1px solid #f1f5f9; margin-bottom:20px; box-shadow:0 10px 25px rgba(0,0,0,0.03);">
+            <div style="position:relative;">
+                <span class="dashicons dashicons-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--control-muted); font-size: 18px;"></span>
+                <input type="text" id="patient-search-input" placeholder="<?php _e('بحث في السجلات...', 'control'); ?>" style="padding:12px 40px 12px 12px; border-radius:12px; border:1.5px solid #f1f5f9; width:100%; font-size: 0.9rem; background:#f8fafc; border-color:#e2e8f0;">
             </div>
         </div>
 
-        <div style="margin-top:20px; padding:20px; background:var(--control-primary-soft); border-radius:20px; text-align:center;">
+        <div class="control-card" style="padding:10px; border-radius:20px; background:#fff; border:1px solid #f1f5f9; box-shadow:0 10px 30px rgba(0,0,0,0.02);">
+            <div style="padding:10px 15px 5px; color:var(--control-muted); font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">
+                <?php _e('تصنيفات الملفات', 'control'); ?>
+            </div>
+            <div class="p-nav-item active" data-tab="tab-active" style="display:flex; align-items:center; gap:12px; padding:12px 15px; border-radius:15px; cursor:pointer; transition:0.3s; margin-bottom:2px;">
+                <div style="width:35px; height:35px; border-radius:10px; background:var(--control-primary-soft); display:flex; align-items:center; justify-content:center; color:var(--control-primary);">
+                    <span class="dashicons dashicons-id"></span>
+                </div>
+                <span style="font-weight:800; flex:1; font-size:0.9rem;"><?php _e('السجلات النشطة', 'control'); ?></span>
+                <span style="background:var(--control-primary); color:#fff; font-size:0.65rem; padding:2px 8px; border-radius:10px;"><?php echo count($active_records); ?></span>
+            </div>
+            <div class="p-nav-item" data-tab="tab-evaluation" style="display:flex; align-items:center; gap:12px; padding:12px 15px; border-radius:15px; cursor:pointer; transition:0.3s; margin-bottom:2px;">
+                <div style="width:35px; height:35px; border-radius:10px; background:#fff7ed; display:flex; align-items:center; justify-content:center; color:#d97706;">
+                    <span class="dashicons dashicons-clipboard"></span>
+                </div>
+                <span style="font-weight:800; flex:1; font-size:0.9rem;"><?php _e('تقييم فقط', 'control'); ?></span>
+                <span style="background:#fef3c7; color:#92400e; font-size:0.65rem; padding:2px 8px; border-radius:10px;"><?php echo count($evaluation_cases); ?></span>
+            </div>
+            <div class="p-nav-item" data-tab="tab-closed" style="display:flex; align-items:center; gap:12px; padding:12px 15px; border-radius:15px; cursor:pointer; transition:0.3s; margin-bottom:10px;">
+                <div style="width:35px; height:35px; border-radius:10px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#64748b;">
+                    <span class="dashicons dashicons-archive"></span>
+                </div>
+                <span style="font-weight:800; flex:1; font-size:0.9rem;"><?php _e('ملفات مغلقة', 'control'); ?></span>
+                <span style="background:#f1f5f9; color:#475569; font-size:0.65rem; padding:2px 8px; border-radius:10px;"><?php echo count($closed_cases); ?></span>
+            </div>
+
+            <div style="height:1px; background:#f1f5f9; margin:5px 15px 15px;"></div>
+
+            <!-- Additional Filters in Sidebar -->
+            <div style="padding:0 15px 20px;" class="filters-wrapper">
+                <div style="margin-bottom:15px;" class="filter-group">
+                    <label style="display:block; font-size:0.75rem; font-weight:800; color:var(--control-muted); margin-bottom:8px;"><?php _e('تصفية حسب الحالة', 'control'); ?></label>
+                    <select id="patient-status-filter" style="width:100%; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; font-size: 0.85rem; font-weight: 600; background:#f8fafc;">
+                        <option value=""><?php _e('كل الحالات التشغيلية', 'control'); ?></option>
+                        <?php foreach($status_labels as $val => $label): ?>
+                            <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div style="margin-bottom:15px;" class="filter-group">
+                    <label style="display:block; font-size:0.75rem; font-weight:800; color:var(--control-muted); margin-bottom:8px;"><?php _e('التشخيص', 'control'); ?></label>
+                    <select id="patient-diag-filter" style="width:100%; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; font-size: 0.85rem; font-weight: 600; background:#f8fafc;">
+                        <option value=""><?php _e('كل التشخيصات', 'control'); ?></option>
+                        <option value="autism">ASD</option>
+                        <option value="adhd">ADHD</option>
+                        <option value="speech">Speech Delay</option>
+                        <option value="cp">Cerebral Palsy</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label style="display:block; font-size:0.75rem; font-weight:800; color:var(--control-muted); margin-bottom:8px;"><?php _e('الأولوية', 'control'); ?></label>
+                    <select id="patient-priority-filter" style="width:100%; padding:10px; border-radius:10px; border:1.5px solid #f1f5f9; font-size: 0.85rem; font-weight: 600; background:#f8fafc;">
+                        <option value=""><?php _e('كل الأولويات', 'control'); ?></option>
+                        <option value="normal">Normal</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:20px; padding:20px; background:var(--control-primary-soft); border-radius:20px; text-align:center; border: 1px solid var(--control-primary); border-opacity: 0.1;">
             <p style="margin:0; font-size:0.8rem; color:var(--control-primary); font-weight:700;"><?php _e('إجمالي الحالات المسجلة بالمركز', 'control'); ?></p>
             <div style="font-size:2.5rem; font-weight:900; color:var(--control-primary); margin:10px 0;"><?php echo count($patients); ?></div>
             <p style="margin:0; font-size:0.75rem; color:var(--control-muted);"><?php _e('بناءً على التحديث اللحظي للبيانات', 'control'); ?></p>
@@ -274,7 +296,20 @@ function render_patient_cards($records, $status_labels, $can_manage) {
 <style>
 .p-nav-item.active { background: var(--control-primary-soft); border: 1px solid var(--control-primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .p-nav-item:not(.active):hover { background: #f8fafc; }
+.p-nav-item:active { transform: scale(0.98); }
 .patient-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); border-color: var(--control-primary); }
+
+@media (max-width: 1024px) {
+    .pediatric-records-layout { flex-direction: column-reverse; }
+    .p-internal-sidebar { width: 100% !important; position: static !important; margin-bottom: 30px; }
+    .p-internal-sidebar > .control-card { display: block; }
+    .p-nav-item { margin-bottom: 5px !important; }
+    .p-internal-sidebar .filters-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+}
+
+@media (max-width: 768px) {
+    .p-internal-sidebar .filters-wrapper { grid-template-columns: 1fr; }
+}
 </style>
 
 <script>
@@ -284,7 +319,9 @@ jQuery(document).ready(function($) {
         $('.p-nav-item').removeClass('active');
         $(this).addClass('active');
         $('.p-tab-pane').hide();
-        $('#' + targetTab).fadeIn(300);
+        $('#' + targetTab).fadeIn(300, function() {
+            applyFilters(); // Re-apply search filters after tab switch
+        });
     });
 
     $(document).on('click', '.restore-patient-btn', function() {
@@ -305,7 +342,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#patient-search-input, #patient-status-filter, #patient-diag-filter, #patient-priority-filter').on('keyup change', function() {
+    function applyFilters() {
         const query = $('#patient-search-input').val().toLowerCase();
         const status = $('#patient-status-filter').val();
         const diag = $('#patient-diag-filter').val().toLowerCase();
@@ -329,7 +366,9 @@ jQuery(document).ready(function($) {
                 card.hide();
             }
         });
-    });
+    }
+
+    $('#patient-search-input, #patient-status-filter, #patient-diag-filter, #patient-priority-filter').on('keyup change', applyFilters);
 
     function showToast(message) {
         $('#pediatric-toast').text(message).fadeIn().delay(3000).fadeOut();

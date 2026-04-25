@@ -10,18 +10,10 @@ if ( ! $patient || ! is_object($patient) ) {
 }
 
 $can_view_clinical = Control_Auth::has_permission('pediatric_view_clinical');
-$can_manage = Control_Auth::has_permission('pediatric_manage'); // This corresponds to Center Manager/Admin
+$can_manage = Control_Auth::has_permission('pediatric_manage');
 $is_reception = ! $can_view_clinical && Control_Auth::has_permission('pediatric_view_basic');
 
-$assessments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_assessments WHERE patient_id = %d ORDER BY test_date DESC", $patient_id ) );
-$assessments = is_array($assessments) ? $assessments : array();
-
-$documents = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_documents WHERE patient_id = %d ORDER BY uploaded_at DESC", $patient_id ) );
-$documents = is_array($documents) ? $documents : array();
-
-$referrals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_referrals WHERE patient_id = %d ORDER BY referral_date DESC", $patient_id ) );
-$referrals = is_array($referrals) ? $referrals : array();
-
+// Status Labels
 $status_labels = array(
     'active'          => __('نشط', 'control'),
     'evaluation_only' => __('تقييم فقط', 'control'),
@@ -30,592 +22,622 @@ $status_labels = array(
     'completed'       => __('تم التأهيل', 'control'),
     'closed'          => __('ملف مغلق', 'control'),
 );
+
+// Tab Definitions with Permissions
+$tabs = array(
+    'demographics' => array('label' => Control_I18n::t('file_demographics'), 'icon' => 'admin-users', 'clinical' => false),
+    'medical'      => array('label' => Control_I18n::t('file_medical'), 'icon' => 'heart', 'clinical' => true),
+    'development'  => array('label' => Control_I18n::t('file_developmental'), 'icon' => 'chart-line', 'clinical' => true),
+    'assessments'  => array('label' => Control_I18n::t('file_assessments'), 'icon' => 'clipboard', 'clinical' => true),
+    'diagnosis'    => array('label' => Control_I18n::t('file_diagnosis'), 'icon' => 'visibility', 'clinical' => true),
+    'treatment'    => array('label' => Control_I18n::t('file_treatment'), 'icon' => 'welcome-learn-more', 'clinical' => true),
+    'sessions'     => array('label' => Control_I18n::t('file_sessions'), 'icon' => 'calendar-alt', 'clinical' => true),
+    'behavior'     => array('label' => Control_I18n::t('file_behavior'), 'icon' => 'groups', 'clinical' => true),
+    'referrals'    => array('label' => Control_I18n::t('referrals'), 'icon' => 'random', 'clinical' => true),
+    'reports'      => array('label' => Control_I18n::t('file_reports'), 'icon' => 'analytics', 'clinical' => true),
+    'attachments'  => array('label' => Control_I18n::t('file_attachments'), 'icon' => 'paperclip', 'clinical' => false),
+    'attendance'   => array('label' => Control_I18n::t('file_attendance'), 'icon' => 'clock', 'clinical' => false),
+    'billing'      => array('label' => Control_I18n::t('file_billing'), 'icon' => 'cart', 'clinical' => false),
+    'notes'        => array('label' => Control_I18n::t('file_notes'), 'icon' => 'edit', 'clinical' => false),
+    'staff'        => array('label' => Control_I18n::t('file_staff'), 'icon' => 'businessperson', 'clinical' => false),
+);
 ?>
 
-<div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
-    <div style="display:flex; gap:20px; align-items:center;">
-        <div style="width:80px; height:80px; background:var(--control-bg); border-radius:20px; overflow:hidden; border:2px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.05); flex-shrink:0;">
-            <?php if($patient->profile_photo): ?>
-                <img src="<?php echo esc_url($patient->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
-            <?php else: ?>
-                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#94a3b8;">
-                    <span class="dashicons dashicons-admin-users" style="font-size:40px; width:40px; height:40px;"></span>
-                </div>
-            <?php endif; ?>
-        </div>
-        <div>
-            <h2 style="font-weight:800; font-size:1.5rem; margin:0; color:var(--control-text-dark);"><?php echo esc_html($patient->full_name); ?></h2>
-            <div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
-                <span class="patient-status-badge status-<?php echo esc_attr($patient->case_status); ?>" style="font-size:0.75rem; padding:3px 12px; border-radius:12px; font-weight:700;">
+<div class="patient-file-layout" style="display:flex; gap:30px; align-items:flex-start;">
+
+    <!-- Right Sidebar Navigation (Sticky) -->
+    <div class="p-internal-sidebar" style="width:280px; flex-shrink:0; position:sticky; top:100px;">
+        <!-- Patient Identity Summary (Mini Card) -->
+        <div class="control-card" style="padding:20px; border-radius:20px; background:var(--control-primary); color:#fff; margin-bottom:20px; text-align:center;">
+            <div style="width:80px; height:80px; border-radius:20px; overflow:hidden; border:3px solid rgba(255,255,255,0.2); margin:0 auto 15px; background:#fff;">
+                <?php if($patient->profile_photo): ?>
+                    <img src="<?php echo esc_url($patient->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
+                <?php else: ?>
+                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><span class="dashicons dashicons-admin-users" style="font-size:40px; width:40px; height:40px;"></span></div>
+                <?php endif; ?>
+            </div>
+            <h3 style="margin:0; color:#fff; font-size:1.1rem; font-weight:800;"><?php echo esc_html($patient->full_name); ?></h3>
+            <div style="margin-top:8px;">
+                <span class="patient-status-badge status-<?php echo esc_attr($patient->case_status); ?>" style="font-size:0.6rem; padding:2px 10px; border-radius:20px; background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.2);">
                     <?php echo $status_labels[$patient->case_status] ?? $patient->case_status; ?>
                 </span>
-                <span style="color:var(--control-muted); font-size:0.85rem;">#<?php echo $patient->id; ?></span>
             </div>
+            <div style="margin-top:10px; font-size:0.75rem; color:rgba(255,255,255,0.6); font-family:monospace;">#<?php echo esc_html($patient->permanent_id ?: $patient->id); ?></div>
         </div>
-    </div>
-    <div style="display:flex; gap:10px;">
-        <button onclick="window.print()" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);">
-            <span class="dashicons dashicons-printer" style="margin-left:5px;"></span><?php _e('طباعة الملف', 'control'); ?>
+
+        <div class="control-card" style="padding:10px; border-radius:20px; background:#fff; border:1px solid #f1f5f9; box-shadow:0 10px 30px rgba(0,0,0,0.02); overflow:hidden;">
+            <?php foreach($tabs as $id => $tab):
+                if ($tab['clinical'] && ! $can_view_clinical && ! $can_manage) continue;
+            ?>
+                <div class="p-nav-item <?php echo $id === 'demographics' ? 'active' : ''; ?>" data-tab="tab-<?php echo $id; ?>" style="display:flex; align-items:center; gap:12px; padding:12px 15px; border-radius:15px; cursor:pointer; transition:0.3s; margin-bottom:2px;">
+                    <div class="nav-icon-box" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; display:flex; align-items:center; justify-content:center; color:var(--control-muted);">
+                        <span class="dashicons dashicons-<?php echo $tab['icon']; ?>"></span>
+                    </div>
+                    <span style="font-weight:700; flex:1; font-size:0.85rem;"><?php echo $tab['label']; ?></span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <button onclick="window.print()" class="control-btn" style="width:100%; margin-top:20px; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:15px;">
+            <span class="dashicons dashicons-printer" style="margin-left:8px;"></span><?php _e('طباعة الملف الشامل', 'control'); ?>
         </button>
-        <a href="<?php echo add_query_arg('control_view', 'pediatric_records'); ?>" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);">
-            <span class="dashicons dashicons-arrow-right-alt" style="margin-left:5px;"></span><?php _e('العودة للقائمة', 'control'); ?>
-        </a>
-        <?php if($can_manage): ?>
-            <button class="control-btn edit-patient-btn" data-id="<?php echo $patient->id; ?>" style="background:var(--control-primary); border:none;">
-                <span class="dashicons dashicons-edit" style="margin-left:5px;"></span><?php _e('تعديل الملف', 'control'); ?>
-            </button>
-        <?php endif; ?>
-    </div>
-</div>
-
-<div class="control-card" style="padding:0; border:none; overflow:hidden;">
-    <div class="control-tabs" style="display:flex; background:#fff; border-bottom:1px solid #e2e8f0; padding:0 20px; gap:20px; overflow-x:auto;">
-        <button class="tab-btn active" data-tab="tab-overview"><?php _e('نظرة عامة', 'control'); ?></button>
-        <?php if($can_view_clinical || $can_manage): ?>
-            <button class="tab-btn" data-tab="tab-medical"><?php _e('التاريخ الطبي', 'control'); ?></button>
-            <button class="tab-btn" data-tab="tab-assessments"><?php _e('التقييمات والتشخيص', 'control'); ?></button>
-            <button class="tab-btn" data-tab="tab-behavioral"><?php _e('الملاحظة السلوكية', 'control'); ?></button>
-            <button class="tab-btn" data-tab="tab-financial"><?php _e('الإعدادات المالية', 'control'); ?></button>
-        <?php endif; ?>
-        <button class="tab-btn" data-tab="tab-documents"><?php _e('الوثائق والملفات', 'control'); ?></button>
-        <?php if($can_view_clinical || $can_manage): ?>
-            <button class="tab-btn" data-tab="tab-referrals"><?php _e('التحويلات الداخلية', 'control'); ?></button>
-        <?php endif; ?>
     </div>
 
-    <div style="padding:30px; background:#fff;">
-        <!-- Overview Tab -->
-        <div id="tab-overview" class="tab-content">
-            <div class="control-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:30px;">
-                <div>
-                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('البيانات الديموغرافية', 'control'); ?></h4>
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('الاسم الكامل للطفل', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->full_name ?? __('بدون اسم', 'control')); ?></span>
+    <!-- Main Content Area -->
+    <div style="flex:1; min-width:0;">
+        <div id="patient-file-content">
+
+            <!-- Tab: Demographics -->
+            <div id="tab-demographics" class="p-file-pane active">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-admin-users"></span> <?php echo Control_I18n::t('file_demographics'); ?>
+                        </h4>
+                        <div class="wiz-grid">
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('name_first'); ?></label><input type="text" name="name_first" value="<?php echo esc_attr($patient->name_first); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('name_second'); ?></label><input type="text" name="name_second" value="<?php echo esc_attr($patient->name_second); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('name_last'); ?></label><input type="text" name="name_last" value="<?php echo esc_attr($patient->name_last); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('dob'); ?></label><input type="date" name="dob" class="dob-input-calc" value="<?php echo esc_attr($patient->dob); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('age'); ?></label><input type="text" class="age-display-field" readonly style="background:#f8fafc; font-weight:700;"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('gender'); ?></label>
+                                <select name="gender">
+                                    <option value="male" <?php selected($patient->gender, 'male'); ?>><?php echo Control_I18n::t('male'); ?></option>
+                                    <option value="female" <?php selected($patient->gender, 'female'); ?>><?php echo Control_I18n::t('female'); ?></option>
+                                </select>
+                            </div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('nationality'); ?></label><input type="text" name="nationality" value="<?php echo esc_attr($patient->nationality); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('referral_source'); ?></label><input type="text" name="referral_source" value="<?php echo esc_attr($patient->referral_source); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('national_id'); ?></label><input type="text" name="national_id" value="<?php echo esc_attr($patient->national_id); ?>"></div>
                         </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('اسم ولي الأمر', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->guardian_name ?? '---'); ?></span>
+                        <div style="margin-top:30px; padding-top:20px; border-top:1px solid #f1f5f9;">
+                            <h5 style="margin:0 0 20px 0; font-weight:800;"><?php echo Control_I18n::t('contact_info'); ?></h5>
+                            <div class="wiz-grid">
+                                <div class="wiz-field"><label><?php echo Control_I18n::t('guardian_name'); ?></label><input type="text" name="guardian_name" value="<?php echo esc_attr($patient->guardian_name); ?>"></div>
+                                <div class="wiz-field"><label><?php echo Control_I18n::t('father_phone'); ?></label><input type="tel" name="father_phone" value="<?php echo esc_attr($patient->father_phone); ?>"></div>
+                                <div class="wiz-field"><label><?php echo Control_I18n::t('mother_phone'); ?></label><input type="tel" name="mother_phone" value="<?php echo esc_attr($patient->mother_phone); ?>"></div>
+                                <div class="wiz-field"><label><?php echo Control_I18n::t('email'); ?></label><input type="email" name="email" value="<?php echo esc_attr($patient->email); ?>"></div>
+                            </div>
+                            <div class="wiz-field" style="margin-top:15px;"><label><?php echo Control_I18n::t('address'); ?></label><textarea name="address" rows="2"><?php echo esc_textarea($patient->address); ?></textarea></div>
                         </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('تاريخ الميلاد', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->dob ?? '---'); ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('الجنس', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo (isset($patient->gender) && $patient->gender === 'male') ? __('ذكر', 'control') : __('أنثى', 'control'); ?></span>
-                        </div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
                     </div>
-                </div>
-                <div>
-                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('معلومات التواصل', 'control'); ?></h4>
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف ولي الأمر (1)', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->father_phone ?? '---'); ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف بديل (2)', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->mother_phone ?? '---'); ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('العنوان السكني', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->address ?? '---'); ?></span>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('معلومات الطوارئ', 'control'); ?></h4>
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال الطوارئ', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact ?? '---'); ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال طوارئ بديلة', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact_alt ?? '---'); ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('فصيلة الدم', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->blood_type ?? '---'); ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('حساسية الأدوية', 'control'); ?></label>
-                            <span style="font-weight:700; color:#ef4444;"><?php echo esc_html($patient->drug_allergies ?? '') ?: __('لا يوجد', 'control'); ?></span>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
 
-            <div class="id-card-print-section" style="margin-bottom:30px;">
-                <div class="patient-id-card" style="width:350px; background:linear-gradient(135deg, #1e293b, #334155); color:#fff; border-radius:15px; padding:20px; display:flex; gap:15px; align-items:center; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
-                    <div style="position:absolute; top:-20px; left:-20px; width:100px; height:100px; background:var(--control-accent); opacity:0.1; border-radius:50%;"></div>
-                    <div style="width:80px; height:80px; background:#fff; border-radius:10px; overflow:hidden; border:2px solid var(--control-accent); flex-shrink:0;">
-                        <?php if($patient->profile_photo): ?>
-                            <img src="<?php echo esc_url($patient->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
-                        <?php else: ?>
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><span class="dashicons dashicons-admin-users" style="font-size:40px;"></span></div>
-                        <?php endif; ?>
+            <!-- Tab: Medical History -->
+            <div id="tab-medical" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-heart"></span> <?php echo Control_I18n::t('file_medical'); ?>
+                        </h4>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('pregnancy_history'); ?></label><textarea name="pregnancy_history" rows="3"><?php echo esc_textarea($patient->pregnancy_history); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('birth_history'); ?></label><textarea name="birth_history" rows="3"><?php echo esc_textarea($patient->birth_history); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('chronic_conditions'); ?></label><textarea name="chronic_conditions" rows="3"><?php echo esc_textarea($patient->chronic_conditions); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('surgeries'); ?></label><textarea name="medical_surgeries" rows="2"><?php echo esc_textarea($patient->medical_surgeries); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('medications'); ?></label><textarea name="current_medications" rows="2"><?php echo esc_textarea($patient->current_medications); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('drug_allergies'); ?></label><textarea name="drug_allergies" rows="2"><?php echo esc_textarea($patient->drug_allergies); ?></textarea></div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
                     </div>
-                    <div style="flex:1;">
-                        <div style="font-weight:800; font-size:1.1rem; margin-bottom:5px;"><?php echo esc_html($patient->full_name); ?></div>
-                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.7); display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                            <span style="grid-column: 1 / -1;"><?php _e('العمر:', 'control'); ?> <strong style="color:#fff;"><?php
-                                try {
-                                    $dob_val = !empty($patient->dob) ? $patient->dob : date('Y-m-d');
-                                    $dob = new DateTime($dob_val);
-                                    $now = new DateTime();
-                                    $age = $now->diff($dob);
-                                    echo sprintf(__('%d سنوات، %d شهور، %d أيام', 'control'), $age->y, $age->m, $age->d);
-                                } catch (Exception $e) {
-                                    echo __('غير معروف', 'control');
-                                }
-                            ?></strong></span>
-                            <span><?php _e('رقم الملف:', 'control'); ?> <strong style="color:#fff;">#<?php echo $patient->id; ?></strong></span>
-                            <span><?php _e('الطول:', 'control'); ?> <strong style="color:#fff;"><?php echo $patient->height ?: '---'; ?></strong></span>
-                            <span><?php _e('الوزن:', 'control'); ?> <strong style="color:#fff;"><?php echo $patient->weight ?: '---'; ?></strong></span>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
 
-            <?php if($can_manage): ?>
-            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:30px; margin-top:40px;">
-                <div>
-                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('البيانات الإدارية', 'control'); ?></h4>
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('رقم النظام (System ID)', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->system_id) ?: '---'; ?></span>
+            <!-- Tab: Developmental History -->
+            <div id="tab-development" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-chart-line"></span> <?php echo Control_I18n::t('file_developmental'); ?>
+                        </h4>
+                        <div class="wiz-grid">
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('sitting'); ?></label><input type="text" name="milestones_sitting" value="<?php echo esc_attr($patient->milestones_sitting); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('crawling'); ?></label><input type="text" name="milestones_crawling" value="<?php echo esc_attr($patient->milestones_crawling); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('walking'); ?></label><input type="text" name="milestones_walking" value="<?php echo esc_attr($patient->milestones_walking); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('first_word'); ?></label><input type="text" name="lang_first_word" value="<?php echo esc_attr($patient->lang_first_word); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('sentences'); ?></label><input type="text" name="lang_sentences" value="<?php echo esc_attr($patient->lang_sentences); ?>"></div>
                         </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('التصنيف الداخلي', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->internal_classification) ?: '---'; ?></span>
-                        </div>
-                        <div>
-                            <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('ملاحظات إدارية', 'control'); ?></label>
-                            <p style="margin:0; font-size:0.9rem;"><?php echo nl2br(esc_html($patient->internal_notes)); ?></p>
-                        </div>
+                        <div class="wiz-field" style="margin-top:20px;"><label><?php echo Control_I18n::t('social_skills'); ?></label><textarea name="dev_social_skills" rows="3"><?php echo esc_textarea($patient->dev_social_skills); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('observed_delays'); ?></label><textarea name="dev_observed_delays" rows="3"><?php echo esc_textarea($patient->dev_observed_delays); ?></textarea></div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
                     </div>
-                </div>
-                <div>
-                    <h4 style="border-bottom:2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php _e('الفريق المعين', 'control'); ?></h4>
-                    <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
-                        <p style="margin:0; font-weight:600; color:var(--control-primary);"><?php echo esc_html($patient->assigned_specialists) ?: __('لم يتم تعيين فريق عمل بعد.', 'control'); ?></p>
-                    </div>
-                </div>
+                </form>
             </div>
-            <?php endif; ?>
-        </div>
 
-        <?php if($can_view_clinical || $can_manage): ?>
-        <!-- Medical Tab -->
-        <div id="tab-medical" class="tab-content" style="display:none;">
-            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:30px;">
-                <div>
-                    <h4 style="color:var(--control-primary); margin-bottom:15px;"><?php _e('تاريخ الحمل والولادة', 'control'); ?></h4>
-                    <div class="info-box" style="background:#f1f5f9; padding:15px; border-radius:10px; min-height:100px;">
-                        <label style="color:var(--control-muted); font-size:0.75rem; display:block; margin-bottom:5px;"><?php _e('مضاعفات الحمل', 'control'); ?></label>
-                        <p><?php echo nl2br(esc_html($patient->pregnancy_history)); ?></p>
-                        <label style="color:var(--control-muted); font-size:0.75rem; display:block; margin-top:15px; margin-bottom:5px;"><?php _e('تاريخ الولادة', 'control'); ?></label>
-                        <p><?php echo nl2br(esc_html($patient->birth_history)); ?></p>
+            <!-- Tab: Assessments -->
+            <div id="tab-assessments" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                        <h4 style="margin:0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px;">
+                            <span class="dashicons dashicons-clipboard"></span> <?php echo Control_I18n::t('file_assessments'); ?>
+                        </h4>
+                        <button class="control-btn add-assessment-btn" data-patient-id="<?php echo $patient->id; ?>" style="background:var(--control-accent); color:var(--control-primary) !important; border:none; font-weight:800; padding:8px 20px; border-radius:12px;">
+                            <span class="dashicons dashicons-plus" style="margin-left:5px;"></span><?php _e('إضافة تقييم جديد', 'control'); ?>
+                        </button>
                     </div>
-                </div>
-                <div>
-                    <h4 style="color:var(--control-primary); margin-bottom:15px;"><?php _e('مراحل التطور النموذجي', 'control'); ?></h4>
-                    <table class="control-table" style="background:#f8fafc;">
-                        <tr>
-                            <td><strong><?php _e('المشي', 'control'); ?></strong></td>
-                            <td><?php echo esc_html($patient->milestones_walking); ?></td>
-                        </tr>
-                        <tr>
-                            <td><strong><?php _e('الكلام', 'control'); ?></strong></td>
-                            <td><?php echo esc_html($patient->milestones_speaking); ?></td>
-                        </tr>
-                        <tr>
-                            <td><strong><?php _e('الجلوس', 'control'); ?></strong></td>
-                            <td><?php echo esc_html($patient->milestones_sitting); ?></td>
-                        </tr>
+
+                    <table class="control-table" style="background:#fcfcfc;">
+                        <thead>
+                            <tr>
+                                <th><?php _e('اسم الاختبار / التقييم', 'control'); ?></th>
+                                <th><?php _e('النتيجة المستخلصة', 'control'); ?></th>
+                                <th><?php _e('التاريخ', 'control'); ?></th>
+                                <th><?php _e('الفاحص', 'control'); ?></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $assessments = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_patient_assessments WHERE patient_id = %d ORDER BY test_date DESC", $patient->id));
+                            if($assessments): foreach($assessments as $a): ?>
+                                <tr>
+                                    <td><strong><?php echo esc_html($a->test_name); ?></strong></td>
+                                    <td><?php echo nl2br(esc_html($a->test_result)); ?></td>
+                                    <td><?php echo esc_html($a->test_date); ?></td>
+                                    <td><small><?php echo esc_html($a->assessor_id); ?></small></td>
+                                    <td style="text-align:left;">
+                                        <button class="delete-assessment-btn" data-id="<?php echo $a->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-trash"></span></button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; else: ?>
+                                <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--control-muted);"><?php _e('لا توجد تقييمات مسجلة حالياً.', 'control'); ?></td></tr>
+                            <?php endif; ?>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:30px; margin-top:30px;">
-                <div>
-                    <h4 style="color:var(--control-primary); margin-bottom:15px;"><?php _e('الأمراض المزمنة', 'control'); ?></h4>
-                    <div style="background:#fff1f2; color:#9f1239; padding:15px; border-radius:10px; border:1px solid #fecaca;">
-                        <?php echo nl2br(esc_html($patient->chronic_conditions)) ?: __('لا توجد أمراض مزمنة مسجلة.', 'control'); ?>
+            <!-- Tab: Diagnosis -->
+            <div id="tab-diagnosis" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-visibility"></span> <?php echo Control_I18n::t('file_diagnosis'); ?>
+                        </h4>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('initial_diagnosis'); ?></label><textarea name="initial_diagnosis" rows="2" style="font-weight:700; font-size:1.1rem;"><?php echo esc_textarea($patient->initial_diagnosis); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('secondary_diagnosis'); ?></label><textarea name="diagnosis_secondary" rows="3"><?php echo esc_textarea($patient->diagnosis_secondary); ?></textarea></div>
+                        <div class="wiz-grid">
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('severity_level'); ?></label><input type="text" name="diagnosis_severity" value="<?php echo esc_attr($patient->diagnosis_severity); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('diagnosis_source'); ?></label><input type="text" name="external_diagnosis_source" value="<?php echo esc_attr($patient->external_diagnosis_source); ?>"></div>
+                        </div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab: Treatment Plan -->
+            <div id="tab-treatment" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-welcome-learn-more"></span> <?php echo Control_I18n::t('file_treatment'); ?>
+                        </h4>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('short_goals'); ?></label><textarea name="tp_goals_short" rows="4"><?php echo esc_textarea($patient->tp_goals_short); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('long_goals'); ?></label><textarea name="tp_goals_long" rows="4"><?php echo esc_textarea($patient->tp_goals_long); ?></textarea></div>
+                        <div class="wiz-grid">
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('tp_frequency'); ?></label><input type="text" name="tp_frequency" value="<?php echo esc_attr($patient->tp_frequency); ?>"></div>
+                            <div class="wiz-field"><label><?php echo Control_I18n::t('routing_dept'); ?></label><input type="text" name="routing_dept" value="<?php echo esc_attr($patient->routing_dept); ?>"></div>
+                        </div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab: Sessions & Progress -->
+            <div id="tab-sessions" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                        <h4 style="margin:0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px;">
+                            <span class="dashicons dashicons-calendar-alt"></span> <?php echo Control_I18n::t('file_sessions'); ?>
+                        </h4>
+                        <button class="control-btn add-session-btn" data-patient-id="<?php echo $patient->id; ?>" style="background:var(--control-primary); border:none; font-weight:800; padding:8px 20px; border-radius:12px;">
+                            <?php _e('تسجيل جلسة جديدة', 'control'); ?>
+                        </button>
+                    </div>
+
+                    <div class="session-timeline" style="display:flex; flex-direction:column; gap:20px;">
+                        <?php $sessions = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_fin_sessions WHERE patient_id = %d ORDER BY session_date DESC", $patient->id));
+                        if($sessions): foreach($sessions as $s): ?>
+                            <div class="session-log-card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:15px; padding:20px;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
+                                    <div>
+                                        <span style="background:var(--control-accent); color:var(--control-primary); font-size:0.7rem; font-weight:900; padding:2px 10px; border-radius:8px; text-transform:uppercase;"><?php echo esc_html($s->session_date); ?></span>
+                                        <h5 style="margin:8px 0 0 0; font-weight:800;"><?php echo esc_html($s->specialist_id); ?></h5>
+                                    </div>
+                                    <div style="text-align:left;">
+                                        <span style="font-size:1.1rem; font-weight:800; color:#059669;"><?php echo $s->progress_percentage; ?>%</span>
+                                        <div style="font-size:0.6rem; color:var(--control-muted); font-weight:700;"><?php _e('نسبة الإنجاز', 'control'); ?></div>
+                                    </div>
+                                </div>
+                                <div style="font-size:0.85rem; line-height:1.6; color:#475569;">
+                                    <p style="margin-bottom:10px;"><strong><?php echo Control_I18n::t('clinical_notes'); ?>:</strong> <?php echo nl2br(esc_html($s->clinical_notes)); ?></p>
+                                    <p><strong><?php echo Control_I18n::t('child_response'); ?>:</strong> <?php echo esc_html($s->child_response); ?></p>
+                                </div>
+                                <div style="margin-top:15px; text-align:left;"><button class="control-btn delete-fin-session" data-id="<?php echo $s->id; ?>" style="background:none; border:none; color:#ef4444; font-size:0.75rem;"><span class="dashicons dashicons-trash"></span></button></div>
+                            </div>
+                        <?php endforeach; else: ?>
+                            <div style="text-align:center; padding:40px; color:var(--control-muted); border:2px dashed #f1f5f9; border-radius:20px;"><?php _e('لم يتم تسجيل أي جلسات علاجية حتى الآن.', 'control'); ?></div>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <div>
-                    <h4 style="color:var(--control-primary); margin-bottom:15px;"><?php _e('الأدوية الحالية', 'control'); ?></h4>
-                    <div style="background:#f0fdf4; color:#166534; padding:15px; border-radius:10px; border:1px solid #bbf7d0;">
-                        <?php echo nl2br(esc_html($patient->current_medications)) ?: __('لا توجد أدوية مسجلة.', 'control'); ?>
+            </div>
+
+            <!-- Tab: Referrals -->
+            <div id="tab-referrals" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                        <h4 style="margin:0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px;">
+                            <span class="dashicons dashicons-random"></span> <?php echo Control_I18n::t('referrals'); ?>
+                        </h4>
+                        <button class="control-btn add-referral-btn" data-patient-id="<?php echo $patient->id; ?>" style="background:var(--control-primary); border:none; font-weight:800; padding:8px 20px; border-radius:12px;">
+                            <?php _e('إضافة تحويل جديد', 'control'); ?>
+                        </button>
+                    </div>
+                    <table class="control-table">
+                        <thead><tr><th><?php _e('من قسم', 'control'); ?></th><th><?php _e('إلى قسم', 'control'); ?></th><th><?php _e('التاريخ', 'control'); ?></th><th><?php _e('ملاحظات', 'control'); ?></th><th></th></tr></thead>
+                        <tbody>
+                            <?php $referrals = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_patient_referrals WHERE patient_id = %d ORDER BY referral_date DESC", $patient->id));
+                            if($referrals): foreach($referrals as $r): ?>
+                                <tr><td><?php echo esc_html($r->from_department); ?></td><td><strong><?php echo esc_html($r->to_department); ?></strong></td><td><?php echo esc_html($r->referral_date); ?></td><td><?php echo esc_html($r->notes); ?></td><td style="text-align:left;"><button class="delete-referral-btn" data-id="<?php echo $r->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-trash"></span></button></td></tr>
+                            <?php endforeach; else: ?>
+                                <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--control-muted);"><?php _e('لا توجد سجلات تحويل.', 'control'); ?></td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Behavior Plan -->
+            <div id="tab-behavior" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-groups"></span> <?php echo Control_I18n::t('file_behavior'); ?>
+                        </h4>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('target_behaviors'); ?></label><textarea name="bp_target_behaviors" rows="3"><?php echo esc_textarea($patient->bp_target_behaviors); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('reinforcement'); ?></label><textarea name="bp_reinforcement_strategies" rows="3"><?php echo esc_textarea($patient->bp_reinforcement_strategies); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('interventions'); ?></label><textarea name="bp_intervention_techniques" rows="3"><?php echo esc_textarea($patient->bp_intervention_techniques); ?></textarea></div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab: Reports -->
+            <div id="tab-reports" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px; text-align:center;">
+                    <div style="width:100px; height:100px; background:#f0f9ff; color:#0ea5e9; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 25px;">
+                        <span class="dashicons dashicons-analytics" style="font-size:50px; width:50px; height:50px;"></span>
+                    </div>
+                    <h2 style="font-weight:800; color:var(--control-primary);"><?php _e('منصة التقارير الذكية', 'control'); ?></h2>
+                    <p style="color:var(--control-muted); margin-bottom:35px;"><?php _e('يمكنك توليد تقارير شاملة عن حالة الطفل وتطور أدائه خلال فترات زمنية محددة.', 'control'); ?></p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px;">
+                        <button class="control-btn" style="background:#fff; color:var(--control-primary) !important; border:1px solid #e2e8f0; height:120px; flex-direction:column; gap:10px; border-radius:20px;">
+                            <span class="dashicons dashicons-calendar-alt"></span><strong><?php _e('تقرير شهري', 'control'); ?></strong>
+                        </button>
+                        <button class="control-btn" style="background:#fff; color:var(--control-primary) !important; border:1px solid #e2e8f0; height:120px; flex-direction:column; gap:10px; border-radius:20px;">
+                            <span class="dashicons dashicons-chart-bar"></span><strong><?php _e('تقرير ربع سنوي', 'control'); ?></strong>
+                        </button>
+                        <button class="control-btn" style="background:var(--control-primary); height:120px; flex-direction:column; gap:10px; border-radius:20px;">
+                            <span class="dashicons dashicons-awards"></span><strong><?php _e('تقرير ختامي', 'control'); ?></strong>
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-        <?php endif; ?>
 
-        <?php if($can_view_clinical || $can_manage): ?>
-        <!-- Assessments Tab -->
-        <div id="tab-assessments" class="tab-content" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h4 style="color:var(--control-primary);"><?php _e('نتائج الاختبارات والتشخيصات', 'control'); ?></h4>
-                <button class="control-btn add-assessment-btn" data-patient-id="<?php echo $patient->id; ?>" style="padding:5px 15px; font-size:0.8rem; background:var(--control-accent); color:var(--control-primary-soft) !important; border:none;">
-                    <?php _e('إضافة اختبار جديد', 'control'); ?>
-                </button>
+            <!-- Tab: Attachments -->
+            <div id="tab-attachments" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                        <h4 style="margin:0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px;">
+                            <span class="dashicons dashicons-paperclip"></span> <?php echo Control_I18n::t('file_attachments'); ?>
+                        </h4>
+                        <button class="control-btn add-document-btn" data-patient-id="<?php echo $patient->id; ?>" style="background:var(--control-primary); border:none; font-weight:800; padding:8px 20px; border-radius:12px;">
+                            <span class="dashicons dashicons-upload" style="margin-left:5px;"></span><?php _e('رفع مرفق جديد', 'control'); ?>
+                        </button>
+                    </div>
+                    <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:20px;">
+                        <?php $docs = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_patient_documents WHERE patient_id = %d ORDER BY uploaded_at DESC", $patient->id));
+                        if($docs): foreach($docs as $d): ?>
+                            <div class="doc-attachment-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:15px; padding:15px; text-align:center;">
+                                <span class="dashicons dashicons-media-document" style="font-size:35px; color:var(--control-primary); margin-bottom:10px;"></span>
+                                <h6 style="margin:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo esc_html($d->doc_name); ?></h6>
+                                <div style="margin-top:10px; display:flex; gap:8px;">
+                                    <a href="<?php echo esc_url($d->doc_url); ?>" target="_blank" class="control-btn" style="flex:1; padding:4px; font-size:0.65rem; background:#f1f5f9; color:var(--control-primary) !important; border:none;"><?php _e('فتح', 'control'); ?></a>
+                                    <button class="delete-document-btn" data-id="<?php echo $d->id; ?>" style="background:none; border:none; color:#ef4444; cursor:pointer;"><span class="dashicons dashicons-trash"></span></button>
+                                </div>
+                            </div>
+                        <?php endforeach; else: ?>
+                            <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--control-muted); border:2px dashed #f1f5f9; border-radius:20px;"><?php _e('لا توجد مرفقات مرتبطة بهذا الملف.', 'control'); ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
 
-            <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px dashed #cbd5e1; margin-bottom:30px;">
-                <label style="color:var(--control-muted); font-size:0.8rem;"><?php _e('التشخيص الأولي:', 'control'); ?></label>
-                <p style="font-weight:700; font-size:1.1rem; color:var(--control-text-dark); margin-bottom:15px;"><?php echo esc_html($patient->initial_diagnosis); ?></p>
-                <label style="color:var(--control-muted); font-size:0.8rem;"><?php _e('مصدر التشخيص الخارجي:', 'control'); ?></label>
-                <p><?php echo esc_html($patient->external_diagnosis_source) ?: __('غير محدد', 'control'); ?></p>
+            <!-- Tab: Attendance -->
+            <div id="tab-attendance" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px;">
+                    <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                        <span class="dashicons dashicons-clock"></span> <?php echo Control_I18n::t('file_attendance'); ?>
+                    </h4>
+                    <div style="background:#f8fafc; padding:30px; border-radius:20px; text-align:center; border:2px dashed #e2e8f0;">
+                        <span class="dashicons dashicons-calendar-alt" style="font-size:40px; color:var(--control-muted); margin-bottom:15px;"></span>
+                        <p style="font-weight:700; color:var(--control-primary);"><?php _e('وحدة تتبع الحضور والجدولة قيد التحسين', 'control'); ?></p>
+                        <small style="color:var(--control-muted);"><?php _e('سيتم توفير تقويم تفاعلي لربط الحضور بنظام الفوترة قريباً.', 'control'); ?></small>
+                    </div>
+                </div>
             </div>
 
-            <table class="control-table">
-                <thead>
-                    <tr>
-                        <th><?php _e('اسم الاختبار', 'control'); ?></th>
-                        <th><?php _e('النتيجة', 'control'); ?></th>
-                        <th><?php _e('التاريخ', 'control'); ?></th>
-                        <th><?php _e('الفاحص', 'control'); ?></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if($assessments): foreach($assessments as $a): ?>
-                        <tr>
-                            <td><strong><?php echo esc_html($a->test_name); ?></strong></td>
-                            <td><?php echo nl2br(esc_html($a->test_result)); ?></td>
-                            <td><?php echo esc_html($a->test_date); ?></td>
-                            <td><?php echo esc_html($a->assessor_id); ?></td>
-                            <td style="text-align:left;">
-                                <button class="delete-assessment-btn" data-id="<?php echo $a->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-trash"></span></button>
-                            </td>
-                        </tr>
-                    <?php endforeach; else: ?>
-                        <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--control-muted);"><?php _e('لا توجد نتائج اختبارات مسجلة.', 'control'); ?></td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Behavioral Tab -->
-        <div id="tab-behavioral" class="tab-content" style="display:none;">
-            <h4 style="color:var(--control-primary); margin-bottom:20px;"><?php _e('الملاحظة السلوكية الأولية', 'control'); ?></h4>
-            <div style="background:#fff; border:1px solid #e2e8f0; padding:30px; border-radius:20px; line-height:1.8; color:#334155; white-space: pre-line;">
-                <?php echo esc_html($patient->initial_behavioral_observation) ?: __('لا توجد ملاحظات مسجلة للجلسة الأولى.', 'control'); ?>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Documents Tab -->
-        <div id="tab-documents" class="tab-content" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h4 style="color:var(--control-primary);"><?php _e('التقارير الطبية والوثائق الإدارية', 'control'); ?></h4>
-                <button class="control-btn add-document-btn" data-patient-id="<?php echo $patient->id; ?>" style="padding:5px 15px; font-size:0.8rem; background:var(--control-accent); color:var(--control-primary-soft) !important; border:none;">
-                    <?php _e('رفع ملف جديد', 'control'); ?>
-                </button>
-            </div>
-
-            <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
-                <?php
-                if($documents):
-                    foreach($documents as $d):
-                        // Filter documents based on role
-                        $is_admin_doc = in_array($d->doc_type, array('birth_certificate', 'id', 'agreement'));
-                        if ( $is_admin_doc && ! $can_manage ) continue;
-
-                        $is_clinical_doc = in_array($d->doc_type, array('medical_report', 'eeg', 'scan', 'gene_test'));
-                        if ( $is_clinical_doc && ! $can_view_clinical && ! $can_manage ) continue;
-                ?>
-                    <div class="control-card" style="padding:15px; text-align:center; position:relative;">
-                        <span class="dashicons dashicons-media-document" style="font-size:40px; width:40px; height:40px; color:var(--control-primary); margin-bottom:10px;"></span>
-                        <h5 style="margin:5px 0; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?php echo esc_html($d->doc_name); ?></h5>
-                        <small style="color:var(--control-muted); display:block; margin-bottom:10px;"><?php echo esc_html($d->doc_type); ?></small>
-                        <div style="display:flex; gap:10px; justify-content:center;">
-                            <a href="<?php echo esc_url($d->doc_url); ?>" target="_blank" class="control-btn" style="padding:4px 10px; font-size:0.7rem; background:var(--control-bg); color:var(--control-text-dark) !important; border:none;"><?php _e('عرض', 'control'); ?></a>
-                            <button class="delete-document-btn" data-id="<?php echo $d->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-trash" style="font-size:16px;"></span></button>
+            <!-- Tab: Billing -->
+            <div id="tab-billing" class="p-file-pane" style="display:none;">
+                <div class="control-card" style="border-radius:24px; padding:35px;">
+                    <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                        <span class="dashicons dashicons-cart"></span> <?php echo Control_I18n::t('file_billing'); ?>
+                    </h4>
+                    <div class="wiz-grid" style="margin-bottom:30px;">
+                        <div style="background:#ecfdf5; border:1px solid #bbf7d0; border-radius:15px; padding:20px; text-align:center;">
+                            <span style="font-size:0.7rem; font-weight:800; color:#065f46; text-transform:uppercase;"><?php _e('إجمالي المدفوعات', 'control'); ?></span>
+                            <div style="font-size:1.5rem; font-weight:900; color:#047857; margin-top:5px;"><?php
+                                $paid = $wpdb->get_var($wpdb->prepare("SELECT SUM(amount) FROM {$wpdb->prefix}control_fin_payments p JOIN {$wpdb->prefix}control_fin_invoices i ON p.invoice_id = i.id WHERE i.patient_id = %d", $patient->id)) ?: 0;
+                                echo number_format($paid, 2);
+                            ?> <small>AED</small></div>
+                        </div>
+                        <div style="background:#fff1f2; border:1px solid #fecaca; border-radius:15px; padding:20px; text-align:center;">
+                            <span style="font-size:0.7rem; font-weight:800; color:#9f1239; text-transform:uppercase;"><?php _e('الرصيد المستحق', 'control'); ?></span>
+                            <div style="font-size:1.5rem; font-weight:900; color:#be123c; margin-top:5px;"><?php
+                                $total = $wpdb->get_var($wpdb->prepare("SELECT SUM(total_amount) FROM {$wpdb->prefix}control_fin_invoices WHERE patient_id = %d", $patient->id)) ?: 0;
+                                echo number_format($total - $paid, 2);
+                            ?> <small>AED</small></div>
                         </div>
                     </div>
-                <?php endforeach; else: ?>
-                    <div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--control-muted);"><?php _e('لا توجد وثائق مرفوعة.', 'control'); ?></div>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <?php if($can_view_clinical || $can_manage): ?>
-        <!-- Financial Tab -->
-        <div id="tab-financial" class="tab-content" style="display:none;">
-            <h4 style="color:var(--control-primary); margin-bottom:20px;"><?php _e('البيانات المالية للطفل', 'control'); ?></h4>
-            <div class="control-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
-                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
-                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('تكلفة التسجيل', 'control'); ?></label>
-                    <div style="font-size:1.2rem; font-weight:800; color:var(--control-primary);"><?php echo number_format(floatval($patient->registration_cost ?? 0), 2); ?> AED</div>
-                </div>
-                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
-                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('نموذج الدفع', 'control'); ?></label>
-                    <div style="font-weight:700;"><?php
-                        $models = ['one_time' => __('دفع لمرة واحدة', 'control'), 'daily' => __('دفع يومي', 'control'), 'weekly' => __('اشتراك أسبوعي', 'control'), 'monthly' => __('اشتراك شهري', 'control')];
-                        echo $models[$patient->payment_model ?? ''] ?? ($patient->payment_model ?? '---');
-                    ?></div>
-                </div>
-                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
-                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('نوع الفوترة', 'control'); ?></label>
-                    <div style="font-weight:700;"><?php
-                        $types = ['session_based' => __('فوترة حسب الجلسات', 'control'), 'subscription_based' => __('فوترة بنظام الاشتراك', 'control')];
-                        echo $types[$patient->billing_type ?? ''] ?? ($patient->billing_type ?? '---');
-                    ?></div>
-                </div>
-                <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
-                    <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('المبلغ لكل دورة / اشتراك', 'control'); ?></label>
-                    <div style="font-size:1.2rem; font-weight:800; color:#059669;"><?php echo number_format(floatval($patient->amount_per_cycle ?? 0), 2); ?> AED</div>
+                    <table class="control-table">
+                        <thead><tr><th><?php _e('رقم الفاتورة', 'control'); ?></th><th><?php _e('التاريخ', 'control'); ?></th><th><?php _e('المبلغ', 'control'); ?></th><th><?php _e('الحالة', 'control'); ?></th></tr></thead>
+                        <tbody>
+                            <?php $invoices = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_fin_invoices WHERE patient_id = %d ORDER BY invoice_date DESC", $patient->id));
+                            if($invoices): foreach($invoices as $inv): ?>
+                                <tr><td><strong><?php echo esc_html($inv->invoice_number); ?></strong></td><td><?php echo esc_html($inv->invoice_date); ?></td><td><?php echo number_format($inv->total_amount, 2); ?></td><td><span class="status-badge inv-<?php echo $inv->status; ?>" style="font-size:0.65rem; padding:2px 8px; border-radius:10px; background:<?php echo $inv->status === 'paid' ? '#ecfdf5' : '#fff1f2'; ?>; color:<?php echo $inv->status === 'paid' ? '#065f46' : '#9f1239'; ?>; font-weight:700;"><?php echo $inv->status; ?></span></td></tr>
+                            <?php endforeach; else: ?>
+                                <tr><td colspan="4" style="text-align:center; padding:20px;"><?php _e('لا توجد فواتير مسجلة.', 'control'); ?></td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Referrals Tab -->
-        <div id="tab-referrals" class="tab-content" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h4 style="color:var(--control-primary);"><?php _e('سجل التحويلات بين الأقسام', 'control'); ?></h4>
-                <button class="control-btn add-referral-btn" data-patient-id="<?php echo $patient->id; ?>" style="padding:5px 15px; font-size:0.8rem; background:var(--control-accent); color:var(--control-primary-soft) !important; border:none;">
-                    <?php _e('إضافة تحويل جديد', 'control'); ?>
-                </button>
+            <!-- Tab: Notes -->
+            <div id="tab-notes" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-edit"></span> <?php echo Control_I18n::t('file_notes'); ?>
+                        </h4>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('specialist_notes'); ?></label><textarea name="notes_specialist" rows="5"><?php echo esc_textarea($patient->notes_specialist); ?></textarea></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('guardian_notes'); ?></label><textarea name="notes_guardian" rows="5"><?php echo esc_textarea($patient->notes_guardian); ?></textarea></div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
+                    </div>
+                </form>
             </div>
 
-            <table class="control-table">
-                <thead>
-                    <tr>
-                        <th><?php _e('من قسم', 'control'); ?></th>
-                        <th><?php _e('إلى قسم', 'control'); ?></th>
-                        <th><?php _e('تاريخ التحويل', 'control'); ?></th>
-                        <th><?php _e('ملاحظات', 'control'); ?></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if($referrals): foreach($referrals as $r): ?>
-                        <tr>
-                            <td><?php echo esc_html($r->from_department); ?></td>
-                            <td><strong><?php echo esc_html($r->to_department); ?></strong></td>
-                            <td><?php echo esc_html($r->referral_date); ?></td>
-                            <td><?php echo esc_html($r->notes); ?></td>
-                            <td style="text-align:left;">
-                                <button class="delete-referral-btn" data-id="<?php echo $r->id; ?>" style="color:#ef4444; background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-trash"></span></button>
-                            </td>
-                        </tr>
-                    <?php endforeach; else: ?>
-                        <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--control-muted);"><?php _e('لا توجد سجلات تحويل.', 'control'); ?></td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            <!-- Tab: Staff -->
+            <div id="tab-staff" class="p-file-pane" style="display:none;">
+                <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
+                    <div class="control-card" style="border-radius:24px; padding:35px;">
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                            <span class="dashicons dashicons-businessperson"></span> <?php echo Control_I18n::t('file_staff'); ?>
+                        </h4>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('primary_specialist'); ?></label><input type="text" name="assigned_specialists" value="<?php echo esc_attr($patient->assigned_specialists); ?>" placeholder="أدخل اسم الأخصائي المسؤول..."></div>
+                        <div class="wiz-field"><label><?php echo Control_I18n::t('case_team'); ?></label><textarea name="intake_notes" rows="4" placeholder="أدخل أسماء فريق التدخل (تخاطب - حركي - وظيفي - نفسي)..."><?php echo esc_textarea($patient->intake_notes); ?></textarea></div>
+                        <div style="text-align:left; margin-top:30px;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:12px 40px; border-radius:12px;"><?php echo Control_I18n::t('save'); ?></button></div>
+                    </div>
+                </form>
+            </div>
+
         </div>
-        <?php endif; ?>
     </div>
 </div>
 
-<!-- Assessment Modal -->
+<!-- All existing modals preserved but context-updated -->
+<div id="pediatric-toast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#1e293b; color:#fff; padding:12px 30px; border-radius:50px; z-index:100000; box-shadow:0 10px 30px rgba(0,0,0,0.2); font-weight:700;"></div>
+
+<!-- Assessment Modal (Preserved & Re-Styled) -->
 <div id="assessment-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
     <div class="control-card" style="width:100%; max-width:500px; padding:30px; border-radius:20px;">
         <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('إضافة نتيجة اختبار', 'control'); ?></h3>
         <form id="assessment-form">
             <input type="hidden" name="patient_id" id="assessment-patient-id">
-            <input type="hidden" name="id" id="assessment-id" value="0">
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('اسم الاختبار / التقييم', 'control'); ?></label>
-                <input type="text" name="test_name" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-            </div>
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('النتيجة / الملاحظات', 'control'); ?></label>
-                <textarea name="test_result" rows="4" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;"></textarea>
-            </div>
-            <div class="wiz-field" style="margin-bottom:20px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('التاريخ', 'control'); ?></label>
-                <input type="date" name="test_date" required value="<?php echo date('Y-m-d'); ?>" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ البيانات', 'control'); ?></button>
-                <button type="button" onclick="jQuery('#assessment-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
-            </div>
+            <div class="wiz-field" style="margin-bottom:15px;"><label><?php _e('اسم الاختبار / التقييم', 'control'); ?></label><input type="text" name="test_name" required></div>
+            <div class="wiz-field" style="margin-bottom:15px;"><label><?php _e('النتيجة / الملاحظات', 'control'); ?></label><textarea name="test_result" rows="4" required></textarea></div>
+            <div class="wiz-field" style="margin-bottom:20px;"><label><?php _e('التاريخ', 'control'); ?></label><input type="date" name="test_date" required value="<?php echo date('Y-m-d'); ?>"></div>
+            <div style="display:flex; gap:10px;"><button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ البيانات', 'control'); ?></button><button type="button" onclick="jQuery('#assessment-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button></div>
         </form>
     </div>
 </div>
 
-<!-- Document Modal -->
-<div id="document-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
-    <div class="control-card" style="width:100%; max-width:500px; padding:30px; border-radius:20px;">
-        <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('رفع مستند جديد', 'control'); ?></h3>
-        <form id="document-form">
-            <input type="hidden" name="patient_id" id="doc-patient-id">
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('نوع المستند', 'control'); ?></label>
-                <select name="doc_type" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-                    <option value="medical_report"><?php _e('تقرير طبي', 'control'); ?></option>
-                    <option value="eeg"><?php _e('رسم مخ (EEG)', 'control'); ?></option>
-                    <option value="scan"><?php _e('أشعة مقطعية / رنين', 'control'); ?></option>
-                    <option value="gene_test"><?php _e('تحليل جينات', 'control'); ?></option>
-                    <option value="birth_certificate"><?php _e('شهادة ميلاد', 'control'); ?></option>
-                    <option value="id"><?php _e('هوية ولي الأمر', 'control'); ?></option>
-                    <option value="agreement"><?php _e('عقد اتفاق', 'control'); ?></option>
-                </select>
-            </div>
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('اسم المستند', 'control'); ?></label>
-                <input type="text" name="doc_name" id="doc-name" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-            </div>
-            <div class="wiz-field" style="margin-bottom:20px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('الملف', 'control'); ?></label>
-                <input type="hidden" name="doc_url" id="doc-url">
-                <button type="button" id="upload-doc-btn" class="control-btn" style="width:100%; background:#f8fafc; color:var(--control-text-dark) !important; border:1.5px dashed #cbd5e1;"><?php _e('اختر ملف...', 'control'); ?></button>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ المستند', 'control'); ?></button>
-                <button type="button" onclick="jQuery('#document-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Referral Modal -->
+<!-- Session Modal (New for Clinical Entry) -->
+<!-- Referral Modal (New) -->
 <div id="referral-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
-    <div class="control-card" style="width:100%; max-width:500px; padding:30px; border-radius:20px;">
+    <div class="control-card" style="width:100%; max-width:500px; padding:35px; border-radius:24px;">
         <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('إضافة تحويل داخلي', 'control'); ?></h3>
-        <form id="referral-form">
+        <form id="file-referral-form">
             <input type="hidden" name="patient_id" id="referral-patient-id">
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('من قسم', 'control'); ?></label>
-                <input type="text" name="from_department" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-            </div>
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('إلى قسم', 'control'); ?></label>
-                <input type="text" name="to_department" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-            </div>
-            <div class="wiz-field" style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('تاريخ التحويل', 'control'); ?></label>
-                <input type="date" name="referral_date" required value="<?php echo date('Y-m-d'); ?>" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;">
-            </div>
-            <div class="wiz-field" style="margin-bottom:20px;">
-                <label style="display:block; font-size:0.8rem; font-weight:800; margin-bottom:5px;"><?php _e('ملاحظات التحويل', 'control'); ?></label>
-                <textarea name="notes" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0;"></textarea>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ التحويل', 'control'); ?></button>
-                <button type="button" onclick="jQuery('#referral-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
-            </div>
+            <div class="wiz-field"><label><?php _e('من قسم', 'control'); ?></label><input type="text" name="from_department" required></div>
+            <div class="wiz-field"><label><?php _e('إلى قسم', 'control'); ?></label><input type="text" name="to_department" required></div>
+            <div class="wiz-field"><label><?php _e('تاريخ التحويل', 'control'); ?></label><input type="date" name="referral_date" required value="<?php echo date('Y-m-d'); ?>"></div>
+            <div class="wiz-field"><label><?php _e('ملاحظات التحويل', 'control'); ?></label><textarea name="notes" rows="3"></textarea></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('حفظ التحويل', 'control'); ?></button><button type="button" onclick="jQuery('#referral-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button></div>
         </form>
     </div>
 </div>
 
-<?php include CONTROL_PATH . 'templates/patient-forms.php'; ?>
+<div id="session-modal" class="control-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div class="control-card" style="width:100%; max-width:550px; padding:35px; border-radius:24px;">
+        <h3 style="margin-top:0; color:var(--control-primary); font-weight:800;"><?php _e('تسجيل جلسة علاجية', 'control'); ?></h3>
+        <form id="file-session-form">
+            <input type="hidden" name="patient_id" id="session-patient-id">
+            <div class="wiz-grid">
+                <div class="wiz-field"><label><?php _e('تاريخ الجلسة', 'control'); ?></label><input type="date" name="session_date" required value="<?php echo date('Y-m-d'); ?>"></div>
+                <div class="wiz-field"><label><?php _e('اسم الأخصائي', 'control'); ?></label><input type="text" name="specialist_id" required></div>
+            </div>
+            <div class="wiz-field"><label><?php echo Control_I18n::t('clinical_notes'); ?></label><textarea name="clinical_notes" rows="3" required></textarea></div>
+            <div class="wiz-field"><label><?php echo Control_I18n::t('child_response'); ?></label><textarea name="child_response" rows="2"></textarea></div>
+            <div class="wiz-grid">
+                <div class="wiz-field"><label><?php echo Control_I18n::t('progress_pct'); ?></label><input type="number" name="progress_percentage" min="0" max="100" value="0"></div>
+                <div class="wiz-field"><label><?php echo Control_I18n::t('duration_minutes'); ?></label><input type="number" name="duration_minutes" value="60"></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button type="submit" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('اعتماد الجلسة', 'control'); ?></button><button type="button" onclick="jQuery('#session-modal').hide()" class="control-btn" style="flex:1; background:#f1f5f9; color:#475569 !important; border:none;"><?php _e('إلغاء', 'control'); ?></button></div>
+        </form>
+    </div>
+</div>
 
 <script>
 jQuery(document).ready(function($) {
-    $('.tab-btn').on('click', function() {
-        $('.tab-btn').removeClass('active');
+    // Age Calculation Logic
+    function calculateAge(dob) {
+        if (!dob) return "";
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let years = today.getFullYear() - birthDate.getFullYear();
+        let months = today.getMonth() - birthDate.getMonth();
+        if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+            years--;
+            months += 12;
+        }
+        return years + " " + "<?php echo Control_I18n::t('years'); ?>" + "، " + months + " " + "<?php echo Control_I18n::t('months'); ?>";
+    }
+
+    $('.dob-input-calc').on('change', function() {
+        $(this).closest('form').find('.age-display-field').val(calculateAge($(this).val()));
+    }).trigger('change');
+
+    // Navigation Logic
+    $('.p-nav-item').on('click', function() {
+        $('.p-nav-item').removeClass('active');
         $(this).addClass('active');
         const tab = $(this).data('tab');
-        $('.tab-content').hide();
-        $('#' + tab).fadeIn();
+        $('.p-file-pane').hide();
+        $('#' + tab).fadeIn(300);
     });
 
-    $(document).on('click', '.edit-patient-btn', function() {
-        const patientData = <?php echo json_encode($patient); ?>;
-        openPatientModal(patientData);
+    // Independent Section Saving
+    $('.clinical-save-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        const patientId = $(this).data('patient-id');
+        $btn.prop('disabled', true).text('<?php _e("جاري الحفظ...", "control"); ?>');
+
+        const formData = $(this).serialize() + '&action=control_save_patient&id=' + patientId + '&nonce=' + control_ajax.nonce;
+
+        $.post(control_ajax.ajax_url, formData, (res) => {
+            $btn.prop('disabled', false).text('<?php echo Control_I18n::t("save"); ?>');
+            if(res.success) {
+                showToast('<?php _e("تم حفظ التعديلات بنجاح.", "control"); ?>');
+            } else {
+                alert(res.data.message || 'Error occurred');
+            }
+        });
     });
 
     // Assessment Logic
     $('.add-assessment-btn').on('click', function() {
-        const patientId = $(this).data('patient-id');
-        $('#assessment-patient-id').val(patientId);
-        $('#assessment-id').val('0');
-        $('#assessment-form')[0].reset();
+        $('#assessment-patient-id').val($(this).data('patient-id'));
         $('#assessment-modal').css('display', 'flex');
     });
 
     $('#assessment-form').on('submit', function(e) {
         e.preventDefault();
-        const $btn = $(this).find('button[type="submit"]');
-        $btn.prop('disabled', true).text('<?php _e("جاري الحفظ...", "control"); ?>');
-
-        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_patient_assessment&nonce=' + control_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_patient_assessment&nonce=' + control_ajax.nonce, (res) => {
             if(res.success) location.reload();
             else alert(res.data);
         });
-    });
-
-    $(document).on('click', '.delete-assessment-btn', function() {
-        if(!confirm('<?php _e("حذف نتيجة الاختبار؟", "control"); ?>')) return;
-        const id = $(this).data('id');
-        $.post(control_ajax.ajax_url, { action: 'control_delete_patient_assessment', id: id, nonce: control_ajax.nonce }, () => location.reload());
-    });
-
-    // Document Logic
-    $('.add-document-btn').on('click', function() {
-        const patientId = $(this).data('patient-id');
-        $('#doc-patient-id').val(patientId);
-        $('#document-modal').css('display', 'flex');
-    });
-
-    $('#upload-doc-btn').on('click', function(e) {
-        e.preventDefault();
-        const frame = wp.media({ title: 'اختر مستند', multiple: false }).open();
-        frame.on('select', function() {
-            const attachment = frame.state().get('selection').first().toJSON();
-            $('#doc-url').val(attachment.url);
-            $('#doc-name').val(attachment.filename);
-            $('#upload-doc-btn').text('تم اختيار: ' + attachment.filename).css('background', '#10b981').css('color', '#fff');
-        });
-    });
-
-    $('#document-form').on('submit', function(e) {
-        e.preventDefault();
-        if(!$('#doc-url').val()) return alert('<?php _e("يرجى اختيار ملف أولاً", "control"); ?>');
-
-        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_patient_document&nonce=' + control_ajax.nonce, function(res) {
-            if(res.success) location.reload();
-            else alert(res.data);
-        });
-    });
-
-    $(document).on('click', '.delete-document-btn', function() {
-        if(!confirm('<?php _e("حذف المستند؟", "control"); ?>')) return;
-        const id = $(this).data('id');
-        $.post(control_ajax.ajax_url, { action: 'control_delete_patient_document', id: id, nonce: control_ajax.nonce }, () => location.reload());
     });
 
     // Referral Logic
     $('.add-referral-btn').on('click', function() {
-        const patientId = $(this).data('patient-id');
-        $('#referral-patient-id').val(patientId);
+        $('#referral-patient-id').val($(this).data('patient-id'));
         $('#referral-modal').css('display', 'flex');
     });
 
-    $('#referral-form').on('submit', function(e) {
+    $('#file-referral-form').on('submit', function(e) {
         e.preventDefault();
-        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_patient_referral&nonce=' + control_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_patient_referral&nonce=' + control_ajax.nonce, (res) => {
             if(res.success) location.reload();
             else alert(res.data);
         });
     });
 
+    // Session Logic
+    $('.add-session-btn').on('click', function() {
+        $('#session-patient-id').val($(this).data('patient-id'));
+        $('#session-modal').css('display', 'flex');
+    });
+
+    $('#file-session-form').on('submit', function(e) {
+        e.preventDefault();
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_fin_session&nonce=' + control_ajax.nonce, (res) => {
+            if(res.success) location.reload();
+            else alert(res.data);
+        });
+    });
+
+    function showToast(message) {
+        $('#pediatric-toast').text(message).fadeIn().delay(3000).fadeOut();
+    }
+
+    $(document).on('click', '.delete-assessment-btn', function() {
+        if(!confirm('<?php _e("حذف نتيجة الاختبار؟", "control"); ?>')) return;
+        $.post(control_ajax.ajax_url, { action: 'control_delete_patient_assessment', id: $(this).data('id'), nonce: control_ajax.nonce }, () => location.reload());
+    });
+
+    $(document).on('click', '.delete-fin-session', function() {
+        if(!confirm('<?php _e("حذف سجل الجلسة؟", "control"); ?>')) return;
+        $.post(control_ajax.ajax_url, { action: 'control_delete_fin_session', id: $(this).data('id'), nonce: control_ajax.nonce }, () => location.reload());
+    });
+
     $(document).on('click', '.delete-referral-btn', function() {
         if(!confirm('<?php _e("حذف سجل التحويل؟", "control"); ?>')) return;
-        const id = $(this).data('id');
-        $.post(control_ajax.ajax_url, { action: 'control_delete_patient_referral', id: id, nonce: control_ajax.nonce }, () => location.reload());
+        $.post(control_ajax.ajax_url, { action: 'control_delete_patient_referral', id: $(this).data('id'), nonce: control_ajax.nonce }, () => location.reload());
     });
 });
 </script>
 
 <style>
-.tab-btn { background:none; border:none; padding:15px 25px; cursor:pointer; font-weight:700; color:var(--control-muted); border-bottom:3px solid transparent; transition:0.2s; white-space:nowrap; }
-.tab-btn.active { color:var(--control-primary); border-bottom-color:var(--control-accent); }
+.p-nav-item.active { background: #1e293b; color: #fff !important; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.p-nav-item.active .nav-icon-box { background: rgba(255,255,255,0.1) !important; color: #fff !important; }
+.p-nav-item:not(.active):hover { background: #f8fafc; transform: translateX(-5px); }
+.wiz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.wiz-field { margin-bottom: 15px; }
+.wiz-field input, .wiz-field select, .wiz-field textarea { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.9rem; background:#fff; transition:0.3s; }
+.wiz-field input:focus { border-color: var(--control-primary); outline:none; }
+.wiz-field label { display:block; font-size:0.75rem; font-weight:800; color:var(--control-muted); margin-bottom:8px; text-transform:uppercase; }
+.control-table th { background:#f8fafc; color:var(--control-muted); font-size:0.75rem; font-weight:800; text-transform:uppercase; padding:15px; border-bottom:1px solid #e2e8f0; }
+.control-table td { padding:15px; border-bottom:1px solid #f1f5f9; font-size:0.9rem; }
 .patient-status-badge.status-active { background: #ecfdf5; color: #059669; }
 .patient-status-badge.status-waiting_list { background: #fff7ed; color: #d97706; }
-.patient-status-badge.status-dropped_out { background: #fef2f2; color: #ef4444; }
-.patient-status-badge.status-completed { background: #eff6ff; color: #2563eb; }
-.info-box p { margin:0; line-height:1.6; color:var(--control-text-dark); font-weight:500; }
+
+@media (max-width: 1024px) {
+    .patient-file-layout { flex-direction: column; }
+    .p-internal-sidebar { width: 100% !important; position: static !important; margin-bottom: 30px; }
+}
+@media (max-width: 768px) {
+    .wiz-grid { grid-template-columns: 1fr; }
+}
 </style>
 </div>

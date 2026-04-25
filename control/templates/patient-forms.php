@@ -1,5 +1,7 @@
 <?php
+global $wpdb;
 $specialists = $wpdb->get_results("SELECT id, first_name, last_name, role FROM {$wpdb->prefix}control_staff WHERE role IN ('therapist', 'coach', 'specialist', 'occupational_therapist', 'physical_rehab', 'speech_therapist')");
+$specialists = is_array($specialists) ? $specialists : array();
 
 $is_internal = Control_Auth::is_logged_in();
 $strings = Control_I18n::get_all();

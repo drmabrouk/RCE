@@ -4,7 +4,7 @@ global $wpdb;
 $patient_id = intval( $_GET['id'] ?? 0 );
 $patient = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patients WHERE id = %d", $patient_id ) );
 
-if ( ! $patient ) {
+if ( ! $patient || ! is_object($patient) ) {
     echo '<div class="control-card">' . __('المريض غير موجود.', 'control') . '</div>';
     return;
 }
@@ -14,8 +14,13 @@ $can_manage = Control_Auth::has_permission('pediatric_manage'); // This correspo
 $is_reception = ! $can_view_clinical && Control_Auth::has_permission('pediatric_view_basic');
 
 $assessments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_assessments WHERE patient_id = %d ORDER BY test_date DESC", $patient_id ) );
+$assessments = is_array($assessments) ? $assessments : array();
+
 $documents = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_documents WHERE patient_id = %d ORDER BY uploaded_at DESC", $patient_id ) );
+$documents = is_array($documents) ? $documents : array();
+
 $referrals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_patient_referrals WHERE patient_id = %d ORDER BY referral_date DESC", $patient_id ) );
+$referrals = is_array($referrals) ? $referrals : array();
 
 $status_labels = array(
     'active'          => __('نشط', 'control'),
@@ -87,19 +92,19 @@ $status_labels = array(
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('الاسم الكامل للطفل', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->full_name); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->full_name ?? __('بدون اسم', 'control')); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('اسم ولي الأمر', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->guardian_name); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->guardian_name ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('تاريخ الميلاد', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->dob); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->dob ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('الجنس', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo $patient->gender === 'male' ? __('ذكر', 'control') : __('أنثى', 'control'); ?></span>
+                            <span style="font-weight:700;"><?php echo (isset($patient->gender) && $patient->gender === 'male') ? __('ذكر', 'control') : __('أنثى', 'control'); ?></span>
                         </div>
                     </div>
                 </div>
@@ -108,15 +113,15 @@ $status_labels = array(
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف ولي الأمر (1)', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->father_phone); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->father_phone ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('هاتف بديل (2)', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->mother_phone); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->mother_phone ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('العنوان السكني', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->address); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->address ?? '---'); ?></span>
                         </div>
                     </div>
                 </div>
@@ -125,19 +130,19 @@ $status_labels = array(
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال الطوارئ', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('جهة اتصال طوارئ بديلة', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact_alt); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->emergency_contact_alt ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('فصيلة الدم', 'control'); ?></label>
-                            <span style="font-weight:700;"><?php echo esc_html($patient->blood_type); ?></span>
+                            <span style="font-weight:700;"><?php echo esc_html($patient->blood_type ?? '---'); ?></span>
                         </div>
                         <div>
                             <label style="color:var(--control-muted); font-size:0.8rem; display:block;"><?php _e('حساسية الأدوية', 'control'); ?></label>
-                            <span style="font-weight:700; color:#ef4444;"><?php echo esc_html($patient->drug_allergies) ?: __('لا يوجد', 'control'); ?></span>
+                            <span style="font-weight:700; color:#ef4444;"><?php echo esc_html($patient->drug_allergies ?? '') ?: __('لا يوجد', 'control'); ?></span>
                         </div>
                     </div>
                 </div>
@@ -349,25 +354,25 @@ $status_labels = array(
             <div class="control-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
                 <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
                     <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('تكلفة التسجيل', 'control'); ?></label>
-                    <div style="font-size:1.2rem; font-weight:800; color:var(--control-primary);"><?php echo number_format($patient->registration_cost, 2); ?> AED</div>
+                    <div style="font-size:1.2rem; font-weight:800; color:var(--control-primary);"><?php echo number_format(floatval($patient->registration_cost ?? 0), 2); ?> AED</div>
                 </div>
                 <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
                     <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('نموذج الدفع', 'control'); ?></label>
                     <div style="font-weight:700;"><?php
                         $models = ['one_time' => __('دفع لمرة واحدة', 'control'), 'daily' => __('دفع يومي', 'control'), 'weekly' => __('اشتراك أسبوعي', 'control'), 'monthly' => __('اشتراك شهري', 'control')];
-                        echo $models[$patient->payment_model] ?? $patient->payment_model;
+                        echo $models[$patient->payment_model ?? ''] ?? ($patient->payment_model ?? '---');
                     ?></div>
                 </div>
                 <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
                     <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('نوع الفوترة', 'control'); ?></label>
                     <div style="font-weight:700;"><?php
                         $types = ['session_based' => __('فوترة حسب الجلسات', 'control'), 'subscription_based' => __('فوترة بنظام الاشتراك', 'control')];
-                        echo $types[$patient->billing_type] ?? $patient->billing_type;
+                        echo $types[$patient->billing_type ?? ''] ?? ($patient->billing_type ?? '---');
                     ?></div>
                 </div>
                 <div style="background:#f8fafc; padding:20px; border-radius:15px; border:1px solid #e2e8f0;">
                     <label style="color:var(--control-muted); font-size:0.8rem; display:block; margin-bottom:5px;"><?php _e('المبلغ لكل دورة / اشتراك', 'control'); ?></label>
-                    <div style="font-size:1.2rem; font-weight:800; color:#059669;"><?php echo number_format($patient->amount_per_cycle, 2); ?> AED</div>
+                    <div style="font-size:1.2rem; font-weight:800; color:#059669;"><?php echo number_format(floatval($patient->amount_per_cycle ?? 0), 2); ?> AED</div>
                 </div>
             </div>
         </div>

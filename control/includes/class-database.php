@@ -31,7 +31,9 @@ class Control_Database {
 		$table_fin_expenses      = $wpdb->prefix . 'control_fin_expenses';
 		$table_custom_perms      = $wpdb->prefix . 'control_custom_permissions';
 
-		$sql = "CREATE TABLE $table_staff (
+		$queries = array();
+
+		$queries[] = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
 			username varchar(100),
 			phone varchar(50) NOT NULL,
@@ -46,43 +48,34 @@ class Control_Database {
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			last_activity datetime DEFAULT CURRENT_TIMESTAMP,
 			raw_password varchar(255),
-
-			/* Personal Info */
 			profile_image varchar(255),
 			gender varchar(20),
-
-			/* Academic Info */
 			degree varchar(255),
 			specialization varchar(255),
 			institution varchar(255),
 			institution_country varchar(100),
 			graduation_year varchar(10),
-
-			/* Personal & Location Info */
 			home_country varchar(100),
 			state varchar(100),
 			address text,
-
-			/* Employment Info */
 			employer_name varchar(255),
 			employer_country varchar(100),
 			work_phone varchar(50),
 			work_email varchar(255),
 			org_logo varchar(255),
 			job_title varchar(255),
-
 			PRIMARY KEY  (id),
 			UNIQUE KEY phone (phone),
 			UNIQUE KEY email (email)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_settings (
+		$queries[] = "CREATE TABLE $table_settings (
 			setting_key varchar(100) NOT NULL,
 			setting_value text,
 			PRIMARY KEY  (setting_key)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_roles (
+		$queries[] = "CREATE TABLE $table_roles (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
 			role_key varchar(50) NOT NULL,
 			role_name varchar(100) NOT NULL,
@@ -90,9 +83,9 @@ class Control_Database {
 			is_system tinyint(1) DEFAULT 0,
 			PRIMARY KEY  (id),
 			UNIQUE KEY role_key (role_key)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_activity_logs (
+		$queries[] = "CREATE TABLE $table_activity_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id varchar(100) NOT NULL,
 			action_type varchar(100) NOT NULL,
@@ -103,25 +96,25 @@ class Control_Database {
 			meta_data longtext,
 			action_date datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_email_templates (
+		$queries[] = "CREATE TABLE $table_email_templates (
 			template_key varchar(100) NOT NULL,
 			subject text NOT NULL,
 			content longtext NOT NULL,
 			last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (template_key)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_policies (
+		$queries[] = "CREATE TABLE $table_policies (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
 			title varchar(255) NOT NULL,
 			content longtext NOT NULL,
 			last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_otps (
+		$queries[] = "CREATE TABLE $table_otps (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			email varchar(255) NOT NULL,
 			otp varchar(10) NOT NULL,
@@ -130,9 +123,9 @@ class Control_Database {
 			is_verified tinyint(1) DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY email (email)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_reset_tokens (
+		$queries[] = "CREATE TABLE $table_reset_tokens (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id varchar(100) NOT NULL,
 			token varchar(100) NOT NULL,
@@ -141,9 +134,9 @@ class Control_Database {
 			is_used tinyint(1) DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY token (token)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_patients (
+		$queries[] = "CREATE TABLE $table_patients (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
 			full_name varchar(255) NOT NULL,
 			name_first varchar(100),
@@ -166,7 +159,6 @@ class Control_Database {
 			height varchar(50),
 			weight varchar(50),
 			profile_photo varchar(255),
-
 			guardian_name varchar(255),
 			guardian_relationship varchar(100),
 			guardian_id varchar(100),
@@ -181,8 +173,6 @@ class Control_Database {
 			emergency_contact_alt varchar(255),
 			blood_type varchar(10),
 			communication_status varchar(50),
-
-			/* Medical History */
 			diag_prev varchar(50),
 			prev_rehab_centers varchar(255),
 			diag_prev_details text,
@@ -198,8 +188,6 @@ class Control_Database {
 			milestones_walking varchar(255),
 			milestones_speaking varchar(255),
 			milestones_sitting varchar(255),
-
-			/* Screening & Evaluation */
 			eval_attention varchar(50),
 			eval_name_response varchar(50),
 			eval_eye_contact varchar(50),
@@ -213,37 +201,31 @@ class Control_Database {
 			initial_behavioral_observation text,
 			initial_diagnosis text,
 			external_diagnosis_source varchar(255),
-
-			/* Status & Internal Analysis */
 			case_classification varchar(100),
 			priority_level varchar(50),
 			suggested_pathway varchar(100),
 			final_decision varchar(100),
-			case_status varchar(50) DEFAULT 'waiting_list', /* active, evaluation_only, closed, waiting_list, dropped_out, completed */
+			case_status varchar(50) DEFAULT 'waiting_list',
 			assigned_specialists text,
 			is_draft tinyint(1) DEFAULT 0,
 			intake_reason text,
 			intake_notes text,
 			intake_status varchar(50) DEFAULT 'none',
-
-			/* Financial Model Integration */
-			registration_cost decimal(10,2) DEFAULT 0,
+			registration_cost decimal(10,2) DEFAULT 0.00,
 			currency varchar(10) DEFAULT 'AED',
-			payment_model varchar(50), /* one_time, daily, weekly, monthly */
-			billing_type varchar(50), /* session_based, subscription_based */
+			payment_model varchar(50),
+			billing_type varchar(50),
 			payment_frequency varchar(50),
-			amount_per_cycle decimal(10,2) DEFAULT 0,
-			total_expected_revenue decimal(10,2) DEFAULT 0,
-
+			amount_per_cycle decimal(10,2) DEFAULT 0.00,
+			total_expected_revenue decimal(10,2) DEFAULT 0.00,
 			system_id varchar(100),
 			workflow_metadata longtext,
-
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_patient_assessments (
+		$queries[] = "CREATE TABLE $table_patient_assessments (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
 			test_name varchar(255) NOT NULL,
@@ -253,20 +235,20 @@ class Control_Database {
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_patient_documents (
+		$queries[] = "CREATE TABLE $table_patient_documents (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
-			doc_type varchar(100), /* medical_report, eeg, scan, gene_test, birth_certificate, id, agreement */
+			doc_type varchar(100),
 			doc_url varchar(255) NOT NULL,
 			doc_name varchar(255),
 			uploaded_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_patient_referrals (
+		$queries[] = "CREATE TABLE $table_patient_referrals (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
 			from_department varchar(100),
@@ -276,25 +258,25 @@ class Control_Database {
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_sessions (
+		$queries[] = "CREATE TABLE $table_fin_sessions (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
 			specialist_id varchar(100) NOT NULL,
 			session_date date NOT NULL,
 			duration_minutes int DEFAULT 60,
-			status varchar(20) DEFAULT 'attended', /* attended, cancelled, no_show */
-			billing_status varchar(20) DEFAULT 'unbilled', /* unbilled, billed, deducted_from_package */
+			status varchar(20) DEFAULT 'attended',
+			billing_status varchar(20) DEFAULT 'unbilled',
 			invoice_id bigint(20),
 			package_id bigint(20),
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id),
 			KEY specialist_id (specialist_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_packages (
+		$queries[] = "CREATE TABLE $table_fin_packages (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
 			package_name varchar(255) NOT NULL,
@@ -306,9 +288,9 @@ class Control_Database {
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_invoices (
+		$queries[] = "CREATE TABLE $table_fin_invoices (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
 			invoice_number varchar(50) NOT NULL,
@@ -317,7 +299,7 @@ class Control_Database {
 			tax decimal(10,2) DEFAULT 0,
 			total_amount decimal(10,2) NOT NULL,
 			paid_amount decimal(10,2) DEFAULT 0,
-			status varchar(20) DEFAULT 'pending', /* paid, pending, overdue, partial */
+			status varchar(20) DEFAULT 'pending',
 			invoice_date date NOT NULL,
 			due_date date,
 			notes text,
@@ -325,9 +307,9 @@ class Control_Database {
 			PRIMARY KEY  (id),
 			UNIQUE KEY invoice_number (invoice_number),
 			KEY patient_id (patient_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_invoice_items (
+		$queries[] = "CREATE TABLE $table_fin_invoice_items (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			invoice_id bigint(20) NOT NULL,
 			description text NOT NULL,
@@ -336,21 +318,21 @@ class Control_Database {
 			total_price decimal(10,2) NOT NULL,
 			PRIMARY KEY  (id),
 			KEY invoice_id (invoice_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_payments (
+		$queries[] = "CREATE TABLE $table_fin_payments (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			invoice_id bigint(20) NOT NULL,
 			amount decimal(10,2) NOT NULL,
-			payment_method varchar(50), /* cash, card, transfer */
+			payment_method varchar(50),
 			payment_date datetime DEFAULT CURRENT_TIMESTAMP,
 			transaction_id varchar(255),
 			recorded_by varchar(100),
 			PRIMARY KEY  (id),
 			KEY invoice_id (invoice_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_payroll (
+		$queries[] = "CREATE TABLE $table_fin_payroll (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			specialist_id varchar(100) NOT NULL,
 			month int NOT NULL,
@@ -365,11 +347,11 @@ class Control_Database {
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY specialist_id (specialist_id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_fin_expenses (
+		$queries[] = "CREATE TABLE $table_fin_expenses (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
-			category varchar(100) NOT NULL, /* rent, equipment, utilities, misc */
+			category varchar(100) NOT NULL,
 			description text NOT NULL,
 			amount decimal(10,2) NOT NULL,
 			expense_date date NOT NULL,
@@ -377,9 +359,9 @@ class Control_Database {
 			attachment_url varchar(255),
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
-		) $charset_collate;
+		) $charset_collate;";
 
-		CREATE TABLE $table_custom_perms (
+		$queries[] = "CREATE TABLE $table_custom_perms (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
 			perm_key varchar(100) NOT NULL,
 			perm_label varchar(255) NOT NULL,
@@ -390,7 +372,9 @@ class Control_Database {
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-			dbDelta( $sql );
+			foreach ($queries as $query) {
+				dbDelta( $query );
+			}
 		}
 
 		// Seed initial data

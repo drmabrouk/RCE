@@ -1,5 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
+global $wpdb;
 $strings = Control_I18n::get_all();
 ?>
 
@@ -175,17 +176,36 @@ if (isStaff) {
 let currentStepIdx = 0;
 
 // Resume logic: If resumeData exists, we find the first empty phase or start at Phase 5
-if (resumeData) {
+if (resumeData && typeof resumeData === 'object') {
     if (resumeData.intake_status === 'pending') {
-        currentStepIdx = stepTree.findIndex(s => s.phase === 5);
+        const targetIdx = stepTree.findIndex(s => s.phase === 5);
+        if (targetIdx !== -1) {
+            currentStepIdx = targetIdx;
+        }
     }
 }
 
 const optionData = {
     gender: { ar: [{v:'male', t:'ذكر (Male)'}, {v:'female', t:'أنثى (Female)'}], en: [{v:'male', t:'Male'}, {v:'female', t:'Female'}] },
     nationality: {
-        ar: [{v:'SA', t:'المملكة العربية السعودية'}, {v:'AE', t:'الإمارات العربية المتحدة'}, {v:'EG', t:'جمهورية مصر العربية'}, {v:'KW', t:'الكويت'}, {v:'QA', t:'قطر'}, {v:'BH', t:'البحرين'}, {v:'OM', t:'سلطنة عمان'}, {v:'JO', t:'الأردن'}, {v:'other', t:'جنسيات أخرى'}],
-        en: [{v:'SA', t:'Saudi Arabia'}, {v:'AE', t:'United Arab Emirates'}, {v:'EG', t:'Egypt'}, {v:'KW', t:'Kuwait'}, {v:'QA', t:'Qatar'}, {v:'BH', t:'Bahrain'}, {v:'OM', t:'Oman'}, {v:'JO', t:'Jordan'}, {v:'other', t:'Other'}]
+        ar: [
+            {v:'SA', t:'المملكة العربية السعودية'}, {v:'AE', t:'الإمارات العربية المتحدة'}, {v:'EG', t:'جمهورية مصر العربية'},
+            {v:'KW', t:'الكويت'}, {v:'QA', t:'قطر'}, {v:'BH', t:'البحرين'}, {v:'OM', t:'سلطنة عمان'},
+            {v:'JO', t:'الأردن'}, {v:'LB', t:'لبنان'}, {v:'SY', t:'سوريا'}, {v:'IQ', t:'العراق'},
+            {v:'SD', t:'السودان'}, {v:'MA', t:'المغرب'}, {v:'DZ', t:'الجزائر'}, {v:'TN', t:'تونس'},
+            {v:'LY', t:'ليبيا'}, {v:'YE', t:'اليمن'}, {v:'PS', t:'فلسطين'}, {v:'US', t:'الولايات المتحدة'},
+            {v:'GB', t:'المملكة المتحدة'}, {v:'CA', t:'كندا'}, {v:'FR', t:'فرنسا'}, {v:'DE', t:'ألمانيا'},
+            {v:'TR', t:'تركيا'}, {v:'IN', t:'الهند'}, {v:'PK', t:'باكستان'}, {v:'other', t:'جنسيات أخرى'}
+        ],
+        en: [
+            {v:'SA', t:'Saudi Arabia'}, {v:'AE', t:'United Arab Emirates'}, {v:'EG', t:'Egypt'},
+            {v:'KW', t:'Kuwait'}, {v:'QA', t:'Qatar'}, {v:'BH', t:'Bahrain'}, {v:'OM', t:'Oman'},
+            {v:'JO', t:'Jordan'}, {v:'LB', t:'Lebanon'}, {v:'SY', t:'Syria'}, {v:'IQ', t:'Iraq'},
+            {v:'SD', t:'Sudan'}, {v:'MA', t:'Morocco'}, {v:'DZ', t:'Algeria'}, {v:'TN', t:'Tunisia'},
+            {v:'LY', t:'Libya'}, {v:'YE', t:'Yemen'}, {v:'PS', t:'Palestine'}, {v:'US', t:'USA'},
+            {v:'GB', t:'UK'}, {v:'CA', t:'Canada'}, {v:'FR', t:'France'}, {v:'DE', t:'Germany'},
+            {v:'TR', t:'Turkey'}, {v:'IN', t:'India'}, {v:'PK', t:'Pakistan'}, {v:'other', t:'Other'}
+        ]
     },
     relationship: {
         ar: [{v:'father', t:'الأب (Father)'}, {v:'mother', t:'الأم (Mother)'}, {v:'relative', t:'قريب من الدرجة الأولى'}, {v:'legal', t:'ولي أمر شرعي'}],
@@ -206,6 +226,9 @@ const optionData = {
 
 function renderStep() {
     const $ = jQuery;
+    if (currentStepIdx < 0) currentStepIdx = 0;
+    if (currentStepIdx >= stepTree.length) currentStepIdx = stepTree.length - 1;
+
     const step = stepTree[currentStepIdx];
     const lang = $('#k-selected-lang').val();
     const s = kStrings[lang];

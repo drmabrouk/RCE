@@ -33,31 +33,31 @@ if ( ! function_exists( 'render_patient_cards' ) ) {
                  data-search="<?php echo esc_attr(strtolower($p_full_name . ' ' . $p_perm_id . ' ' . $p_phone . ' ' . $p_diag)); ?>"
                  style="padding:0; overflow:hidden; transition:0.3s; border:1px solid #f1f5f9; border-radius: 20px; position:relative;">
 
-                <div style="padding:24px;">
-                    <div style="display:flex; gap:18px; align-items:flex-start; margin-bottom:20px;">
-                        <div style="width:75px; height:75px; background:#f8fafc; border-radius:20px; overflow:hidden; border:2px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.06); flex-shrink:0;">
+                <div style="padding:20px;">
+                    <div style="display:flex; gap:15px; align-items:flex-start; margin-bottom:15px;">
+                        <div style="width:65px; height:65px; background:#f8fafc; border-radius:18px; overflow:hidden; border:2px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.06); flex-shrink:0;">
                             <?php if(!empty($p->profile_photo)): ?>
                                 <img src="<?php echo esc_url($p->profile_photo); ?>" style="width:100%; height:100%; object-fit:cover;">
                             <?php else: ?>
                                 <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#cbd5e1;">
-                                    <span class="dashicons dashicons-admin-users" style="font-size:45px; width:45px; height:45px;"></span>
+                                    <span class="dashicons dashicons-admin-users" style="font-size:35px; width:35px; height:35px;"></span>
                                 </div>
                             <?php endif; ?>
                         </div>
                         <div style="flex:1; min-width:0;">
-                            <h3 style="margin:0 0 6px 0; font-size:1.15rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary); letter-spacing:-0.2px;"><?php echo esc_html($p_full_name); ?></h3>
-                            <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap; margin-bottom:8px;">
-                                <span class="patient-status-badge status-<?php echo esc_attr($p_case_status); ?>" style="font-size:0.65rem; padding:3px 10px; border-radius:8px; font-weight:800; text-transform:uppercase;">
+                            <h3 style="margin:0 0 4px 0; font-size:1.05rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--control-primary); letter-spacing:-0.2px;"><?php echo esc_html($p_full_name); ?></h3>
+                            <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap; margin-bottom:6px;">
+                                <span class="patient-status-badge status-<?php echo esc_attr($p_case_status); ?>" style="text-transform:uppercase;">
                                     <?php echo $status_labels[$p_case_status] ?? $p_case_status; ?>
                                 </span>
-                                <span class="badge-pastel badge-age" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800;">
+                                <span class="badge-pastel badge-age">
                                     <?php echo $age_str; ?>
                                 </span>
-                                <span class="badge-pastel badge-gender" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
+                                <span class="badge-pastel badge-gender" style="text-transform:uppercase;">
                                     <?php echo $p_gender === 'male' ? __('ذكر', 'control') : __('أنثى', 'control'); ?>
                                 </span>
                                 <?php if(!empty($p_priority)): ?>
-                                    <span class="badge-pastel badge-priority priority-<?php echo esc_attr($p_priority); ?>" style="padding:3px 10px; border-radius:8px; font-size:0.65rem; font-weight:800; text-transform:uppercase;">
+                                    <span class="badge-pastel badge-priority priority-<?php echo esc_attr($p_priority); ?>" style="text-transform:uppercase;">
                                         <?php
                                             $priorities = ['normal' => __('عادي', 'control'), 'urgent' => __('عاجل', 'control'), 'critical' => __('حرج', 'control')];
                                             echo $priorities[$p_priority] ?? $p_priority;
@@ -65,36 +65,36 @@ if ( ! function_exists( 'render_patient_cards' ) ) {
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <span class="badge-pastel badge-nat" style="padding:2px 12px; border-radius:20px; font-size:0.65rem; font-weight:700;">
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <span class="badge-pastel badge-nat">
                                     <?php echo esc_html($nat_label); ?>
                                 </span>
-                                <span style="color:var(--control-muted); font-size:0.65rem; font-weight:700; border:1px solid #e2e8f0; padding:1px 12px; border-radius:20px; background:#fff;">
+                                <span style="color:var(--control-muted); font-size:0.55rem; font-weight:700; border:1px solid #e2e8f0; padding:1px 8px; border-radius:20px; background:#fff;">
                                     <?php echo esc_html($lang_label); ?>
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div style="background:#f8fafc; padding:15px; border-radius:15px; margin-bottom: 5px;">
+                    <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom: 2px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1;">
-                                <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('تشخيص الحالة', 'control'); ?></span>
-                                <span class="badge-pastel badge-diagnosis" style="padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:800; display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            <div style="flex:1.2; min-width:0;">
+                                <span style="color:var(--control-muted); font-size:0.65rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('تشخيص الحالة', 'control'); ?></span>
+                                <span class="badge-pastel badge-diagnosis" style="display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                                     <?php echo esc_html($p_diag) ?: __('غير محدد', 'control'); ?>
                                 </span>
                             </div>
-                            <div style="width:1px; height:25px; background:#e2e8f0; margin:0 15px;"></div>
-                            <div style="flex:1; text-align:left;">
-                                <span style="color:var(--control-muted); font-size:0.7rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('رقم الملف', 'control'); ?></span>
-                                <strong style="font-size: 0.8rem; font-family:monospace; letter-spacing:1px; display:block;">#<?php echo esc_html($p_perm_id ?: $p_id); ?></strong>
+                            <div style="width:1px; height:20px; background:#e2e8f0; margin:0 12px;"></div>
+                            <div style="flex:0.8; text-align:left;">
+                                <span style="color:var(--control-muted); font-size:0.65rem; font-weight:700; display:block; margin-bottom:2px;"><?php _e('رقم الملف', 'control'); ?></span>
+                                <strong style="font-size: 0.75rem; font-family:monospace; letter-spacing:0.5px; display:block;">#<?php echo esc_html($p_perm_id ?: $p_id); ?></strong>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="background:#fff; padding:15px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; gap: 10px;">
-                    <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p_id)); ?>" class="control-btn" style="flex: 1; padding:10px; font-size:0.8rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:12px; text-align:center;">
+                <div style="background:#fff; padding:12px 20px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; gap: 8px;">
+                    <a href="<?php echo add_query_arg(array('control_view' => 'patient_view', 'id' => $p_id)); ?>" class="control-btn" style="flex: 1; padding:8px; font-size:0.75rem; background:#f8fafc; color:var(--control-primary) !important; border:1px solid #e2e8f0; font-weight:800; border-radius:10px; text-align:center;">
                         <?php echo Control_I18n::t('view_file'); ?>
                     </a>
 
@@ -179,7 +179,7 @@ $closed_cases     = array_filter($patients, function($p) { return is_object($p) 
         <span class="dashicons dashicons-clock" style="font-size:24px; width:24px; height:24px;"></span>
         <?php _e('طلبات الالتحاق الجديدة (قيد المراجعة)', 'control'); ?>
     </h3>
-    <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+    <div class="control-grid grid-layout">
         <?php foreach($pending_requests as $p): if(!is_object($p)) continue; ?>
             <div class="control-card" style="border-right:5px solid #fbbf24; padding:0; overflow:hidden;">
                 <div style="padding:20px;">
@@ -370,6 +370,7 @@ $closed_cases     = array_filter($patients, function($p) { return is_object($p) 
 </div>
 
 <style>
+.grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .p-nav-item.active { background: #1e293b; color: #fff !important; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
 .p-nav-item.active .nav-icon-box { background: rgba(255,255,255,0.1) !important; color: #fff !important; }
 .p-nav-item.active .nav-count-badge { background: var(--control-accent) !important; color: #1e293b !important; }
@@ -378,21 +379,35 @@ $closed_cases     = array_filter($patients, function($p) { return is_object($p) 
 .p-sidebar-select:focus { border-color: var(--control-primary); background: #fff; box-shadow: 0 0 0 4px var(--control-primary-soft); }
 .p-sidebar-select option:checked { background: #1e293b; color: #fff; }
 
-.patient-status-badge.status-active { background: #dcfce7; color: #15803d; }
-.patient-status-badge.status-waiting_list { background: #dbeafe; color: #1e40af; }
-.patient-status-badge.status-dropped_out { background: #fee2e2; color: #b91c1c; }
-.patient-status-badge.status-completed { background: #f0fdf4; color: #166534; }
-.patient-status-badge.status-closed { background: #f1f5f9; color: #475569; }
-.patient-status-badge.status-evaluation_only { background: #fef3c7; color: #92400e; }
+/* Refined Pastel Badges */
+.patient-status-badge, .badge-pastel, .badge-lang {
+    font-size: 0.6rem !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
 
-.badge-pastel { border: 1px solid rgba(0,0,0,0.03); }
-.badge-age { background: #f3e8ff; color: #7e22ce; }
-.badge-gender { background: #e0f2fe; color: #0369a1; }
-.badge-nat { background: #fdf2f8; color: #be185d; }
-.badge-diagnosis { background: #fff1f2; color: #e11d48; }
-.badge-priority.priority-normal { background: #f0fdf4; color: #166534; }
-.badge-priority.priority-urgent { background: #fff7ed; color: #9a3412; }
-.badge-priority.priority-critical { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+.patient-status-badge.status-active { background: rgba(220, 252, 231, 0.3); color: #166534; }
+.patient-status-badge.status-waiting_list { background: rgba(219, 234, 254, 0.3); color: #1e40af; }
+.patient-status-badge.status-dropped_out { background: rgba(254, 226, 226, 0.3); color: #991b1b; }
+.patient-status-badge.status-completed { background: rgba(240, 253, 244, 0.3); color: #166534; }
+.patient-status-badge.status-closed { background: rgba(241, 245, 249, 0.3); color: #475569; }
+.patient-status-badge.status-evaluation_only { background: rgba(254, 243, 199, 0.3); color: #92400e; }
+
+.badge-pastel { border: 1px solid rgba(0,0,0,0.01); }
+.badge-age { background: rgba(243, 232, 255, 0.3); color: #7e22ce; }
+.badge-gender { background: rgba(224, 242, 254, 0.3); color: #0369a1; }
+.badge-nat { background: rgba(253, 242, 248, 0.3); color: #be185d; }
+.badge-diagnosis { background: rgba(255, 241, 242, 0.3); color: #e11d48; }
+.badge-lang { background: rgba(241, 245, 249, 0.3); color: #64748b; border: 1px solid rgba(226, 232, 240, 0.5); }
+.badge-priority.priority-normal { background: rgba(240, 253, 244, 0.3); color: #166534; }
+.badge-priority.priority-urgent { background: rgba(255, 247, 237, 0.3); color: #9a3412; }
+.badge-priority.priority-critical { background: rgba(254, 242, 242, 0.3); color: #991b1b; border: 1px solid rgba(254, 226, 226, 0.3); }
 
 .patient-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); border-color: var(--control-primary); }
 
@@ -406,6 +421,7 @@ $closed_cases     = array_filter($patients, function($p) { return is_object($p) 
 
 @media (max-width: 768px) {
     .p-internal-sidebar .filters-wrapper { grid-template-columns: 1fr; }
+    .grid-layout { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -567,11 +583,4 @@ jQuery(document).ready(function($) {
 });
 </script>
 
-<style>
-.patient-status-badge.status-active { background: #ecfdf5; color: #059669; }
-.patient-status-badge.status-waiting_list { background: #eff6ff; color: #1d4ed8; }
-.patient-status-badge.status-dropped_out { background: #fef2f2; color: #ef4444; }
-.patient-status-badge.status-completed { background: #f0fdf4; color: #166534; }
-.patient-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); border-color: var(--control-primary); }
-</style>
 </div>

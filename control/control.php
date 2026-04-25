@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define constants
-define( 'CONTROL_VERSION', '3.6.0' );
+define( 'CONTROL_VERSION', '3.7.0' );
 define( 'CONTROL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CONTROL_URL', plugin_dir_url( __FILE__ ) );
 

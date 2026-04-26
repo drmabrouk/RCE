@@ -22,6 +22,7 @@ class Control_Database {
 		$table_patient_assessments = $wpdb->prefix . 'control_patient_assessments';
 		$table_patient_documents = $wpdb->prefix . 'control_patient_documents';
 		$table_patient_referrals = $wpdb->prefix . 'control_patient_referrals';
+		$table_patient_notes     = $wpdb->prefix . 'control_patient_clinical_notes';
 		$table_fin_sessions      = $wpdb->prefix . 'control_fin_sessions';
 		$table_fin_packages      = $wpdb->prefix . 'control_fin_packages';
 		$table_fin_invoices      = $wpdb->prefix . 'control_fin_invoices';
@@ -235,6 +236,28 @@ class Control_Database {
 			street_name varchar(255),
 			area_district varchar(255),
 			billing_plan varchar(50),
+			child_lang_primary varchar(50),
+			child_lang_secondary varchar(50),
+			comm_lang_primary varchar(50),
+			comm_lang_secondary varchar(50),
+			emergency_relationship varchar(100),
+			emergency_lang varchar(100),
+			eval_psych_cognitive text,
+			eval_psych_emotional text,
+			eval_psych_tests text,
+			eval_psych_interpretation text,
+			eval_ot_fine_motor text,
+			eval_ot_adl text,
+			eval_ot_sensory text,
+			eval_ot_functional text,
+			eval_phys_gross_motor text,
+			eval_phys_strength text,
+			eval_phys_balance text,
+			eval_phys_performance text,
+			eval_beh_tracking text,
+			eval_beh_regulation text,
+			eval_beh_response text,
+			eval_beh_plans text,
 			registration_cost decimal(10,2) DEFAULT 0.00,
 			currency varchar(10) DEFAULT 'AED',
 			payment_model varchar(50),
@@ -265,9 +288,24 @@ class Control_Database {
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			patient_id mediumint(9) NOT NULL,
 			doc_type varchar(100),
+			doc_category varchar(100),
+			specialist_role varchar(100),
 			doc_url varchar(255) NOT NULL,
 			doc_name varchar(255),
 			uploaded_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;";
+
+		$queries[] = "CREATE TABLE $table_patient_notes (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			author_id varchar(100),
+			author_name varchar(255),
+			author_role varchar(100),
+			note_category varchar(50),
+			content text NOT NULL,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
 		) $charset_collate;";

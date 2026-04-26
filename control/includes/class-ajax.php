@@ -29,7 +29,7 @@ class Control_Ajax {
 			'save_fin_payment', 'delete_fin_payment', 'get_fin_report_data',
 			'save_fin_payroll', 'delete_fin_payroll', 'save_fin_expense', 'delete_fin_expense',
 			'update_intake_status', 'add_custom_permission', 'update_session_lang', 'restore_patient',
-			'close_patient'
+			'close_patient', 'save_clinical_note', 'delete_clinical_note'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1345,11 +1345,14 @@ class Control_Ajax {
 			'initial_diagnosis' => 'sanitize_textarea_field',
 			'external_diagnosis_source' => 'sanitize_text_field',
 			'case_classification' => 'sanitize_text_field',
+			'priority_level'    => 'sanitize_text_field',
 			'suggested_pathway' => 'sanitize_text_field',
 			'final_decision'    => 'sanitize_text_field',
 			'case_status'       => 'sanitize_text_field',
 			'assigned_specialists' => 'sanitize_textarea_field',
 			'is_draft'          => 'intval',
+			'intake_reason'     => 'sanitize_textarea_field',
+			'intake_notes'      => 'sanitize_textarea_field',
 			'referral_source'   => 'sanitize_text_field',
 			'medical_surgeries' => 'sanitize_textarea_field',
 			'milestones_crawling' => 'sanitize_text_field',
@@ -1374,6 +1377,28 @@ class Control_Ajax {
 			'street_name'       => 'sanitize_text_field',
 			'area_district'     => 'sanitize_text_field',
 			'billing_plan'      => 'sanitize_text_field',
+			'child_lang_primary' => 'sanitize_text_field',
+			'child_lang_secondary' => 'sanitize_text_field',
+			'comm_lang_primary' => 'sanitize_text_field',
+			'comm_lang_secondary' => 'sanitize_text_field',
+			'emergency_relationship' => 'sanitize_text_field',
+			'emergency_lang'    => 'sanitize_text_field',
+			'eval_psych_cognitive' => 'sanitize_textarea_field',
+			'eval_psych_emotional' => 'sanitize_textarea_field',
+			'eval_psych_tests' => 'sanitize_textarea_field',
+			'eval_psych_interpretation' => 'sanitize_textarea_field',
+			'eval_ot_fine_motor' => 'sanitize_textarea_field',
+			'eval_ot_adl' => 'sanitize_textarea_field',
+			'eval_ot_sensory' => 'sanitize_textarea_field',
+			'eval_ot_functional' => 'sanitize_textarea_field',
+			'eval_phys_gross_motor' => 'sanitize_textarea_field',
+			'eval_phys_strength' => 'sanitize_textarea_field',
+			'eval_phys_balance' => 'sanitize_textarea_field',
+			'eval_phys_performance' => 'sanitize_textarea_field',
+			'eval_beh_tracking' => 'sanitize_textarea_field',
+			'eval_beh_regulation' => 'sanitize_textarea_field',
+			'eval_beh_response' => 'sanitize_textarea_field',
+			'eval_beh_plans' => 'sanitize_textarea_field',
 			'system_id'         => 'sanitize_text_field',
 			'intake_status'     => 'sanitize_text_field',
 			'workflow_metadata' => 'wp_unslash',
@@ -1511,11 +1536,14 @@ class Control_Ajax {
 		if ( ! Control_Auth::has_permission('pediatric_view_basic') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
+		$user = Control_Auth::current_user();
 		$data = array(
-			'patient_id' => intval( $_POST['patient_id'] ),
-			'doc_type'   => sanitize_text_field( $_POST['doc_type'] ),
-			'doc_url'    => esc_url_raw( $_POST['doc_url'] ),
-			'doc_name'   => sanitize_text_field( $_POST['doc_name'] ),
+			'patient_id'      => intval( $_POST['patient_id'] ),
+			'doc_type'        => sanitize_text_field( $_POST['doc_type'] ?? '' ),
+			'doc_category'    => sanitize_text_field( $_POST['doc_category'] ?? '' ),
+			'specialist_role' => $user->role,
+			'doc_url'         => esc_url_raw( $_POST['doc_url'] ),
+			'doc_name'        => sanitize_text_field( $_POST['doc_name'] ),
 		);
 
 		$wpdb->insert( "{$wpdb->prefix}control_patient_documents", $data );
@@ -1972,6 +2000,34 @@ class Control_Ajax {
 		$wpdb->update("{$wpdb->prefix}control_patients", array('case_status' => 'closed'), array('id' => $id));
 
 		Control_Audit::log('close_patient', "Patient record closed for ID: $id");
+		$this->send_success();
+	}
+
+	public function save_clinical_note() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::is_logged_in() ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+
+		$user = Control_Auth::current_user();
+		$data = array(
+			'patient_id'    => intval($_POST['patient_id']),
+			'author_id'     => $user->id,
+			'author_name'   => $user->name,
+			'author_role'   => $user->role,
+			'note_category' => sanitize_text_field($_POST['note_category']),
+			'content'       => sanitize_textarea_field($_POST['content']),
+			'created_at'    => current_time('mysql')
+		);
+
+		$wpdb->insert("{$wpdb->prefix}control_patient_clinical_notes", $data);
+		$this->send_success();
+	}
+
+	public function delete_clinical_note() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('pediatric_manage') ) $this->send_error( 'Unauthorized', 403 );
+		global $wpdb;
+		$wpdb->delete("{$wpdb->prefix}control_patient_clinical_notes", array('id' => intval($_POST['id'])));
 		$this->send_success();
 	}
 }

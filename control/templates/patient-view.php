@@ -29,13 +29,12 @@ $tabs = array(
     'eval_ot'      => array('label' => $specialist_modules['ot']['label'], 'icon' => 'welcome-learn-more', 'specialist' => 'ot'),
     'eval_phys'    => array('label' => $specialist_modules['phys']['label'], 'icon' => 'chart-line', 'specialist' => 'phys'),
     'eval_beh'     => array('label' => $specialist_modules['beh']['label'], 'icon' => 'visibility', 'specialist' => 'beh'),
-    'treatment'    => array('label' => Control_I18n::t('file_treatment'), 'icon' => 'welcome-add-page', 'specialist' => false),
-    'sessions'     => array('label' => Control_I18n::t('file_sessions'), 'icon' => 'calendar-alt', 'specialist' => false),
+    'treatment_sessions' => array('label' => Control_I18n::t('treatment_sessions'), 'icon' => 'welcome-add-page', 'specialist' => false),
     'reports'      => array('label' => Control_I18n::t('file_reports'), 'icon' => 'analytics', 'specialist' => false),
-    'attachments'  => array('label' => Control_I18n::t('file_attachments'), 'icon' => 'paperclip', 'specialist' => false),
+    'referrals'    => array('label' => Control_I18n::t('referrals'), 'icon' => 'randomize', 'specialist' => false),
     'attendance'   => array('label' => Control_I18n::t('file_attendance'), 'icon' => 'clock', 'specialist' => false),
     'billing'      => array('label' => Control_I18n::t('file_billing'), 'icon' => 'cart', 'specialist' => false),
-    'notes'        => array('label' => Control_I18n::t('file_notes'), 'icon' => 'edit', 'specialist' => false),
+    'status'       => array('label' => Control_I18n::t('case_status'), 'icon' => 'list-view', 'specialist' => false),
     'staff'        => array('label' => Control_I18n::t('file_staff'), 'icon' => 'businessperson', 'specialist' => false),
 );
 ?>
@@ -88,63 +87,104 @@ $tabs = array(
             <div id="tab-demographics" class="p-file-pane active">
                 <form class="clinical-save-form" data-patient-id="<?php echo $patient->id; ?>">
 
-                    <!-- Container 1: Child Identity -->
+                    <!-- Container 1: Child Identity & Documents -->
                     <div class="control-card profile-section-box pastel-box-primary" style="border-radius:24px; padding:35px; margin-bottom:30px; border-right:6px solid var(--control-primary);">
-                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:800; display:flex; align-items:center; gap:10px;"><span class="dashicons dashicons-admin-users"></span> <?php echo Control_I18n::t('basic_info'); ?></h4>
-                        <div class="wiz-grid-3">
-                            <div class="wiz-field no-label"><input type="text" name="name_first" placeholder="<?php echo Control_I18n::t('placeholder_first_name'); ?> *" value="<?php echo esc_attr($patient->name_first); ?>" required></div>
-                            <div class="wiz-field no-label"><input type="text" name="name_second" placeholder="<?php echo Control_I18n::t('placeholder_father_name'); ?> *" value="<?php echo esc_attr($patient->name_second); ?>" required></div>
-                            <div class="wiz-field no-label"><input type="text" name="name_last" placeholder="<?php echo Control_I18n::t('placeholder_family_name'); ?> *" value="<?php echo esc_attr($patient->name_last); ?>" required></div>
-                        </div>
-                        <div class="wiz-grid-3">
-                            <div class="wiz-field no-label"><input type="date" name="dob" class="dob-input-calc" value="<?php echo esc_attr($patient->dob); ?>"></div>
-                            <div class="wiz-field no-label"><input type="text" class="age-display-field" readonly style="background:rgba(255,255,255,0.5); font-weight:700;" placeholder="<?php echo Control_I18n::t('age'); ?>"></div>
-                            <div class="wiz-field no-label">
-                                <select name="gender">
-                                    <option value="male" <?php selected($patient->gender, 'male'); ?>><?php echo Control_I18n::t('male'); ?></option>
-                                    <option value="female" <?php selected($patient->gender, 'female'); ?>><?php echo Control_I18n::t('female'); ?></option>
-                                </select>
+                        <h4 style="margin:0 0 30px 0; color:var(--control-primary); font-weight:900; display:flex; align-items:center; gap:10px;"><span class="dashicons dashicons-admin-users"></span> <?php echo Control_I18n::t('basic_info'); ?></h4>
+                        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:40px;">
+                            <div>
+                                <div class="wiz-grid-3" style="margin-bottom:15px;">
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php _e('الاسم الأول', 'control'); ?></label><input type="text" name="name_first" placeholder="..." value="<?php echo esc_attr($patient->name_first); ?>" required></div>
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php _e('اسم الأب', 'control'); ?></label><input type="text" name="name_second" placeholder="..." value="<?php echo esc_attr($patient->name_second); ?>" required></div>
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php _e('اسم العائلة', 'control'); ?></label><input type="text" name="name_last" placeholder="..." value="<?php echo esc_attr($patient->name_last); ?>" required></div>
+                                </div>
+                                <div class="wiz-grid-3" style="margin-bottom:15px;">
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('dob'); ?></label><input type="date" name="dob" class="dob-input-calc" value="<?php echo esc_attr($patient->dob); ?>"></div>
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('age'); ?></label><input type="text" class="age-display-field" readonly style="background:#f1f5f9; font-weight:800; color:var(--control-primary);" placeholder="..."></div>
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('gender'); ?></label>
+                                        <select name="gender">
+                                            <option value="male" <?php selected($patient->gender, 'male'); ?>><?php echo Control_I18n::t('male'); ?></option>
+                                            <option value="female" <?php selected($patient->gender, 'female'); ?>><?php echo Control_I18n::t('female'); ?></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="wiz-grid-3">
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('nationality'); ?></label><input type="text" name="nationality" placeholder="..." value="<?php echo esc_attr($patient->nationality); ?>"></div>
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('child_lang_primary'); ?></label>
+                                        <select name="child_lang_primary">
+                                            <option value="ar" <?php selected($patient->child_lang_primary, 'ar'); ?>>العربية</option>
+                                            <option value="en" <?php selected($patient->child_lang_primary, 'en'); ?>>English</option>
+                                        </select>
+                                    </div>
+                                    <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('national_id'); ?></label><input type="text" name="national_id" placeholder="..." value="<?php echo esc_attr($patient->national_id); ?>"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="wiz-grid-3">
-                            <div class="wiz-field no-label"><input type="text" name="nationality" placeholder="<?php echo Control_I18n::t('nationality'); ?>" value="<?php echo esc_attr($patient->nationality); ?>"></div>
-                            <div class="wiz-field no-label">
-                                <select name="child_lang_primary">
-                                    <option value=""><?php echo Control_I18n::t('child_lang_primary'); ?>...</option>
-                                    <option value="ar" <?php selected($patient->child_lang_primary, 'ar'); ?>>العربية</option>
-                                    <option value="en" <?php selected($patient->child_lang_primary, 'en'); ?>>English</option>
-                                </select>
-                            </div>
-                            <div class="wiz-field no-label">
-                                <select name="child_lang_secondary">
-                                    <option value=""><?php echo Control_I18n::t('child_lang_secondary'); ?>...</option>
-                                    <option value="ar" <?php selected($patient->child_lang_secondary, 'ar'); ?>>العربية</option>
-                                    <option value="en" <?php selected($patient->child_lang_secondary, 'en'); ?>>English</option>
-                                </select>
+                            <div style="background:#fff; border-radius:24px; padding:25px; border:1px solid #e2e8f0;">
+                                <div style="font-weight:900; font-size:0.8rem; color:var(--control-primary); margin-bottom:20px; border-bottom:1.5px solid #f8fafc; padding-bottom:10px;"><?php _e('وثائق الهوية والملفات الإدارية', 'control'); ?></div>
+                                <div style="display:flex; flex-direction:column; gap:12px;">
+                                    <?php
+                                    $id_docs = array(
+                                        'id_national_url'  => array('label' => __('هوية الطفل / الإقامة', 'control'), 'icon' => 'id-alt'),
+                                        'guardian_id_url'  => array('label' => __('هوية ولي الأمر', 'control'), 'icon' => 'admin-users'),
+                                        'id_passport_url'  => array('label' => __('جواز السفر', 'control'), 'icon' => 'id'),
+                                        'birth_cert_url'   => array('label' => __('شهادة الميلاد', 'control'), 'icon' => 'media-text'),
+                                        'agreement_url'    => array('label' => __('اتفاقية المركز الموقعة', 'control'), 'icon' => 'clipboard')
+                                    );
+                                    foreach($id_docs as $key => $doc_meta): ?>
+                                        <div style="display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #f1f5f9;">
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <span class="dashicons dashicons-<?php echo $doc_meta['icon']; ?>" style="font-size:18px; color:var(--control-muted);"></span>
+                                                <small style="font-weight:800; font-size:0.7rem;"><?php echo $doc_meta['label']; ?></small>
+                                            </div>
+                                            <div style="display:flex; gap:5px;">
+                                                <?php if(!empty($patient->$key)): ?>
+                                                    <a href="<?php echo esc_url($patient->$key); ?>" target="_blank" style="color:var(--control-primary);"><span class="dashicons dashicons-visibility"></span></a>
+                                                <?php endif; ?>
+                                                <button type="button" class="identity-upload-trigger" data-key="<?php echo $key; ?>" style="background:none; border:none; color:var(--control-accent); cursor:pointer;"><span class="dashicons dashicons-upload"></span></button>
+                                                <input type="hidden" name="<?php echo $key; ?>" id="input-<?php echo $key; ?>" value="<?php echo esc_attr($patient->$key ?? ''); ?>">
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Container 2: Communication -->
+                    <!-- Container 2: Communication & Emergency -->
                     <div class="control-card profile-section-box pastel-box-success" style="border-radius:24px; padding:35px; margin-bottom:30px; border-right:6px solid #10b981;">
                         <h4 style="margin:0 0 30px 0; color:#059669; font-weight:800; display:flex; align-items:center; gap:10px;"><span class="dashicons dashicons-phone"></span> <?php echo Control_I18n::t('contact_info'); ?></h4>
                         <div class="wiz-grid-3">
-                            <div class="wiz-field no-label"><input type="tel" name="father_phone" placeholder="<?php echo Control_I18n::t('father_phone'); ?> *" value="<?php echo esc_attr($patient->father_phone); ?>" required></div>
-                            <div class="wiz-field no-label"><input type="tel" name="mother_phone" placeholder="<?php echo Control_I18n::t('mother_phone'); ?>" value="<?php echo esc_attr($patient->mother_phone); ?>"></div>
-                            <div class="wiz-field no-label"><input type="email" name="email" placeholder="<?php echo Control_I18n::t('email'); ?>" value="<?php echo esc_attr($patient->email); ?>"></div>
+                            <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('father_phone'); ?></label><input type="tel" name="father_phone" placeholder="..." value="<?php echo esc_attr($patient->father_phone); ?>" required></div>
+                            <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('mother_phone'); ?></label><input type="tel" name="mother_phone" placeholder="..." value="<?php echo esc_attr($patient->mother_phone); ?>"></div>
+                            <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('email'); ?></label><input type="email" name="email" placeholder="..." value="<?php echo esc_attr($patient->email); ?>"></div>
                         </div>
                         <div class="wiz-grid-3">
-                            <div class="wiz-field no-label">
+                            <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('comm_lang_primary'); ?></label>
                                 <select name="comm_lang_primary">
-                                    <option value=""><?php echo Control_I18n::t('comm_lang_primary'); ?>...</option>
                                     <option value="ar" <?php selected($patient->comm_lang_primary, 'ar'); ?>>العربية</option>
                                     <option value="en" <?php selected($patient->comm_lang_primary, 'en'); ?>>English</option>
                                 </select>
                             </div>
-                            <div class="wiz-field no-label"><input type="text" name="city_residence" placeholder="<?php echo Control_I18n::t('city_residence'); ?>" value="<?php echo esc_attr($patient->city_residence); ?>"></div>
-                            <div class="wiz-field no-label"><input type="text" name="area_district" placeholder="<?php echo Control_I18n::t('area_district'); ?>" value="<?php echo esc_attr($patient->area_district); ?>"></div>
+                            <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('city_residence'); ?></label><input type="text" name="city_residence" placeholder="..." value="<?php echo esc_attr($patient->city_residence); ?>"></div>
+                            <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('area_district'); ?></label><input type="text" name="area_district" placeholder="..." value="<?php echo esc_attr($patient->area_district); ?>"></div>
                         </div>
-                        <div class="wiz-field no-label"><textarea name="address" placeholder="<?php echo Control_I18n::t('placeholder_address'); ?>" rows="2"><?php echo esc_textarea($patient->address); ?></textarea></div>
+                        <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('address'); ?></label><textarea name="address" placeholder="..." rows="2"><?php echo esc_textarea($patient->address); ?></textarea></div>
+
+                        <!-- Emergency Group -->
+                        <div style="margin-top:25px; padding-top:25px; border-top:1.5px dashed #d1fae5;">
+                            <h5 style="margin:0 0 20px 0; color:#065f46; font-weight:800; font-size:0.9rem;"><?php echo Control_I18n::t('address_emergency'); ?></h5>
+                            <div class="wiz-grid-3">
+                                <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('emergency_contact'); ?></label><input type="text" name="emergency_contact" placeholder="..." value="<?php echo esc_attr($patient->emergency_contact); ?>"></div>
+                                <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('emergency_contact_alt'); ?></label><input type="tel" name="emergency_contact_alt" placeholder="..." value="<?php echo esc_attr($patient->emergency_contact_alt); ?>"></div>
+                                <div class="wiz-field"><label style="display:block; font-size:0.7rem; font-weight:800; color:var(--control-muted); margin-bottom:5px;"><?php echo Control_I18n::t('blood_type'); ?></label>
+                                    <select name="blood_type">
+                                        <option value=""><?php _e('اختر الفصيلة...', 'control'); ?></option>
+                                        <?php foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bt): ?>
+                                            <option value="<?php echo $bt; ?>" <?php selected($patient->blood_type, $bt); ?>><?php echo $bt; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="text-align:left;"><button type="submit" class="control-btn" style="background:var(--control-primary); border:none; padding:15px 60px; border-radius:12px; font-weight:800;"><?php echo Control_I18n::t('save'); ?></button></div>

@@ -23,6 +23,9 @@ class Control_Database {
 		$table_patient_documents = $wpdb->prefix . 'control_patient_documents';
 		$table_patient_referrals = $wpdb->prefix . 'control_patient_referrals';
 		$table_patient_notes     = $wpdb->prefix . 'control_patient_clinical_notes';
+		$table_patient_evaluations = $wpdb->prefix . 'control_patient_evaluations';
+		$table_patient_schedules   = $wpdb->prefix . 'control_patient_schedules';
+		$table_patient_treatment_plans = $wpdb->prefix . 'control_patient_treatment_plans';
 		$table_fin_sessions      = $wpdb->prefix . 'control_fin_sessions';
 		$table_fin_packages      = $wpdb->prefix . 'control_fin_packages';
 		$table_fin_invoices      = $wpdb->prefix . 'control_fin_invoices';
@@ -318,6 +321,47 @@ class Control_Database {
 			referral_date date,
 			notes text,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;";
+
+		$queries[] = "CREATE TABLE $table_patient_evaluations (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			specialist_id varchar(100),
+			eval_type varchar(50),
+			eval_date date NOT NULL,
+			structured_data longtext,
+			notes text,
+			attachments text,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;";
+
+		$queries[] = "CREATE TABLE $table_patient_schedules (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			day_of_week varchar(20),
+			time_slot varchar(50),
+			specialist_id varchar(100),
+			session_type varchar(100),
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY patient_id (patient_id)
+		) $charset_collate;";
+
+		$queries[] = "CREATE TABLE $table_patient_treatment_plans (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			patient_id mediumint(9) NOT NULL,
+			st_goals text,
+			lt_goals text,
+			therapy_types text,
+			frequency varchar(100),
+			status varchar(20) DEFAULT 'active',
+			version int DEFAULT 1,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY patient_id (patient_id)
 		) $charset_collate;";

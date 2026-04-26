@@ -956,3 +956,67 @@ body.control-dashboard-active .control-dashboard {
         padding: 15px 10px;
     }
 }
+
+/* Professional Upgrade - Child Profile v3.7.0 */
+.patient-file-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    max-height: calc(100vh - 150px);
+}
+
+.p-internal-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.p-internal-sidebar::-webkit-scrollbar { display: none; }
+
+#patient-file-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 50px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--control-primary-soft) transparent;
+}
+
+/* Vertical Dropdown Fix */
+select.wiz-field, .wiz-field select {
+    display: flex !important;
+    align-items: center !important;
+    line-height: normal !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 50px !important;
+}
+
+/* Pastel Container Hierarchies */
+.profile-section-box {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.profile-section-box:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+/* Timeline Components */
+.sessions-timeline::before {
+    content: '';
+    position: absolute;
+    right: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--control-primary-soft);
+    opacity: 0.3;
+}
+
+.session-entry-card {
+    position: relative;
+    z-index: 1;
+}
+
+/* Scroll Isolation */
+body.is-modal-open {
+    overflow: hidden !important;
+}

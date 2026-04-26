@@ -1020,3 +1020,36 @@ select.wiz-field, .wiz-field select {
 body.is-modal-open {
     overflow: hidden !important;
 }
+
+
+/* Financial Management UI v3.8.0 */
+.finance-management-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.stat-card {
+    border: 1px solid rgba(0,0,0,0.05);
+    padding: 25px !important;
+}
+
+/* Custom Financial Table Styling */
+.control-table th {
+    border-top: none;
+    background: #f8fafc;
+}
+
+.control-table td {
+    vertical-align: middle;
+}
+
+.font-bold { font-weight: 800; }
+.text-success { color: #10b981; }
+.text-danger { color: #ef4444; }
+
+/* Financial Status Badges */
+.status-paid, .status-collected { background: #dcfce7 !important; color: #166534 !important; }
+.status-pending { background: #fff7ed !important; color: #d97706 !important; }
+.status-partial { background: #eff6ff !important; color: #1e40af !important; }
+.status-overdue, .status-unpaid { background: #fee2e2 !important; color: #991b1b !important; }

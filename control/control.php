@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Control
  * Description: Professional system for administrative and user management.
- * Version: 3.5.0
+ * Version: 3.9.0
  * Author: Control Team
  * Text Domain: control
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define constants
-define( 'CONTROL_VERSION', '3.7.0' );
+define( 'CONTROL_VERSION', '3.9.0' );
 define( 'CONTROL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CONTROL_URL', plugin_dir_url( __FILE__ ) );
 
